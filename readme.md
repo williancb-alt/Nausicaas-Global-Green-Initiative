@@ -1,4 +1,4 @@
-# Name of Project
+# Nausicaä’s Global Green Initiative 
 
 
 # Table of Contents
