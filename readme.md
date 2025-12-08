@@ -43,10 +43,19 @@ Rotating scrum master so that everyone gets to experience the role once.
 Refer to BB for deadlines
 
 # Project Specification
-Clean and simple design
-User access levels (client, administrator)
-Includes at least one self-developed API and one web service
-To be run over <specify platform>
+Develop an online application system for Studio Ghibli’s climate change grant programs, supporting their Sustainable Planet Goals. The platform will manage multiple grants, including the popular Teto Grant (up to €10,000).
+
+#Requirements
+- Capture applicant details, funding requests, and grant selection.
+- Include an optional field for special award applications.
+- Applicants can submit but not modify their data after submission.
+- Administrators (Nausicaä Enterprises) can view, edit, and manage all applications.
+- Interface must be clean, user-friendly, and secure.
+
+#Deliverables
+- Full SDLC pipeline setup for development, testing, and deployment.
+- Basic UI prototype page(s) for pipeline validation.
+- Compliance with standard security requirements and data protection practices. 
 
 # Frameworks
 We will be using MongoDB for our database
