@@ -36,7 +36,7 @@ Our product will be delivered using an Agile methodology that embraces the DevOp
 - 05/01 ... BREAK
 - 12/01 John
 - 19/01 Tito
-- 26/01 William0
+- 26/01 Willian
 - 02/02 Anuj
 - 09/02 Ronan
   
@@ -135,7 +135,7 @@ The code framework to be used will be <<>>, we will be programming using the IDE
     Use Agile methodologies in the project at all times.
 
 # Meetings
-Stand-ups will occur Every <<day/time>> during class and <<day/time>> using an Automated bot. Two per week.
+Stand-ups will occur **Every Tuesday at 20:30** during class and **Thursdays at 19:00** using an Automated bot. Two per week.
 The order in which people give their updates will be :
 
 - 08/12 Arno
@@ -145,7 +145,7 @@ The order in which people give their updates will be :
 - 05/01 ... BREAK
 - 12/01 John
 - 19/01 Tito
-- 26/01 William
+- 26/01 Willian
 - 02/02 Anuj
 - 09/02 Ronan
 
@@ -167,7 +167,7 @@ Be honest.
 Slack is the preferred method of communication.
 Communication in this order: <<Slack, Microsoft Teams, E-Mail>> *Note that if the lecturers can't see the communications, we cannot grade it!
 If a demonstration is required, use Zoom, record the session and upload it to the Slack channel.
-No Slack communications between <<time and time>>.
+No Slack communications between 22:00 and 08:00
 Raise a problem as soon as you see it.
 Respect each other and understand differences in knowledge.
 All team documents are to be created using Markdown language and shared on GitHub.
