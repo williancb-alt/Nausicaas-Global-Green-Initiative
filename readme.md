@@ -29,7 +29,17 @@ Each team should fill in the blanks <<>> and add additional content that the tea
 Our product will be delivered using an Agile methodology that embraces the DevOps culture. Please note that our culture embraces change and these documents are treated as living, breathing artefacts that will be continuously updated.
 
 # Scrum Master
-<<list week number, student name>>
+- 08/12 Arno
+- 15/12 Matheus
+- 22/12 ... BREAK
+- 29/12 ... BREAK
+- 05/01 ... BREAK
+- 12/01 John
+- 19/01 Tito
+- 26/01 William0
+- 02/02 Anuj
+- 09/02 Ronan
+  
 Rotating scrum master so that everyone gets to experience the role once.
 
 # Product Owner
@@ -40,17 +50,17 @@ Rotating scrum master so that everyone gets to experience the role once.
 
 
 # Project Deadline
-Refer to BB for deadlines
+14/04/2026
 
 # Project Specification
 Develop an online application system for Studio Ghibli’s climate change grant programs, supporting their Sustainable Planet Goals. The platform will manage multiple grants, including the popular Teto Grant (up to €10,000).
 
 #Requirements
-- Capture applicant details, funding requests, and grant selection.
-- Include an optional field for special award applications.
-- Applicants can submit but not modify their data after submission.
-- Administrators (Nausicaä Enterprises) can view, edit, and manage all applications.
-- Interface must be clean, user-friendly, and secure.
+- Capture applicant details, funding requests, and grant selection. (Ronan)
+- Include an optional field for special award applications. (Matheus)
+- Applicants can submit but not modify their data after submission. (Arno)
+- Administrators (Nausicaä Enterprises) can view, edit, and manage all applications. ( John / William )
+- Interface must be clean, user-friendly, and secure.  (Tito)
 
 #Deliverables
 - Full SDLC pipeline setup for development, testing, and deployment.
@@ -66,7 +76,7 @@ Regex for cleansing and validation of data before sending it to the database.
 
 # Useful Links
  - Project Slack: https://atudevops.slack.com
- - GitHub: <<staff member's GitHub repo for the student project>>
+ - GitHub: https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative.git
 
 # More Information
 For more information, visit our other sections
@@ -126,11 +136,23 @@ The code framework to be used will be <<>>, we will be programming using the IDE
 
 # Meetings
 Stand-ups will occur Every <<day/time>> during class and <<day/time>> using an Automated bot. Two per week.
-The order in which people give their updates will be << >>.
+The order in which people give their updates will be :
+
+- 08/12 Arno
+- 15/12 Matheus
+- 22/12 ... BREAK
+- 29/12 ... BREAK
+- 05/01 ... BREAK
+- 12/01 John
+- 19/01 Tito
+- 26/01 William
+- 02/02 Anuj
+- 09/02 Ronan
+
 Updates will be in the form: What I've done, Impediments, What I plan to do.
-Sprint planning will occur at <<date/time>> every week.
-Please add and update items within <<issue management tool>> prior to the sprint planning session.
-Sprint retro will be at the end of our sprint on <<Date/Time>> (timebox retro for 15 minutes, to be organised by the scrum master).
+Sprint planning will occur at **Every Thursday at 19:00** every week.
+Please add and update items within **Github Projects** prior to the sprint planning session.
+Sprint retro will be at the end of our sprint on **Thursdays at 19:15** (timebox retro for 15 minutes, to be organised by the scrum master).
 Points raised in the sprint retro will be noted and posted on the Slack channel by the Scrum Master. The Scrum Master is rotated per team member every week.
 Backlog refinement will happen on <<date/time>> during our sprint.
 Task estimation will be done using << >>. 
@@ -160,8 +182,8 @@ Zero tolerance for bullying.
 # Agile way of working.
 If are assigned a job, take ownership of it and keep it up to date.
 Stick to your agreed working patterns. Let the team know when you are late or going early.
-Keep the JIRA board updated at all times.
-Update the Scrum Board as you progress the story i.e. don’t update at standup.
+Keep the Kanban board updated at all times.
+Update the Kanban Board as you progress the story i.e. don’t update at standup.
 Don't be afraid to ask for help.
 Don't be afraid to give constructive criticism, as long as it is constructive.
 Solve roadblocks within the team. If the impediment can’t be solved within the team, then give it to the Scrum Master.
