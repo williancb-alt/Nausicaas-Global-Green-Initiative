@@ -39,6 +39,15 @@ Our product will be delivered using an Agile methodology that embraces the DevOp
 - 26/01 Willian
 - 02/02 Anuj
 - 09/02 Ronan
+- 16/02 Arno
+- 23/02 Matheus
+- 02/03 John
+- 09/03 Tito
+- 16/03 William
+- 23/03 Anuj
+- 30/03 ... BREAK 
+- 06/04 ... BREAK
+- 13/04 Ronan (if needed)
   
 Rotating scrum master so that everyone gets to experience the role once.
 
