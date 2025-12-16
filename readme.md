@@ -52,7 +52,7 @@ Our product will be delivered using an Agile methodology that embraces the DevOp
 Rotating scrum master so that everyone gets to experience the role once.
 
 # Product Owner
-<<List name>> (Permanent)
+Pauric Dawson (Permanent)
 
 # Rockstars
 <<list team member names here>>
