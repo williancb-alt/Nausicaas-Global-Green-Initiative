@@ -77,6 +77,7 @@ Regex for cleansing and validation of data before sending it to the database.
 # Useful Links
  - Project Slack: https://atudevops.slack.com
  - GitHub: https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative.git
+ - Figma: https://www.figma.com/files/team/1581042243514154421/project/515037871/Team-project?fuid=1581042238894889205
 
 # More Information
 For more information, visit our other sections
