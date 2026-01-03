@@ -33,7 +33,7 @@ Database migrations set to run automatically within the setup
 To add a user for testing, open a new terminal and run the below command (changing email to your own)
 
 ```
-docker compose exec backend uv run flask --app run.py add-user demo@example.com --admin
+docker compose exec backend python -m flask --app run.py add-user demo@example.com --admin
 ```
 
 ### Option 2 - Manually

@@ -20,6 +20,7 @@ INSTALL_REQUIRES = [
     "Flask-Migrate",
     "flask-restx",
     "Flask-SQLAlchemy>=3.1.0",
+    "gunicorn",
     "psycopg2-binary",
     "PyJWT",
     "python-dateutil",
