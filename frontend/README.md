@@ -7,7 +7,6 @@ Frontend application for the grant management system. Built with React, TypeScri
 - React 19
 - React Router DOM
 - Bootstrap
-- Tailwind CSS
 - TypeScript
 - Vite
 - Testing libraries (Vitest, Testing Library)
@@ -35,10 +34,17 @@ Ensure you have the following installed:
 - **npm** (comes with Node.js)
 
 #### Starting locally
+
 Navigate to the frontend directory
 
 ```
 cd frontend
+```
+
+Add env file
+
+```
+cp .env.sample .env
 ```
 
 Install dependencies
