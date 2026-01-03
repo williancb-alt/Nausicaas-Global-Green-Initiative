@@ -1,5 +1,8 @@
 import os
+from typing import Dict, Type, Union
+
 import click
+from flask_sqlalchemy import SQLAlchemy
 
 from nausicass_global_green_initiative_api import create_app, db
 from nausicass_global_green_initiative_api.models.user import User
@@ -10,7 +13,7 @@ app = create_app(os.getenv("FLASK_ENV", "development"))
 
 
 @app.shell_context_processor
-def shell():
+def shell() -> Dict[str, Union[SQLAlchemy, Type[User], Type[BlacklistedToken], Type[Grant]]]:
     return {"db": db, "User": User, "BlacklistedToken": BlacklistedToken, "Grant": Grant}
 
 
@@ -20,7 +23,7 @@ def shell():
     "--admin", is_flag=True, default=False, help="New user has administrator role"
 )
 @click.password_option(help="Do not set password on the command line!")
-def add_user(email, admin, password):
+def add_user(email: str, admin: bool, password: str) -> int:
     """Add a new user to the database with email address = EMAIL."""
     if User.find_by_email(email):
         error = f"Error: {email} is already registered"

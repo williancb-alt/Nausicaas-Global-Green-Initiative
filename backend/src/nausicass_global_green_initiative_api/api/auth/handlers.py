@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from flask import current_app, jsonify
+from flask import Response, current_app, jsonify
 from flask_restx import abort
 
 from nausicass_global_green_initiative_api import db
@@ -13,7 +13,7 @@ from nausicass_global_green_initiative_api.util.datetime_util import (
 from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 
 
-def process_registration_request(email, password):
+def process_registration_request(email: str, password: str) -> Response:
     if User.find_by_email(email):
         abort(HTTPStatus.CONFLICT, f"{email} is already registered", status="fail")
     new_user = User(email=email, password=password)
@@ -27,7 +27,7 @@ def process_registration_request(email, password):
     )
 
 
-def process_login_request(email, password):
+def process_login_request(email: str, password: str) -> Response:
     user = User.find_by_email(email)
     if not user or not user.check_password(password):
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
@@ -39,7 +39,7 @@ def process_login_request(email, password):
     )
 
 
-def _create_auth_successful_response(token, status_code, message):
+def _create_auth_successful_response(token: str, status_code: HTTPStatus, message: str) -> Response:
     response = jsonify(
         status="success",
         message=message,
@@ -53,7 +53,7 @@ def _create_auth_successful_response(token, status_code, message):
     return response
 
 
-def _get_token_expire_time():
+def _get_token_expire_time() -> int:
     token_age_h = current_app.config.get("TOKEN_EXPIRE_HOURS")
     token_age_m = current_app.config.get("TOKEN_EXPIRE_MINUTES")
     expires_in_seconds = token_age_h * 3600 + token_age_m * 60
@@ -61,18 +61,18 @@ def _get_token_expire_time():
 
 
 @token_required
-def get_logged_in_user():
-    public_id = get_logged_in_user.public_id
+def get_logged_in_user() -> User:
+    public_id = get_logged_in_user.public_id  # type: ignore[attr-defined]
     user = User.find_by_public_id(public_id)
-    expires_at = get_logged_in_user.expires_at
+    expires_at = get_logged_in_user.expires_at  # type: ignore[attr-defined]
     user.token_expires_in = format_timespan_digits(remaining_fromtimestamp(expires_at))
     return user
 
 
 @token_required
-def process_logout_request():
-    access_token = process_logout_request.token
-    expires_at = process_logout_request.expires_at
+def process_logout_request() -> tuple[dict[str, str], HTTPStatus]:
+    access_token = process_logout_request.token  # type: ignore[attr-defined]
+    expires_at = process_logout_request.expires_at  # type: ignore[attr-defined]
     blacklisted_token = BlacklistedToken(access_token, expires_at)
     db.session.add(blacklisted_token)
     db.session.commit()

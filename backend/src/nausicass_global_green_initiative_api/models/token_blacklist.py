@@ -17,14 +17,14 @@ class BlacklistedToken(db.Model):
     blacklisted_on = db.Column(db.DateTime, default=utc_now)
     expires_at = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, token, expires_at):
+    def __init__(self, token: str, expires_at: int) -> None:
         self.token = token
         self.expires_at = dtaware_fromtimestamp(expires_at, use_tz=timezone.utc)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<BlacklistToken token={self.token}>"
 
     @classmethod
-    def check_blacklist(cls, token):
+    def check_blacklist(cls, token: str) -> bool:
         exists = cls.query.filter_by(token=token).first()
         return True if exists else False

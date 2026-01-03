@@ -1,7 +1,10 @@
 from http import HTTPStatus
+from datetime import datetime
+from typing import TypedDict
 
-from flask import jsonify, url_for
+from flask import Response, jsonify, url_for
 from flask_restx import abort, marshal
+from flask_sqlalchemy.pagination import Pagination
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import (
@@ -15,15 +18,20 @@ from nausicass_global_green_initiative_api.api.grants.dto import (
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 
+class GrantDictionary(TypedDict, total=False):
+    """Type definition for API requests regarding grants"""
+    name: str
+    deadline: datetime
+
 
 @admin_token_required
-def create_grant(grant_dict):
+def create_grant(grant_dict: GrantDictionary) -> Response:
     name = grant_dict["name"]
     if Grant.find_by_name(name):
         error = f"Grant name: {name} already exists, must be unique."
         abort(HTTPStatus.CONFLICT, error, status="fail")
     grant = Grant(**grant_dict)
-    owner = User.find_by_public_id(create_grant.public_id)
+    owner = User.find_by_public_id(create_grant.public_id)  # type: ignore[attr-defined]
     grant.owner_id = owner.id
     db.session.add(grant)
     db.session.commit()
@@ -34,7 +42,7 @@ def create_grant(grant_dict):
 
 
 @token_required
-def retrieve_grant_list(page, per_page):
+def retrieve_grant_list(page: int, per_page: int) -> Response:
     pagination = Grant.query.paginate(page=page, per_page=per_page, error_out=False)
     response_data = marshal(pagination, pagination_model)
     response_data["links"] = _pagination_nav_links(pagination)
@@ -45,14 +53,14 @@ def retrieve_grant_list(page, per_page):
 
 
 @token_required
-def retrieve_grant(name):
+def retrieve_grant(name: str) -> Grant:
     return Grant.query.filter_by(name=name.lower()).first_or_404(
         description=f"{name} not found in database."
     )
 
 
 @admin_token_required
-def update_grant(name, grant_dict):
+def update_grant(name: str, grant_dict: GrantDictionary) -> Response | tuple[dict[str, str], HTTPStatus]:
     grant = Grant.find_by_name(name.lower())
     if grant:
         for k, v in grant_dict.items():
@@ -70,7 +78,7 @@ def update_grant(name, grant_dict):
 
 
 @admin_token_required
-def delete_grant(name):
+def delete_grant(name: str) -> tuple[str, HTTPStatus]:
     grant = Grant.query.filter_by(name=name.lower()).first_or_404(
         description=f"{name} not found in database."
     )
@@ -79,7 +87,7 @@ def delete_grant(name):
     return "", HTTPStatus.NO_CONTENT
 
 
-def _pagination_nav_links(pagination):
+def _pagination_nav_links(pagination: Pagination) -> dict[str, str]:
     nav_links = {}
     per_page = pagination.per_page
     this_page = pagination.page
@@ -98,7 +106,7 @@ def _pagination_nav_links(pagination):
     return nav_links
 
 
-def _pagination_nav_header_links(pagination):
+def _pagination_nav_header_links(pagination: Pagination) -> str:
     url_dict = _pagination_nav_links(pagination)
     link_header = ""
     for rel, url in url_dict.items():

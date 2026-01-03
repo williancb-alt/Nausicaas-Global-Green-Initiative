@@ -13,7 +13,7 @@ from nausicass_global_green_initiative_api.util.datetime_util import (
 )
 
 
-def grant_name(name):
+def grant_name(name: str) -> str:
     """Validation method - string must contain only letters,numbers,' ','-' and '_'."""
     if not re.compile(r"^[\w\s-]+$").match(name):
         raise ValueError(
@@ -23,7 +23,7 @@ def grant_name(name):
     return name
 
 
-def future_date_from_string(date_str):
+def future_date_from_string(date_str: str) -> datetime:
     """Validation method for a date in the future, formatted as a string."""
     try:
         parsed_date = parser.parse(date_str)

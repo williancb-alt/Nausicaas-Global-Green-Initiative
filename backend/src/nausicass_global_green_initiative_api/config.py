@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Type
 
 
 HERE = Path(__file__).parent
@@ -54,6 +55,6 @@ ENV_CONFIG_DICT = dict(
 )
 
 
-def get_config(config_name):
+def get_config(config_name: str) -> Type[Config]:
     """Retrieve environment configuration settings."""
     return ENV_CONFIG_DICT.get(config_name, ProductionConfig)

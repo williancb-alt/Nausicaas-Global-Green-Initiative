@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+from flask import Response
 from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.auth.dto import (
@@ -12,6 +13,7 @@ from nausicass_global_green_initiative_api.api.auth.handlers import (
     get_logged_in_user,
     process_logout_request,
 )
+from nausicass_global_green_initiative_api.models.user import User
 
 auth_ns = Namespace(name="auth", validate=True)
 auth_ns.models[user_model.name] = user_model
@@ -26,7 +28,7 @@ class RegisterUser(Resource):
     @auth_ns.response(int(HTTPStatus.CONFLICT), "Email address is already registered.")
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
-    def post(self):
+    def post(self) -> Response:
         """Register a new user and return an access token."""
         request_data = auth_req_parser.parse_args()
         email = request_data.get("email")
@@ -43,7 +45,7 @@ class LoginUser(Resource):
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "email or password does not match")
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
-    def post(self):
+    def post(self) -> Response:
         """Authenticate an existing user and return an access token."""
         request_data = auth_req_parser.parse_args()
         email = request_data.get("email")
@@ -60,7 +62,7 @@ class GetUser(Resource):
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "Token is invalid or expired.")
     @auth_ns.marshal_with(user_model)
-    def get(self):
+    def get(self) -> User:
         """Validate access token and return user info."""
         return get_logged_in_user()
 
@@ -74,6 +76,6 @@ class LogoutUser(Resource):
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "Token is invalid or expired.")
     @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
-    def post(self):
+    def post(self) -> tuple[dict[str, str], HTTPStatus]:
         """Add token to blacklist, deauthenticating the current user."""
         return process_logout_request()

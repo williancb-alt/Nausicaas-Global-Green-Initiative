@@ -12,7 +12,7 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 
 
-def create_app(config_name):
+def create_app(config_name: str) -> Flask:
     app = Flask("nausicass-global-green-initiative-api")
     app.config.from_object(get_config(config_name))
 

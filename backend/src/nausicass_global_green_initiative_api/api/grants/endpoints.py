@@ -1,5 +1,7 @@
 from http import HTTPStatus
+from typing import Union
 
+from flask import Response
 from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.grants.dto import (
@@ -18,6 +20,7 @@ from nausicass_global_green_initiative_api.api.grants.handlers import (
     update_grant,
     delete_grant,
 )
+from nausicass_global_green_initiative_api.models.grant import Grant
 
 grant_ns = Namespace(name="grants", validate=True)
 grant_ns.models[grant_owner_model.name] = grant_owner_model
@@ -36,7 +39,7 @@ class GrantList(Resource):
     @grant_ns.doc(security="Bearer")
     @grant_ns.response(int(HTTPStatus.OK), "Retrieved grant list.", pagination_model)
     @grant_ns.expect(pagination_reqparser)
-    def get(self):
+    def get(self) -> Response:
         """Retrieve a list of grants."""
         request_data = pagination_reqparser.parse_args()
         page = request_data.get("page")
@@ -48,7 +51,7 @@ class GrantList(Resource):
     @grant_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
     @grant_ns.response(int(HTTPStatus.CONFLICT), "Grant name already exists.")
     @grant_ns.expect(create_grant_reqparser)
-    def post(self):
+    def post(self) -> Response:
         """Create a grant."""
         grant_dict = create_grant_reqparser.parse_args()
         return create_grant(grant_dict)
@@ -66,7 +69,7 @@ class Grant(Resource):
     @grant_ns.doc(security="Bearer")
     @grant_ns.response(int(HTTPStatus.OK), "Retrieved grant.", grant_model)
     @grant_ns.marshal_with(grant_model)
-    def get(self, name):
+    def get(self, name: str) -> Grant:
         """Retrieve a grant."""
         return retrieve_grant(name)
 
@@ -75,7 +78,7 @@ class Grant(Resource):
     @grant_ns.response(int(HTTPStatus.CREATED), "Added new grant.")
     @grant_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
     @grant_ns.expect(update_grant_reqparser)
-    def put(self, name):
+    def put(self, name: str) -> Union[Response, tuple[dict[str, str], HTTPStatus]]:
         """Update a grant."""
 
         grant_dict = update_grant_reqparser.parse_args()
@@ -85,6 +88,6 @@ class Grant(Resource):
     @grant_ns.doc(security="Bearer")
     @grant_ns.response(int(HTTPStatus.NO_CONTENT), "grant was deleted.")
     @grant_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
-    def delete(self, name):
+    def delete(self, name: str) -> tuple[str, HTTPStatus]:
         """Delete a grant."""
         return delete_grant(name)

@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Any, Callable, TypedDict
 
 from flask import request
 
@@ -9,11 +10,18 @@ from nausicass_global_green_initiative_api.api.exceptions import (
 from nausicass_global_green_initiative_api.models.user import User
 
 
-def token_required(f):
+class TokenPayload(TypedDict):
+    """Type definition for decoded JWT token payload."""
+    public_id: str
+    admin: bool
+    token: str
+    expires_at: int
+
+def token_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Only run function if request contains valid access token."""
 
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         token_payload = _validate_access_token(admin_only=False)
         for name, val in token_payload.items():
             setattr(decorated, name, val)
@@ -22,11 +30,11 @@ def token_required(f):
     return decorated
 
 
-def admin_token_required(f):
+def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Only run function if request contains valid access token AND user is admin."""
 
     @wraps(f)
-    def decorated(*args, **kwargs):
+    def decorated(*args: Any, **kwargs: Any) -> Any:
         token_payload = _validate_access_token(admin_only=True)
         if not token_payload["admin"]:
             raise ApiForbidden()
@@ -37,7 +45,7 @@ def admin_token_required(f):
     return decorated
 
 
-def _validate_access_token(admin_only):
+def _validate_access_token(admin_only: bool) -> TokenPayload:
     token = request.headers.get("Authorization")
     if not token:
         raise ApiUnauthorized(description="Unauthorized", admin_only=admin_only)

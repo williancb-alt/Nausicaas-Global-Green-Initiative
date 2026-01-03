@@ -1,5 +1,8 @@
 from datetime import date
-from flask import url_for
+from typing import Optional
+
+from flask import Response, url_for
+from flask.testing import FlaskClient
 
 EMAIL = "new_user@email.com"
 ADMIN_EMAIL = "admin_user@email.com"
@@ -13,7 +16,9 @@ DEFAULT_URL = "https://www.fakesite.com"
 DEFAULT_DEADLINE = date.today().strftime("%m/%d/%y")
 
 
-def register_user(test_client, email=EMAIL, password=PASSWORD):
+def register_user(
+    test_client: FlaskClient, email: str = EMAIL, password: str = PASSWORD
+) -> Response:
     return test_client.post(
         url_for("api.auth_register"),
         data=f"email={email}&password={password}",
@@ -21,7 +26,9 @@ def register_user(test_client, email=EMAIL, password=PASSWORD):
     )
 
 
-def login_user(test_client, email=EMAIL, password=PASSWORD):
+def login_user(
+    test_client: FlaskClient, email: str = EMAIL, password: str = PASSWORD
+) -> Response:
     return test_client.post(
         url_for("api.auth_login"),
         data=f"email={email}&password={password}",
@@ -29,24 +36,24 @@ def login_user(test_client, email=EMAIL, password=PASSWORD):
     )
 
 
-def get_user(test_client, access_token):
+def get_user(test_client: FlaskClient, access_token: str) -> Response:
     return test_client.get(
         url_for("api.auth_user"), headers={"Authorization": f"Bearer {access_token}"}
     )
 
 
-def logout_user(test_client, access_token):
+def logout_user(test_client: FlaskClient, access_token: str) -> Response:
     return test_client.post(
         url_for("api.auth_logout"), headers={"Authorization": f"Bearer {access_token}"}
     )
 
 
 def create_grant(
-    test_client,
-    access_token,
-    grant_name=DEFAULT_NAME,
-    deadline_str=DEFAULT_DEADLINE,
-):
+    test_client: FlaskClient,
+    access_token: str,
+    grant_name: str = DEFAULT_NAME,
+    deadline_str: str = DEFAULT_DEADLINE,
+) -> Response:
     return test_client.post(
         url_for("api.grant_list"),
         headers={"Authorization": f"Bearer {access_token}"},
@@ -55,21 +62,28 @@ def create_grant(
     )
 
 
-def retrieve_grant_list(test_client, access_token, page=None, per_page=None):
+def retrieve_grant_list(
+    test_client: FlaskClient,
+    access_token: str,
+    page: Optional[int] = None,
+    per_page: Optional[int] = None,
+) -> Response:
     return test_client.get(
         url_for("api.grant_list", page=page, per_page=per_page),
         headers={"Authorization": f"Bearer {access_token}"},
     )
 
 
-def retrieve_grant(test_client, access_token, grant_name):
+def retrieve_grant(test_client: FlaskClient, access_token: str, grant_name: str) -> Response:
     return test_client.get(
         url_for("api.grant", name=grant_name),
         headers={"Authorization": f"Bearer {access_token}"},
     )
 
 
-def update_grant(test_client, access_token, grant_name, deadline_str):
+def update_grant(
+    test_client: FlaskClient, access_token: str, grant_name: str, deadline_str: str
+) -> Response:
     return test_client.put(
         url_for("api.grant", name=grant_name),
         headers={"Authorization": f"Bearer {access_token}"},
@@ -78,7 +92,7 @@ def update_grant(test_client, access_token, grant_name, deadline_str):
     )
 
 
-def delete_grant(test_client, access_token, grant_name):
+def delete_grant(test_client: FlaskClient, access_token: str, grant_name: str) -> Response:
     return test_client.delete(
         url_for("api.grant", name=grant_name),
         headers={"Authorization": f"Bearer {access_token}"},

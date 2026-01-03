@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -25,35 +26,35 @@ class Grant(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     owner = db.relationship("User", backref=db.backref("grants"))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Grant name={self.name}>"
 
     @hybrid_property
-    def created_at_str(self):
+    def created_at_str(self) -> str:
         created_at_utc = make_tzaware(
             self.created_at, use_tz=timezone.utc, localize=False
         )
         return localized_dt_string(created_at_utc, use_tz=get_local_utcoffset())
 
     @hybrid_property
-    def deadline_str(self):
+    def deadline_str(self) -> str:
         deadline_utc = make_tzaware(self.deadline, use_tz=timezone.utc, localize=False)
         return localized_dt_string(deadline_utc, use_tz=get_local_utcoffset())
 
     @hybrid_property
-    def deadline_passed(self):
+    def deadline_passed(self) -> bool:
         return datetime.now(timezone.utc) > self.deadline.replace(tzinfo=timezone.utc)
 
     @hybrid_property
-    def time_remaining(self):
+    def time_remaining(self) -> timedelta:
         time_remaining = self.deadline.replace(tzinfo=timezone.utc) - utc_now()
         return time_remaining if not self.deadline_passed else timedelta(0)
 
     @hybrid_property
-    def time_remaining_str(self):
+    def time_remaining_str(self) -> str:
         timedelta_str = format_timedelta_str(self.time_remaining)
         return timedelta_str if not self.deadline_passed else "No time remaining"
 
     @classmethod
-    def find_by_name(cls, name):
+    def find_by_name(cls, name: str) -> Optional["Grant"]:
         return cls.query.filter_by(name=name).first()

@@ -1,3 +1,4 @@
+from typing import Any, List, Mapping, Optional, Tuple
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 # TODO - update these when real domain in place
@@ -10,11 +11,11 @@ class ApiUnauthorized(Unauthorized):
 
     def __init__(
         self,
-        description="Unauthorized",
-        admin_only=False,
-        error=None,
-        error_description=None,
-    ):
+        description: str = "Unauthorized",
+        admin_only: bool = False,
+        error: Optional[str] = None,
+        error_description: Optional[str] = None,
+    ) -> None:
         self.description = description
         self.www_auth_value = self.__get_www_auth_value(
             admin_only, error, error_description
@@ -23,10 +24,16 @@ class ApiUnauthorized(Unauthorized):
             self, description=description, response=None, www_authenticate=None
         )
 
-    def get_headers(self, environ=None, scope=None):
+    def get_headers(
+        self, 
+        environ: Optional[Mapping[str, Any]] = None, 
+        scope: Optional[Mapping[str, Any]] = None
+    ) -> List[Tuple[str, str]]:
         return [("Content-Type", "text/html"), ("WWW-Authenticate", self.www_auth_value)]
 
-    def __get_www_auth_value(self, admin_only, error, error_description):
+    def __get_www_auth_value(
+        self, admin_only: bool, error: Optional[str], error_description: Optional[str]
+    ) -> str:
         realm = _REALM_ADMIN_USERS if admin_only else _REALM_REGULAR_USERS
         www_auth_value = f'Bearer realm="{realm}"'
         if error:
@@ -41,7 +48,11 @@ class ApiForbidden(Forbidden):
 
     description = "You are not an administrator"
 
-    def get_headers(self, environ=None, scope=None):
+    def get_headers(
+        self, 
+        environ: Optional[Mapping[str, Any]] = None, 
+        scope: Optional[Mapping[str, Any]] = None
+    ) -> List[Tuple[str, str]]:
         return [
             ("Content-Type", "text/html"),
             (
