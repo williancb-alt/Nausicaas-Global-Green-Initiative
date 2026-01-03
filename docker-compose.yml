@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
@@ -28,8 +26,8 @@ services:
     ports:
       - "8080:8080"
     command: >
-      sh -c "uv run flask --app run.py db upgrade &&
-           uv run flask --app run.py run --host 0.0.0.0 --port 8080"
+      sh -c "python -m flask --app run.py db upgrade &&
+           python -m gunicorn --bind 0.0.0.0:8080 --workers 4 run:app"
 
   frontend:
     build:
