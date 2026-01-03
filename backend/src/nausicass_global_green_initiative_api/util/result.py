@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, List, Optional, TypeVar
 T = TypeVar("T")
 R = TypeVar("R", bound="Result[Any]")
 
+
 class Result(Generic[T]):
     """Returns the outcome of a function call"""
 

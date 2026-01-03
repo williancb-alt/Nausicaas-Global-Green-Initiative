@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from nausicass_global_green_initiative_api.models.user import User
-from tests.util import EMAIL, register_user, login_user
+from tests.util import EMAIL, register_user, login_user, get_access_token_from_cookie
 
 SUCCESS = "successfully logged in"
 UNAUTHORIZED = "email or password does not match"
@@ -13,8 +13,9 @@ def test_login(client, db):
     assert response.status_code == HTTPStatus.OK
     assert "status" in response.json and response.json["status"] == "success"
     assert "message" in response.json and response.json["message"] == SUCCESS
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
+    assert "access_token" not in response.json
+    access_token = get_access_token_from_cookie(response)
+    assert access_token is not None
     result = User.decode_access_token(access_token)
     assert result.success
     token_payload = result.value

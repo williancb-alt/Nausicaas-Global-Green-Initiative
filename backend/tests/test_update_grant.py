@@ -14,20 +14,17 @@ UPDATED_DEADLINE = (date.today() + timedelta(days=5)).strftime("%m/%d/%y")
 
 
 def test_update_grant(client, db, admin):
-    response = login_user(client, email=ADMIN_EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = create_grant(client, access_token)
+    login_user(client, email=ADMIN_EMAIL)
+    response = create_grant(client)
     assert response.status_code == HTTPStatus.CREATED
 
     response = update_grant(
         client,
-        access_token,
         grant_name=DEFAULT_NAME,
         deadline_str=UPDATED_DEADLINE,
     )
     assert response.status_code == HTTPStatus.OK
-    response = retrieve_grant(client, access_token, grant_name=DEFAULT_NAME)
+    response = retrieve_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.OK
 
     assert "name" in response.json and response.json["name"] == DEFAULT_NAME

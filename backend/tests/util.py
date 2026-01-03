@@ -36,27 +36,21 @@ def login_user(
     )
 
 
-def get_user(test_client: FlaskClient, access_token: str) -> Response:
-    return test_client.get(
-        url_for("api.auth_user"), headers={"Authorization": f"Bearer {access_token}"}
-    )
+def get_user(test_client: FlaskClient) -> Response:
+    return test_client.get(url_for("api.auth_user"))
 
 
-def logout_user(test_client: FlaskClient, access_token: str) -> Response:
-    return test_client.post(
-        url_for("api.auth_logout"), headers={"Authorization": f"Bearer {access_token}"}
-    )
+def logout_user(test_client: FlaskClient) -> Response:
+    return test_client.post(url_for("api.auth_logout"))
 
 
 def create_grant(
     test_client: FlaskClient,
-    access_token: str,
     grant_name: str = DEFAULT_NAME,
     deadline_str: str = DEFAULT_DEADLINE,
 ) -> Response:
     return test_client.post(
         url_for("api.grant_list"),
-        headers={"Authorization": f"Bearer {access_token}"},
         data=f"name={grant_name}&deadline={deadline_str}",
         content_type="application/x-www-form-urlencoded",
     )
@@ -64,36 +58,44 @@ def create_grant(
 
 def retrieve_grant_list(
     test_client: FlaskClient,
-    access_token: str,
     page: Optional[int] = None,
     per_page: Optional[int] = None,
 ) -> Response:
     return test_client.get(
         url_for("api.grant_list", page=page, per_page=per_page),
-        headers={"Authorization": f"Bearer {access_token}"},
     )
 
 
-def retrieve_grant(test_client: FlaskClient, access_token: str, grant_name: str) -> Response:
+def retrieve_grant(test_client: FlaskClient, grant_name: str) -> Response:
     return test_client.get(
         url_for("api.grant", name=grant_name),
-        headers={"Authorization": f"Bearer {access_token}"},
     )
 
 
 def update_grant(
-    test_client: FlaskClient, access_token: str, grant_name: str, deadline_str: str
+    test_client: FlaskClient, grant_name: str, deadline_str: str
 ) -> Response:
     return test_client.put(
         url_for("api.grant", name=grant_name),
-        headers={"Authorization": f"Bearer {access_token}"},
         data=f"deadline={deadline_str}",
         content_type="application/x-www-form-urlencoded",
     )
 
 
-def delete_grant(test_client: FlaskClient, access_token: str, grant_name: str) -> Response:
+def delete_grant(test_client: FlaskClient, grant_name: str) -> Response:
     return test_client.delete(
         url_for("api.grant", name=grant_name),
-        headers={"Authorization": f"Bearer {access_token}"},
     )
+
+
+def get_access_token_from_cookie(response: Response) -> Optional[str]:
+    """Helper to extract access_token for testing token validation."""
+    set_cookie_header = response.headers.get("Set-Cookie", "")
+    if not set_cookie_header:
+        return None
+
+    for part in set_cookie_header.split(";"):
+        part = part.strip()
+        if part.startswith("access_token="):
+            return part.split("=", 1)[1]
+    return None

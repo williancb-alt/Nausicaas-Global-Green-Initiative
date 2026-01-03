@@ -13,27 +13,21 @@ from tests.util import (
 
 
 def test_delete_grant(client, db, admin):
-    response = login_user(client, email=ADMIN_EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = create_grant(client, access_token)
+    login_user(client, email=ADMIN_EMAIL)
+    response = create_grant(client)
     assert response.status_code == HTTPStatus.CREATED
-    response = delete_grant(client, access_token, grant_name=DEFAULT_NAME)
+    response = delete_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.NO_CONTENT
-    response = retrieve_grant(client, access_token, grant_name=DEFAULT_NAME)
+    response = retrieve_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_delete_grant_no_admin_token(client, db, admin, user):
-    response = login_user(client, email=ADMIN_EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = create_grant(client, access_token)
+    login_user(client, email=ADMIN_EMAIL)
+    response = create_grant(client)
     assert response.status_code == HTTPStatus.CREATED
 
-    response = login_user(client, email=EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = delete_grant(client, access_token, grant_name=DEFAULT_NAME)
+    login_user(client, email=EMAIL)
+    response = delete_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "message" in response.json and response.json["message"] == FORBIDDEN

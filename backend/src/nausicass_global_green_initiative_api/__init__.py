@@ -6,7 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 from .config import get_config
 
-cors = CORS()
+cors = CORS(
+    supports_credentials=True,
+)
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()

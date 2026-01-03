@@ -36,21 +36,17 @@ DEADLINES = [
 
 
 def test_retrieve_paginated_grant_list(client, db, admin):
-    response = login_user(client, email=ADMIN_EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
+    login_user(client, email=ADMIN_EMAIL)
 
-    # ADD SEVEN grant INSTANCES TO DATABASE
     for i in range(0, len(NAMES)):
         response = create_grant(
             client,
-            access_token,
             grant_name=NAMES[i],
             deadline_str=DEADLINES[i],
         )
         assert response.status_code == HTTPStatus.CREATED
 
-    response = retrieve_grant_list(client, access_token, page=1, per_page=5)
+    response = retrieve_grant_list(client, page=1, per_page=5)
     assert response.status_code == HTTPStatus.OK
 
     assert "has_prev" in response.json and not response.json["has_prev"]
@@ -68,7 +64,7 @@ def test_retrieve_paginated_grant_list(client, db, admin):
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
 
-    response = retrieve_grant_list(client, access_token, page=2, per_page=5)
+    response = retrieve_grant_list(client, page=2, per_page=5)
     assert response.status_code == HTTPStatus.OK
 
     assert "has_prev" in response.json and response.json["has_prev"]
@@ -86,7 +82,7 @@ def test_retrieve_paginated_grant_list(client, db, admin):
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
 
-    response = retrieve_grant_list(client, access_token, page=1, per_page=10)
+    response = retrieve_grant_list(client, page=1, per_page=10)
     assert response.status_code == HTTPStatus.OK
 
     assert "has_prev" in response.json and not response.json["has_prev"]
@@ -104,7 +100,7 @@ def test_retrieve_paginated_grant_list(client, db, admin):
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
 
-    response = retrieve_grant_list(client, access_token)
+    response = retrieve_grant_list(client)
     assert response.status_code == HTTPStatus.OK
 
     assert "has_prev" in response.json and not response.json["has_prev"]

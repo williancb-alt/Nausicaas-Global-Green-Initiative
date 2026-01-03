@@ -2,7 +2,14 @@ import time
 from http import HTTPStatus
 
 from flask import url_for
-from tests.util import EMAIL, WWW_AUTH_NO_TOKEN, register_user, login_user, get_user
+from tests.util import (
+    EMAIL,
+    WWW_AUTH_NO_TOKEN,
+    register_user,
+    login_user,
+    get_user,
+    get_access_token_from_cookie,
+)
 
 TOKEN_EXPIRED = "Access token expired. Please log in again."
 WWW_AUTH_EXPIRED_TOKEN = (
@@ -10,15 +17,12 @@ WWW_AUTH_EXPIRED_TOKEN = (
     'error="invalid_token", '
     f'error_description="{TOKEN_EXPIRED}"'
 )
-WWW_AUTH_NO_TOKEN = 'Bearer realm="registered_users@mydomain.com"'
 
 
 def test_auth_user(client, db):
     register_user(client)
-    response = login_user(client)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = get_user(client, access_token)
+    login_user(client)
+    response = get_user(client)
     assert response.status_code == HTTPStatus.OK
     assert "email" in response.json and response.json["email"] == EMAIL
     assert "admin" in response.json and not response.json["admin"]
@@ -34,11 +38,11 @@ def test_auth_user_no_token(client, db):
 
 def test_auth_user_expired_token(client, db):
     register_user(client)
-    response = login_user(client)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
+    login_response = login_user(client)
+    access_token = get_access_token_from_cookie(login_response)
+    assert access_token is not None
     time.sleep(6)
-    response = get_user(client, access_token)
+    response = get_user(client)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert "message" in response.json and response.json["message"] == TOKEN_EXPIRED
     assert "WWW-Authenticate" in response.headers

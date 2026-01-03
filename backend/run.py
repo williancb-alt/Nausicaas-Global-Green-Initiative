@@ -13,7 +13,9 @@ app = create_app(os.getenv("FLASK_ENV", "development"))
 
 
 @app.shell_context_processor
-def shell() -> Dict[str, Union[SQLAlchemy, Type[User], Type[BlacklistedToken], Type[Grant]]]:
+def shell() -> (
+    Dict[str, Union[SQLAlchemy, Type[User], Type[BlacklistedToken], Type[Grant]]]
+):
     return {"db": db, "User": User, "BlacklistedToken": BlacklistedToken, "Grant": Grant}
 
 

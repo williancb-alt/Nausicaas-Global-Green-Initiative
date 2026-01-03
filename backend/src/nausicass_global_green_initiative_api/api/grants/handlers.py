@@ -18,8 +18,10 @@ from nausicass_global_green_initiative_api.api.grants.dto import (
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 
+
 class GrantDictionary(TypedDict, total=False):
     """Type definition for API requests regarding grants"""
+
     name: str
     deadline: datetime
 
@@ -60,7 +62,9 @@ def retrieve_grant(name: str) -> Grant:
 
 
 @admin_token_required
-def update_grant(name: str, grant_dict: GrantDictionary) -> Response | tuple[dict[str, str], HTTPStatus]:
+def update_grant(
+    name: str, grant_dict: GrantDictionary
+) -> Response | tuple[dict[str, str], HTTPStatus]:
     grant = Grant.find_by_name(name.lower())
     if grant:
         for k, v in grant_dict.items():

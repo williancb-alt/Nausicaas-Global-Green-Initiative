@@ -76,6 +76,6 @@ class LogoutUser(Resource):
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "Token is invalid or expired.")
     @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
-    def post(self) -> tuple[dict[str, str], HTTPStatus]:
+    def post(self) -> Response:
         """Add token to blacklist, deauthenticating the current user."""
         return process_logout_request()

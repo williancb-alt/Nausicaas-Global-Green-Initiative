@@ -12,16 +12,12 @@ from tests.util import (
 
 
 def test_retrieve_grant_non_admin_user(client, db, admin, user):
-    response = login_user(client, email=ADMIN_EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = create_grant(client, access_token)
+    login_user(client, email=ADMIN_EMAIL)
+    response = create_grant(client)
     assert response.status_code == HTTPStatus.CREATED
 
-    response = login_user(client, email=EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = retrieve_grant(client, access_token, grant_name=DEFAULT_NAME)
+    login_user(client, email=EMAIL)
+    response = retrieve_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.OK
 
     assert "name" in response.json and response.json["name"] == DEFAULT_NAME
@@ -31,10 +27,8 @@ def test_retrieve_grant_non_admin_user(client, db, admin, user):
 
 
 def test_retrieve_grant_does_not_exist(client, db, user):
-    response = login_user(client, email=EMAIL)
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
-    response = retrieve_grant(client, access_token, grant_name=DEFAULT_NAME)
+    login_user(client, email=EMAIL)
+    response = retrieve_grant(client, grant_name=DEFAULT_NAME)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert (
         "message" in response.json

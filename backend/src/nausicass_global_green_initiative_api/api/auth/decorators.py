@@ -12,10 +12,12 @@ from nausicass_global_green_initiative_api.models.user import User
 
 class TokenPayload(TypedDict):
     """Type definition for decoded JWT token payload."""
+
     public_id: str
     admin: bool
     token: str
     expires_at: int
+
 
 def token_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Only run function if request contains valid access token."""
@@ -46,7 +48,7 @@ def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
 
 
 def _validate_access_token(admin_only: bool) -> TokenPayload:
-    token = request.headers.get("Authorization")
+    token = request.cookies.get("access_token")
     if not token:
         raise ApiUnauthorized(description="Unauthorized", admin_only=admin_only)
     result = User.decode_access_token(token)

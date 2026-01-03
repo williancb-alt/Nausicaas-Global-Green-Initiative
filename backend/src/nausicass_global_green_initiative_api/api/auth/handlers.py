@@ -39,17 +39,31 @@ def process_login_request(email: str, password: str) -> Response:
     )
 
 
-def _create_auth_successful_response(token: str, status_code: HTTPStatus, message: str) -> Response:
+def _create_auth_successful_response(
+    token: str, status_code: HTTPStatus, message: str
+) -> Response:
+    expires_in = _get_token_expire_time()
     response = jsonify(
         status="success",
         message=message,
-        access_token=token,
         token_type="bearer",
-        expires_in=_get_token_expire_time(),
+        expires_in=expires_in,
     )
     response.status_code = status_code
     response.headers["Cache-Control"] = "no-store"
     response.headers["Pragma"] = "no-cache"
+
+    is_production = current_app.config.get("FLASK_ENV") == "production"
+
+    response.set_cookie(
+        "access_token",
+        token,
+        httponly=True,
+        secure=is_production,
+        samesite="Lax",
+        max_age=expires_in,
+        path="/",
+    )
     return response
 
 
@@ -70,11 +84,12 @@ def get_logged_in_user() -> User:
 
 
 @token_required
-def process_logout_request() -> tuple[dict[str, str], HTTPStatus]:
+def process_logout_request() -> Response:
     access_token = process_logout_request.token  # type: ignore[attr-defined]
     expires_at = process_logout_request.expires_at  # type: ignore[attr-defined]
     blacklisted_token = BlacklistedToken(access_token, expires_at)
     db.session.add(blacklisted_token)
     db.session.commit()
-    response_dict = dict(status="success", message="successfully logged out")
-    return response_dict, HTTPStatus.OK
+    response = jsonify(dict(status="success", message="successfully logged out"))
+    response.set_cookie("access_token", "", expires=0)
+    return response

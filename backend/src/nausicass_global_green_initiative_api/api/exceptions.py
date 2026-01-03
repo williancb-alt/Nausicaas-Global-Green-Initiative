@@ -25,9 +25,9 @@ class ApiUnauthorized(Unauthorized):
         )
 
     def get_headers(
-        self, 
-        environ: Optional[Mapping[str, Any]] = None, 
-        scope: Optional[Mapping[str, Any]] = None
+        self,
+        environ: Optional[Mapping[str, Any]] = None,
+        scope: Optional[Mapping[str, Any]] = None,
     ) -> List[Tuple[str, str]]:
         return [("Content-Type", "text/html"), ("WWW-Authenticate", self.www_auth_value)]
 
@@ -49,9 +49,9 @@ class ApiForbidden(Forbidden):
     description = "You are not an administrator"
 
     def get_headers(
-        self, 
-        environ: Optional[Mapping[str, Any]] = None, 
-        scope: Optional[Mapping[str, Any]] = None
+        self,
+        environ: Optional[Mapping[str, Any]] = None,
+        scope: Optional[Mapping[str, Any]] = None,
     ) -> List[Tuple[str, str]]:
         return [
             ("Content-Type", "text/html"),

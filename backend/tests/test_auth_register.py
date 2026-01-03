@@ -1,7 +1,13 @@
 from http import HTTPStatus
 
 from nausicass_global_green_initiative_api.models.user import User
-from tests.util import EMAIL, PASSWORD, BAD_REQUEST, register_user
+from tests.util import (
+    EMAIL,
+    PASSWORD,
+    BAD_REQUEST,
+    register_user,
+    get_access_token_from_cookie,
+)
 
 SUCCESS = "successfully registered"
 EMAIL_ALREADY_EXISTS = f"{EMAIL} is already registered"
@@ -14,8 +20,9 @@ def test_auth_register(client, db):
     assert "message" in response.json and response.json["message"] == SUCCESS
     assert "token_type" in response.json and response.json["token_type"] == "bearer"
     assert "expires_in" in response.json and response.json["expires_in"] == 5
-    assert "access_token" in response.json
-    access_token = response.json["access_token"]
+    assert "access_token" not in response.json
+    access_token = get_access_token_from_cookie(response)
+    assert access_token is not None
     result = User.decode_access_token(access_token)
     assert result.success
     user_dict = result.value

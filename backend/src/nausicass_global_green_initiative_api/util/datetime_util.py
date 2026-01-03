@@ -45,14 +45,18 @@ def get_local_utcoffset() -> timezone:
     return timezone(offset=utc_offset)
 
 
-def make_tzaware(dt: datetime, use_tz: Optional[timezone] = None, localize: bool = True) -> datetime:
+def make_tzaware(
+    dt: datetime, use_tz: Optional[timezone] = None, localize: bool = True
+) -> datetime:
     """Make a naive datetime object timezone-aware."""
     if not use_tz:
         use_tz = get_local_utcoffset()
     return dt.astimezone(use_tz) if localize else dt.replace(tzinfo=use_tz)
 
 
-def dtaware_fromtimestamp(timestamp: int | float, use_tz: Optional[timezone] = None) -> datetime:
+def dtaware_fromtimestamp(
+    timestamp: int | float, use_tz: Optional[timezone] = None
+) -> datetime:
     """Time-zone aware datetime object from UNIX timestamp."""
     timestamp_naive = datetime.fromtimestamp(timestamp)
     timestamp_aware = timestamp_naive.replace(tzinfo=get_local_utcoffset())
