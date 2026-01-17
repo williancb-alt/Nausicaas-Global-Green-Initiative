@@ -44,7 +44,10 @@ export function Login(): JSX.Element {
   }
 
   return (
-    <div className="container py-5 d-flex flex-column justify-content-center align-items-center min-vh-100">
+    <div
+      className="container py-5 d-flex flex-column justify-content-center align-items-center"
+      style={{ minHeight: "calc(100vh - 104px)" }}
+    >
       <div
         className="card shadow-sm"
         style={{ width: "100%", maxWidth: "400px" }}
