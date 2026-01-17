@@ -14,6 +14,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.11"
+  COVERAGE_THRESHOLD: "80"
 
 jobs:
   lint:
@@ -103,7 +104,6 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-          continue-on-error: false
 
   test:
     name: Test
@@ -171,14 +171,14 @@ jobs:
       - name: Run tests with coverage
         run: |
           source .venv/bin/activate
-          pytest --cov=src --cov-report=xml --cov-report=term
+          pytest --cov=src --cov-report=xml --cov-report=term --cov-report=json
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./backend/coverage.xml
-          flags: backend
-          fail_ci_if_error: false
+      - name: Check coverage threshold
+        env:
+          COVERAGE_THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
+        run: |
+          source .venv/bin/activate
+          coverage report --fail-under=$COVERAGE_THRESHOLD
 
   build:
     name: Build
