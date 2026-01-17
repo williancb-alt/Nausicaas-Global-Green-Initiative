@@ -37,6 +37,26 @@ export function useLogout() {
   })
 }
 
+export function useRegister() {
+  const { setUser } = useAuthStore()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ email, password }: LoginCredentials) =>
+      api.auth.register(email, password),
+    onSuccess: async () => {
+      try {
+        const user = await api.auth.getUser()
+        setUser(user)
+        await queryClient.invalidateQueries({ queryKey: ["user"] })
+      } catch (error) {
+        // TODO - error handling - trigger state or dispatch to show message to user informing of error
+        console.error("Failed to fetch user after registration:", error)
+      }
+    },
+  })
+}
+
 export function useUser() {
   const { setUser, clearAuth } = useAuthStore()
 

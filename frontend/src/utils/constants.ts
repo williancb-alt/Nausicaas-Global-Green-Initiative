@@ -7,6 +7,8 @@ export const BUTTON_TEXT = {
   CREATING: "Creating...",
   REFRESH: "Refresh",
   LOADING: "Loading...",
+  SIGN_UP: "Sign Up",
+  SIGNING_UP: "Signing up...",
 } as const
 
 export const MESSAGES = {

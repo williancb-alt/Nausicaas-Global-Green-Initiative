@@ -6,7 +6,7 @@ import { Button } from "../button/Button"
 import { BUTTON_TEXT } from "../../utils/constants"
 
 export function Header(): JSX.Element {
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated } = useAuthStore()
   const logoutMutation = useLogout()
 
   const handleLogout = () => {
