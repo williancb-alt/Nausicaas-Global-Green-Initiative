@@ -45,12 +45,12 @@ jobs:
       - name: Run Black check
         run: |
           source .venv/bin/activate
-          black --check .
+          black --check . --exclude=.venv
 
       - name: Run Flake8
         run: |
           source .venv/bin/activate
-          flake8 .
+          flake8 . --exclude=.venv
 
   test:
     name: Test
@@ -162,8 +162,8 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: Dockerfile
+          context: .
+          file: ./backend/Dockerfile
           push: false
           tags: nausicaa-backend:latest
           cache-from: type=gha
