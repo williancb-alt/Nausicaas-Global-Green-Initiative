@@ -161,8 +161,8 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ github.workspace }}/backend
-          file: Dockerfile
+          context: ./backend
+          file: ./backend/Dockerfile
           push: false
           tags: nausicaa-backend:latest
           cache-from: type=gha
