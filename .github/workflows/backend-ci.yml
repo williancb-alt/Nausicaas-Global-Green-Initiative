@@ -107,7 +107,7 @@ jobs:
       - name: Run safety check
         run: |
           source .venv/bin/activate
-          safety check --json || safety check
+          safety scan || safety scan --json
 
   test:
     name: Test
