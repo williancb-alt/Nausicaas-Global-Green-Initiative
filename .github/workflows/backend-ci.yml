@@ -176,7 +176,15 @@ jobs:
           COVERAGE_THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
         run: |
           source .venv/bin/activate
-          coverage report --fail-under=$COVERAGE_THRESHOLD
+          COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
+          echo "Current coverage: ${COVERAGE}%"
+          echo "Required threshold: ${COVERAGE_THRESHOLD}%"
+          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below threshold ${COVERAGE_THRESHOLD}%"
+            exit 1
+          else
+            echo "Coverage ${COVERAGE}% meets threshold ${COVERAGE_THRESHOLD}%"
+          fi
 
   build:
     name: Build
