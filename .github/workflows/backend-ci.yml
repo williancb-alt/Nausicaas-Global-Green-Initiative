@@ -99,15 +99,11 @@ jobs:
           uv pip install --upgrade pip
           uv pip install -e .
 
-      - name: Install safety
-        run: |
-          source .venv/bin/activate
-          uv pip install safety
-
       - name: Run safety check
-        run: |
-          source .venv/bin/activate
-          safety scan || safety scan --json
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          continue-on-error: false
 
   test:
     name: Test
