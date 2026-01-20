@@ -26,7 +26,8 @@ class GrantDictionary(TypedDict, total=False):
     deadline: datetime
 
 
-@admin_token_required
+# @admin_token_required
+@token_required
 def create_grant(grant_dict: GrantDictionary) -> Response:
     name = grant_dict["name"]
     if Grant.find_by_name(name):
@@ -61,7 +62,8 @@ def retrieve_grant(name: str) -> Grant:
     )
 
 
-@admin_token_required
+# @admin_token_required
+@token_required
 def update_grant(
     name: str, grant_dict: GrantDictionary
 ) -> Response | tuple[dict[str, str], HTTPStatus]:
@@ -81,7 +83,8 @@ def update_grant(
     return create_grant(grant_dict)
 
 
-@admin_token_required
+# @admin_token_required
+@token_required
 def delete_grant(name: str) -> tuple[str, HTTPStatus]:
     grant = Grant.query.filter_by(name=name.lower()).first_or_404(
         description=f"{name} not found in database."
