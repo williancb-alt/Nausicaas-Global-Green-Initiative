@@ -18,11 +18,11 @@ jobs:
 
       - name: Stop any existing test containers
         run: |
-          docker-compose --profile test down || true
+          docker compose --profile test down || true
 
       - name: Start test services
         run: |
-          docker-compose --profile test up -d --build
+          docker compose --profile test up -d --build
 
       # TODO - add healthchecks to docker compose for more stability and use that here instead
       - name: Wait for backend to be ready
@@ -72,4 +72,4 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          docker-compose --profile test down
+          docker compose --profile test down
