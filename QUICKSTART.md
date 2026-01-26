@@ -25,7 +25,7 @@ git checkout branch-name
 ### 2. Build and Start the Application
 
 ```bash
-docker compose up --build
+docker compose --profile dev up --build
 ```
 
 This will:

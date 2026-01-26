@@ -21,7 +21,7 @@ From root directory within project
 Ensure that Docker is running on the local machine, then run the below command
 
 ```
-docker compose up --build
+docker compose --profile dev up --build
 ```
 
 ### Option 2 - Running manually
