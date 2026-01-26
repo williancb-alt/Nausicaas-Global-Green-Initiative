@@ -1,0 +1,75 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Stop any existing test containers
+        run: |
+          docker-compose --profile test down || true
+
+      - name: Start test services
+        run: |
+          docker-compose --profile test up -d --build
+
+      # TODO - add healthchecks to docker compose for more stability and use that here instead
+      - name: Wait for backend to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8081/api/v1/auth/register -X OPTIONS; do sleep 2; done'
+
+      # TODO - add healthchecks to docker compose for more stability and use that here instead
+      - name: Wait for frontend to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:5174; do sleep 2; done'
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: 'npm'
+          cache-dependency-path: e2e/package-lock.json
+
+      - name: Install Playwright dependencies
+        working-directory: ./e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        working-directory: ./e2e
+        env:
+          BASE_URL: http://localhost:5174
+          API_BASE_URL: http://localhost:8081
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: e2e/test-results/
+          retention-days: 30
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose --profile test down
