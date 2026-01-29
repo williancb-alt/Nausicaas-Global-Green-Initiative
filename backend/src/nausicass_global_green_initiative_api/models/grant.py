@@ -22,6 +22,8 @@ class Grant(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
     deadline = db.Column(db.DateTime)
+    description = db.Column(db.String(1000), nullable=True)
+    custom_fields = db.Column(db.JSON, nullable=True)
 
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     owner = db.relationship("User", backref=db.backref("grants"))

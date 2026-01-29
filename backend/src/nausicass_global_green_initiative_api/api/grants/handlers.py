@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from datetime import datetime
-from typing import TypedDict
+import json
+from typing import Any, TypedDict
 
 from flask import Response, jsonify, url_for
 from flask_restx import abort, marshal
@@ -24,16 +25,35 @@ class GrantDictionary(TypedDict, total=False):
 
     name: str
     deadline: datetime
+    description: str
+    custom_fields: str | None
 
 
-# @admin_token_required
-@token_required
+@admin_token_required
 def create_grant(grant_dict: GrantDictionary) -> Response:
     name = grant_dict["name"]
     if Grant.find_by_name(name):
         error = f"Grant name: {name} already exists, must be unique."
         abort(HTTPStatus.CONFLICT, error, status="fail")
-    grant = Grant(**grant_dict)
+
+    # Parse custom_fields JSON string if provided
+    custom_fields_str = grant_dict.get("custom_fields")
+    parsed_custom_fields: Any = None
+    if custom_fields_str:
+        try:
+            parsed_custom_fields = json.loads(custom_fields_str)
+        except json.JSONDecodeError:
+            abort(
+                HTTPStatus.BAD_REQUEST,
+                "custom_fields must be valid JSON",
+                status="fail",
+            )
+
+    # Create grant with parsed custom_fields
+    grant_data = {k: v for k, v in grant_dict.items() if k != "custom_fields"}
+    grant = Grant(**grant_data)
+    grant.custom_fields = parsed_custom_fields
+
     owner = User.find_by_public_id(create_grant.public_id)  # type: ignore[attr-defined]
     grant.owner_id = owner.id
     db.session.add(grant)
@@ -57,36 +77,47 @@ def retrieve_grant_list(page: int, per_page: int) -> Response:
 
 @token_required
 def retrieve_grant(name: str) -> Grant:
-    return Grant.query.filter_by(name=name.lower()).first_or_404(
+    return Grant.query.filter_by(name=name).first_or_404(
         description=f"{name} not found in database."
     )
 
 
-# @admin_token_required
-@token_required
+@admin_token_required
 def update_grant(
     name: str, grant_dict: GrantDictionary
 ) -> Response | tuple[dict[str, str], HTTPStatus]:
-    grant = Grant.find_by_name(name.lower())
+    grant = Grant.find_by_name(name)
     if grant:
+        # Parse custom_fields JSON string if provided
+        custom_fields_str = grant_dict.get("custom_fields")
+        if custom_fields_str:
+            try:
+                grant.custom_fields = json.loads(custom_fields_str)
+            except json.JSONDecodeError:
+                abort(
+                    HTTPStatus.BAD_REQUEST,
+                    "custom_fields must be valid JSON",
+                    status="fail",
+                )
+
         for k, v in grant_dict.items():
-            setattr(grant, k, v)
+            if k != "custom_fields":
+                setattr(grant, k, v)
         db.session.commit()
         message = f"'{name}' was successfully updated"
         response_dict = dict(status="success", message=message)
         return response_dict, HTTPStatus.OK
     try:
-        valid_name = grant_name(name.lower())
+        valid_name = grant_name(name)
     except ValueError as e:
         abort(HTTPStatus.BAD_REQUEST, str(e), status="fail")
     grant_dict["name"] = valid_name
     return create_grant(grant_dict)
 
 
-# @admin_token_required
-@token_required
+@admin_token_required
 def delete_grant(name: str) -> tuple[str, HTTPStatus]:
-    grant = Grant.query.filter_by(name=name.lower()).first_or_404(
+    grant = Grant.query.filter_by(name=name).first_or_404(
         description=f"{name} not found in database."
     )
     db.session.delete(grant)

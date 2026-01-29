@@ -19,7 +19,7 @@ COPY src/ ./src/
 RUN uv venv && \
     . .venv/bin/activate && \
     uv pip install --upgrade pip && \
-    uv pip install -e . 
+    uv pip install -e .
 
 COPY . .
 
@@ -45,7 +45,8 @@ RUN uv venv && \
     . .venv/bin/activate && \
     cp -r /tmp/site-packages/. .venv/lib/python3.11/site-packages/ && \
     uv pip install --upgrade pip && \
-    uv pip install -e .
+    uv pip install -e . && \
+    uv pip install tox
 
 ENV PATH="/app/.venv/bin:${PATH}"
 

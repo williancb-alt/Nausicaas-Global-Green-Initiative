@@ -3,7 +3,6 @@ from collections import namedtuple
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-
 DT_AWARE = "%m/%d/%y %I:%M:%S %p %Z"
 DT_NAIVE = "%m/%d/%y %I:%M:%S %p"
 DATE_MONTH_NAME = "%b %d %Y"
@@ -114,9 +113,9 @@ def format_timedelta_str(td: timedelta) -> str:
 
 def get_timespan(td: timedelta) -> timespan:
     """Convert timedelta object to timespan namedtuple."""
-    (milliseconds, microseconds) = divmod(td.microseconds, 1000)
-    (minutes, seconds) = divmod(td.seconds, 60)
-    (hours, minutes) = divmod(minutes, 60)
+    milliseconds, microseconds = divmod(td.microseconds, 1000)
+    minutes, seconds = divmod(td.seconds, 60)
+    hours, minutes = divmod(minutes, 60)
     total_seconds = td.seconds + (td.days * ONE_DAY_IN_SECONDS)
     return timespan(
         td.days,

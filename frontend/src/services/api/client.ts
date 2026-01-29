@@ -56,6 +56,16 @@ export interface Grant {
   deadline: string
   deadline_passed: boolean
   time_remaining: string
+  description?: string
+  custom_fields?: {
+    configs: Array<
+      | { type: "text"; label: string; maxLength: number }
+      | { type: "radio"; label: string; options: string[] }
+      | { type: "phone"; label: string }
+      | { type: "email"; label: string }
+    >
+    values: Record<string, string>
+  }
   owner?: { email: string; public_id: string }
   link?: string
 }

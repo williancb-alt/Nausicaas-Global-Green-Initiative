@@ -3,7 +3,7 @@ from datetime import date, datetime, time, timezone
 
 from dateutil import parser
 from flask_restx import Model
-from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, String, Url
+from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
 from flask_restx.inputs import positive
 from flask_restx.reqparse import RequestParser
 
@@ -47,6 +47,28 @@ def future_date_from_string(date_str: str) -> datetime:
     return deadline_utc
 
 
+def valid_phone(phone: str) -> str:
+    """Validate phone number format."""
+    # Supports: 555-123-4567, (555)123-4567, +1-555-123-4567, +1 (555) 123-4567
+    pattern = (
+        r"^[\+]?[0-9]{0,3}[-\s]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
+    )
+    if not re.match(pattern, phone):
+        raise ValueError(
+            f"'{phone}' is not a valid phone number. Please use a format like "
+            "+1 (555) 123-4567 or 555-123-4567."
+        )
+    return phone
+
+
+def valid_email(email: str) -> str:
+    """Validate email format."""
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if not re.match(pattern, email):
+        raise ValueError(f"'{email}' is not a valid email address.")
+    return email
+
+
 create_grant_reqparser = RequestParser(bundle_errors=True)
 create_grant_reqparser.add_argument(
     "name",
@@ -62,6 +84,20 @@ create_grant_reqparser.add_argument(
     location="form",
     required=True,
     nullable=False,
+)
+create_grant_reqparser.add_argument(
+    "description",
+    type=str,
+    location="form",
+    required=True,
+    nullable=False,
+)
+create_grant_reqparser.add_argument(
+    "custom_fields",
+    type=str,
+    location="form",
+    required=False,
+    nullable=True,
 )
 
 pagination_reqparser = RequestParser(bundle_errors=True)
@@ -81,6 +117,8 @@ grant_model = Model(
         "deadline": String(attribute="deadline_str"),
         "deadline_passed": Boolean,
         "time_remaining": String(attribute="time_remaining_str"),
+        "description": String,
+        "custom_fields": Raw,
         "owner": Nested(grant_owner_model),
         "link": Url("api.grant"),
     },
