@@ -139,13 +139,13 @@ docker compose exec db psql -U postgres -d nausicaa_dev
 docker compose exec db psql -U postgres -d nausicaa_dev -c "\dt"
 
 # View grant table structure
-docker compose exec db psql -U postgres -d nausicaa_dev -c "\d grant"
+docker compose exec db psql -U postgres -d nausicaa_dev -c '\d "grant"'
 
 # View user table structure
-docker compose exec db psql -U postgres -d nausicaa_dev -c "\d user"
+docker compose exec db psql -U postgres -d nausicaa_dev -c '\d "user"'
 
-# Query all grants
-docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT * FROM grant;"
+# Query all grants (grant is a reserved word, must be quoted)
+docker compose exec db psql -U postgres -d nausicaa_dev -c 'SELECT * FROM "grant";'
 
 # Query all users
 docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT id, email, admin FROM \"user\";"
