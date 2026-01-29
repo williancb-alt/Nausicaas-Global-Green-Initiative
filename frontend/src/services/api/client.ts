@@ -21,12 +21,24 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   response => response,
-  (error: AxiosError<{ message?: string; error?: string }>) => {
-    const message =
+  (error: AxiosError<{ message?: string; error?: string; errors?: Record<string, string> }>) => {
+    let message =
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       `HTTP error ${error.response?.status || "unknown"}`
+
+    // Append field-specific validation errors if present
+    const fieldErrors = error.response?.data?.errors
+    if (fieldErrors && typeof fieldErrors === "object") {
+      const errorDetails = Object.entries(fieldErrors)
+        .map(([field, msg]) => `${field}: ${msg}`)
+        .join("; ")
+      if (errorDetails) {
+        message = `${message} - ${errorDetails}`
+      }
+    }
+
     throw new Error(message)
   },
 )
@@ -56,6 +68,16 @@ export interface Grant {
   deadline: string
   deadline_passed: boolean
   time_remaining: string
+  description?: string
+  custom_fields?: {
+    configs: Array<
+      | { type: "text"; label: string; maxLength: number }
+      | { type: "radio"; label: string; options: string[] }
+      | { type: "phone"; label: string }
+      | { type: "email"; label: string }
+    >
+    values: Record<string, string>
+  }
   owner?: { email: string; public_id: string }
   link?: string
 }

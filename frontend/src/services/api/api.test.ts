@@ -124,6 +124,7 @@ describe("api (auth + grants)", () => {
       const result = await api.grants.createGrant({
         name: "test-grant",
         deadline: "12/31/2024",
+        description: "Test grant description",
       })
 
       expect(result).toEqual(mockResponse)

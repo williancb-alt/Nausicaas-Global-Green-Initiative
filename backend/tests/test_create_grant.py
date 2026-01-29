@@ -11,6 +11,7 @@ from tests.util import (
     FORBIDDEN,
     login_user,
     create_grant,
+    retrieve_grant,
 )
 
 
@@ -78,3 +79,43 @@ def test_create_grant_no_admin_token(client, db, user):
     response = create_grant(client)
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "message" in response.json and response.json["message"] == FORBIDDEN
+
+
+def test_create_grant_with_description(client, db, admin):
+    login_user(client, email=ADMIN_EMAIL)
+    response = create_grant(
+        client,
+        grant_name="test-grant",
+        description="Test description",
+    )
+    assert response.status_code == HTTPStatus.CREATED
+
+    # Verify fields are returned when retrieving the grant
+    response = retrieve_grant(client, "test-grant")
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["description"] == "Test description"
+
+
+def test_create_grant_with_custom_fields(client, db, admin):
+    import json
+
+    login_user(client, email=ADMIN_EMAIL)
+    custom_fields = json.dumps(
+        {
+            "configs": [
+                {"type": "text", "label": "Project Summary", "maxLength": 500},
+                {"type": "radio", "label": "Category", "options": ["A", "B", "C"]},
+            ],
+            "values": {"field_0": "My summary", "field_1": "B"},
+        }
+    )
+    response = create_grant(
+        client, grant_name="custom-grant", custom_fields=custom_fields
+    )
+    assert response.status_code == HTTPStatus.CREATED
+
+    # Verify custom fields are returned
+    response = retrieve_grant(client, "custom-grant")
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["custom_fields"] is not None
+    assert len(response.json["custom_fields"]["configs"]) == 2

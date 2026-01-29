@@ -9,10 +9,20 @@ export const grantsApi = {
   createGrant: async (params: {
     name: string
     deadline: string
+    description: string
+    custom_fields?: string
   }): Promise<BaseResponse> => {
+    const formData = new URLSearchParams({
+      name: params.name,
+      deadline: params.deadline,
+      description: params.description,
+    })
+    if (params.custom_fields) {
+      formData.append("custom_fields", params.custom_fields)
+    }
     const { data } = await apiClient.post<BaseResponse>(
       "/api/v1/grants",
-      new URLSearchParams({ name: params.name, deadline: params.deadline }),
+      formData,
     )
     return data
   },

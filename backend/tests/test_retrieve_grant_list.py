@@ -3,7 +3,6 @@ from http import HTTPStatus
 
 from tests.util import ADMIN_EMAIL, login_user, create_grant, retrieve_grant_list
 
-
 NAMES = [
     "grant1",
     "second_grant",

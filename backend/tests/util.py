@@ -14,6 +14,7 @@ WWW_AUTH_NO_TOKEN = 'Bearer realm="registered_users@mydomain.com"'
 DEFAULT_NAME = "some-grant"
 DEFAULT_URL = "https://www.fakesite.com"
 DEFAULT_DEADLINE = date.today().strftime("%m/%d/%y")
+DEFAULT_DESCRIPTION = "A test grant description"
 
 
 def register_user(
@@ -48,10 +49,15 @@ def create_grant(
     test_client: FlaskClient,
     grant_name: str = DEFAULT_NAME,
     deadline_str: str = DEFAULT_DEADLINE,
+    description: str = DEFAULT_DESCRIPTION,
+    custom_fields: Optional[str] = None,
 ) -> Response:
+    data = f"name={grant_name}&deadline={deadline_str}&description={description}"
+    if custom_fields:
+        data += f"&custom_fields={custom_fields}"
     return test_client.post(
         url_for("api.grant_list"),
-        data=f"name={grant_name}&deadline={deadline_str}",
+        data=data,
         content_type="application/x-www-form-urlencoded",
     )
 
@@ -73,11 +79,18 @@ def retrieve_grant(test_client: FlaskClient, grant_name: str) -> Response:
 
 
 def update_grant(
-    test_client: FlaskClient, grant_name: str, deadline_str: str
+    test_client: FlaskClient,
+    grant_name: str,
+    deadline_str: str,
+    description: str = DEFAULT_DESCRIPTION,
+    custom_fields: Optional[str] = None,
 ) -> Response:
+    data = f"deadline={deadline_str}&description={description}"
+    if custom_fields:
+        data += f"&custom_fields={custom_fields}"
     return test_client.put(
         url_for("api.grant", name=grant_name),
-        data=f"deadline={deadline_str}",
+        data=data,
         content_type="application/x-www-form-urlencoded",
     )
 
