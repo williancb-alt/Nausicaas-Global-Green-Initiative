@@ -37,6 +37,7 @@ EXTRAS_REQUIRE = {
         "pytest",
         "pytest-black",
         "pytest-clarity",
+        "pytest-cov",
         "pytest-dotenv",
         "pytest-flake8",
         "pytest-flask",

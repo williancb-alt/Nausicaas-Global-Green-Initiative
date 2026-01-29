@@ -1,4 +1,4 @@
-FROM python:3.11.9-slim as builder
+FROM python:3.11.9-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
