@@ -80,7 +80,7 @@ This allows you to test the application from both admin and regular user perspec
 
 Log in with your credentials and you can create and manage grants from the home page.
 
-> **Note:** Currently all authenticated users can create, update, and delete grants. Admin/user role separation is not yet enforced.
+> **Note:** Admin privileges are required to create, update, and delete grants. Regular users can view grants only.
 
 ## Useful Commands
 
@@ -105,6 +105,71 @@ docker compose down -v
 docker compose ps
 ```
 
+## Running Tests
+
+### Backend Tests
+
+```bash
+# Run all backend tests with tox
+docker compose exec backend /app/.venv/bin/python -m tox
+
+# Run pytest directly (faster, skips linting)
+docker compose exec backend /app/.venv/bin/python -m pytest tests/ -v
+```
+
+### Frontend Tests
+
+Frontend tests run locally (not in Docker):
+
+```bash
+cd frontend
+npm install
+npm test
+```
+
+## Database Commands
+
+### Inspect Database Tables
+
+```bash
+# Connect to PostgreSQL
+docker compose exec db psql -U postgres -d nausicaa_dev
+
+# List all tables
+docker compose exec db psql -U postgres -d nausicaa_dev -c "\dt"
+
+# View grant table structure
+docker compose exec db psql -U postgres -d nausicaa_dev -c "\d grant"
+
+# View user table structure
+docker compose exec db psql -U postgres -d nausicaa_dev -c "\d user"
+
+# Query all grants
+docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT * FROM grant;"
+
+# Query all users
+docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT id, email, admin FROM \"user\";"
+```
+
+### Database Migrations
+
+```bash
+# Apply pending migrations
+docker compose exec backend /app/.venv/bin/python -m flask --app run.py db upgrade
+
+# Generate a new migration after model changes
+docker compose exec backend /app/.venv/bin/python -m flask --app run.py db migrate -m "description of changes"
+
+# View migration history
+docker compose exec backend /app/.venv/bin/python -m flask --app run.py db history
+```
+
+### Create Test Database (for running tests)
+
+```bash
+docker compose exec db psql -U postgres -c "CREATE DATABASE nausicaa_test;"
+```
+
 ## Troubleshooting
 
 **Port already in use**
@@ -115,6 +180,20 @@ Ensure the `db` service is healthy before the backend starts. Run `docker compos
 
 **Changes not reflected**
 Rebuild with `docker compose up --build`.
+
+**Migration errors ("Can't locate revision")**
+The database migration history is out of sync. Reset the database:
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+**Column does not exist errors**
+Run database migrations:
+```bash
+docker compose exec backend /app/.venv/bin/python -m flask --app run.py db upgrade
+docker compose restart backend
+```
 
 ## Manual Setup (Without Docker)
 
