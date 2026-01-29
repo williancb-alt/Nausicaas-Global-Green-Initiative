@@ -1,6 +1,9 @@
 services:
+  ## Local dev infra config
   db:
     image: postgres:16
+    profiles:
+      - dev
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -15,6 +18,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    profiles:
+      - dev
     restart: unless-stopped
     environment:
       FLASK_ENV: development
@@ -36,12 +41,94 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:8080
         SERVER_NAME: localhost
+    profiles:
+      - dev
     environment:
       VITE_API_BASE_URL: http://localhost:8080
     depends_on:
       - backend
     ports:
       - "5173:80"
+
+  ## E2E infra config
+  db-test:
+    image: postgres:16
+    profiles:
+      - test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "55433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-test-init:
+    image: postgres:16
+    profiles:
+      - test
+    environment:
+      PGPASSWORD: postgres
+    depends_on:
+      db-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for database connection...' &&
+        until psql -h db-test -U postgres -d postgres -c 'SELECT 1' > /dev/null 2>&1; do
+          echo 'Waiting...'
+          sleep 1
+        done &&
+        echo 'Terminating active connections to test database...' &&
+        psql -h db-test -U postgres -d postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'nausicaa_test' AND pid <> pg_backend_pid();\" || true &&
+        echo 'Dropping test database if exists...' &&
+        psql -h db-test -U postgres -d postgres -c 'DROP DATABASE IF EXISTS nausicaa_test;' || true &&
+        echo 'Creating test database...' &&
+        psql -h db-test -U postgres -d postgres -c 'CREATE DATABASE nausicaa_test;' &&
+        echo 'Test database created successfully'
+      "
+    restart: "no"
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles:
+      - test
+    environment:
+      FLASK_ENV: testing
+      TEST_DATABASE_URL: postgresql://postgres:postgres@db-test:5432/nausicaa_test
+      SECRET_KEY: ${SECRET_KEY:-test-secret-key}
+    depends_on:
+      db-test:
+        condition: service_healthy
+      db-test-init:
+        condition: service_completed_successfully
+    ports:
+      - "8081:8080"
+    command: >
+      sh -c "python -m flask --app run.py db upgrade &&
+           python -m gunicorn --bind 0.0.0.0:8080 --workers 2 run:app"
+
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8081
+        SERVER_NAME: localhost
+    profiles:
+      - test
+    environment:
+      VITE_API_BASE_URL: http://localhost:8081
+    depends_on:
+      - backend-test
+    ports:
+      - "5174:80"
 
 volumes:
   pgdata:
