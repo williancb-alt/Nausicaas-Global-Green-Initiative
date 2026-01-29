@@ -21,12 +21,24 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   response => response,
-  (error: AxiosError<{ message?: string; error?: string }>) => {
-    const message =
+  (error: AxiosError<{ message?: string; error?: string; errors?: Record<string, string> }>) => {
+    let message =
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       `HTTP error ${error.response?.status || "unknown"}`
+
+    // Append field-specific validation errors if present
+    const fieldErrors = error.response?.data?.errors
+    if (fieldErrors && typeof fieldErrors === "object") {
+      const errorDetails = Object.entries(fieldErrors)
+        .map(([field, msg]) => `${field}: ${msg}`)
+        .join("; ")
+      if (errorDetails) {
+        message = `${message} - ${errorDetails}`
+      }
+    }
+
     throw new Error(message)
   },
 )

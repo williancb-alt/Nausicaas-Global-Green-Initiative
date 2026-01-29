@@ -147,6 +147,12 @@ docker compose exec db psql -U postgres -d nausicaa_dev -c '\d "user"'
 # Query all grants (grant is a reserved word, must be quoted)
 docker compose exec db psql -U postgres -d nausicaa_dev -c 'SELECT * FROM "grant";'
 
+# View custom_fields JSON (formatted)
+docker compose exec db psql -U postgres -d nausicaa_dev -c 'SELECT name, jsonb_pretty(custom_fields::jsonb) FROM "grant";'
+
+# View custom_fields for a specific grant
+docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT name, jsonb_pretty(custom_fields::jsonb) FROM \"grant\" WHERE name = 'Your Grant Name';"
+
 # Query all users
 docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT id, email, admin FROM \"user\";"
 ```
