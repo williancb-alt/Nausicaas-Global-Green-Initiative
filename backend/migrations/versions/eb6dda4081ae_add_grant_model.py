@@ -25,6 +25,8 @@ def upgrade():
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("deadline", sa.DateTime(), nullable=True),
+        sa.Column("description", sa.String(length=1000), nullable=True),
+        sa.Column("custom_fields", sa.JSON(), nullable=True),
         sa.Column("owner_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["owner_id"],

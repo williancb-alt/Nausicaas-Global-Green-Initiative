@@ -112,6 +112,8 @@ test.describe("Authenticated User Flow", () => {
     await authenticatedPage.getByPlaceholder(/dd\/mm\/yyyy/i).fill(deadline);
     await takeScreenshot(authenticatedPage, testInfo, sequentialScreenshotNames("filled-deadline"));
 
+    await authenticatedPage.locator('textarea').fill('Test description for the grant');
+
     await authenticatedPage
       .getByRole("button", { name: /create grant/i })
       .click();
