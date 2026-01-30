@@ -24,14 +24,15 @@ def shell() -> (
 @click.option(
     "--admin", is_flag=True, default=False, help="New user has administrator role"
 )
-@click.password_option(help="Do not set password on the command line!")
+@click.option("--password", required=True)
 def add_user(email: str, admin: bool, password: str) -> int:
     """Add a new user to the database with email address = EMAIL."""
     if User.find_by_email(email):
         error = f"Error: {email} is already registered"
         click.secho(f"{error}\n", fg="red", bold=True)
         return 1
-    new_user = User(email=email, password=password, admin=admin)
+    new_user = User(email=email, admin=admin)
+    new_user.password = password
     db.session.add(new_user)
     db.session.commit()
     user_type = "admin user" if admin else "user"
