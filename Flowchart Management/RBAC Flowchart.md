@@ -1,6 +1,6 @@
                     ┌─────────────────┐
-                    │   Landing Page   │
-                    └─────────┬─────────┘
+                    │   Landing Page  │
+                    └─────────┬───────┘
                               │
                     ┌─────────▼─────────┐
                     │   Login/Register  │
@@ -11,18 +11,19 @@
                 │     from Database         │
                 └─────────┬─────────────┬───┘
                           │             │
-                ┌─────────▼───┐  ┌──────▼──────┐
-                │  Admin      │  │   Regular    │
-                │  Dashboard  │  │  User View   │
+                ┌─────────▼───┐  ┌──────▼─────┐
+                │  Admin      │  │   Regular  │
+                │  Dashboard  │  │  User View │
                 └──────┬──────┘  └─────┬──────┘
                        │                │
         ┌──────────────▼──────────────┐ │ ┌──────────────────┐
-        │  ADMIN CONTROLS             │ │ │ USER VIEW ONLY    │
+        │  ADMIN CONTROLS             │ │ │ USER VIEW ONLY   │
         │                             │ │ │                  │
         │ • Create Grants  ┌──────────┼─┼─→• Organization    │
-        │ • Edit Grants    │          │ │  │   Description    │
-        │ • Delete Grants  │          │ │  │                  │
-        │ • Manage Users   │◄─────────┘ │  │ • Grant Lists    │
-        │ • Change Status  │            │  │                  │
-        └──────────────────┘            │  │ • Apply Button   │
-                                        │  └──────────────────┘
+        │ • Edit Grants    │          │ │  │   Description   │
+        │ • Delete Grants  │          │ │  │                 │
+        │ • Manage Users   │◄─────────┘ │  │ • Grant Lists   │
+        │ • Change Status  │            │  │                 │
+        └──────────────────┘            │  │ • Apply Button  │
+                                        │  └─────────────────┘
+
