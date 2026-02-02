@@ -1,3 +1,9 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 export const BUTTON_TEXT = {
   LOGIN: "Sign In",
   LOGGING_IN: "Logging in...",
