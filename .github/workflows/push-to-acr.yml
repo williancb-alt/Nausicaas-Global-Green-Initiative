@@ -1,0 +1,34 @@
+name: Build and Push Images to ACR
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+#Github actions uses virtual machines called "runners" to run workflows. Each runner is a fresh instance of a virtual machine that is created when a job starts and destroyed when the job finishes.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Docker Login to ACR
+        run: |
+          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      - name: Build backend image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest ./backend
+
+      - name: Push backend image
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest
+
+      - name: Build frontend image
+        run: |
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest ./frontend
+
+      - name: Push frontend image
+        run: |
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest
