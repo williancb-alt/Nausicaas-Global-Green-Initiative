@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, FileText, CheckCircle2, XCircle, Clock, Search, Plus } from 'lucide-react';
-import { Card } from '@/components/layout/Card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/layout/Tab';
-import { Application, LoginCredentials } from '@/types/index';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { FileText, Search } from 'lucide-react';
+import { Application, LoginCredentials } from '../types/index';
 
 interface AdminDashboardProps {
   user: LoginCredentials;
@@ -17,7 +15,6 @@ interface AdminDashboardProps {
 export function AdminDashboard({ 
   user, 
   applications, 
-  grants,
   onLogout,
   onViewApplication,
   onManageGrants
@@ -28,19 +25,19 @@ export function AdminDashboard({
   // Calculate statistics
   const stats = useMemo(() => {
     const total = applications.length;
-    const approved = applications.filter(app => app.status).length;
-    const rejected = applications.filter(app => app.status ).length;
-    const pending = applications.filter(app => app.status ).length;
+    const approved = applications.filter(app => app.status === 'approved').length;
+    const rejected = applications.filter(app => app.status === 'denied').length;
+    const pending = applications.filter(app => app.status === 'pending_review' || app.status === 'in_review').length;
 
     return { total, approved, rejected, pending };
   }, [applications]);
 
   // Prepare chart data
-  const statusChartData = [
-    { name: 'Approved', value: stats.approved, color: '#10b981' },
+  const statusChartData = useMemo(() => [
+    { name: 'Approved', value: stats.approved, color: '#3b7a57' },
     { name: 'Rejected', value: stats.rejected, color: '#ef4444' },
     { name: 'Pending Review', value: stats.pending, color: '#f59e0b' }
-  ];
+  ], [stats]);
 
   // Grant-wise application data
   const grantWiseData = useMemo(() => {
@@ -70,26 +67,26 @@ export function AdminDashboard({
   }, [applications, searchTerm, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+  <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+      <header style={{ backgroundColor: "#2f6f44", color: "white" }} className="border-bottom">
+        <div className="container-fluid py-4">
+          <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h1 className="text-slate-900">Admin Dashboard</h1>
-              <p className="text-slate-600">Welcome back, {user.email}</p>
+              <h1 className="h3 mb-0 fw-bold">Admin Dashboard</h1>
+              <p className="mb-0 mt-2" style={{ opacity: 0.9 }}>Welcome back, {user.email}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="d-flex gap-3">
               <button
                 onClick={onManageGrants}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                className="btn"
+                style={{ backgroundColor: "white", color: "#3b7a57", fontWeight: "500" }}
               >
-                <Plus className="w-4 h-4" />
                 Manage Grants
               </button>
               <button
                 onClick={onLogout}
-                className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors"
+                className="btn btn-outline-light"
               >
                 Logout
               </button>
@@ -98,164 +95,191 @@ export function AdminDashboard({
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container-fluid py-5">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6 bg-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600">Total Applications</p>
-                <p className="text-slate-900 mt-1">{stats.total}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-blue-600" />
+        <div className="row mb-5 g-4">
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="card h-100" style={{ borderTop: "4px solid #3b82f6", borderRadius: "8px" }}>
+              <div className="card-body">
+                  <p className="text-muted mb-2">Total Applications</p>
+                  <h2 className="fw-bold" style={{ color: "#2f6f44", fontSize: "2.5rem" }}>{stats.total}</h2>
+                <small className="text-muted">submissions received</small>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600">Approved</p>
-                <p className="text-slate-900 mt-1">{stats.approved}</p>
-              </div>
-              <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="card h-100" style={{ borderTop: "4px solid #3b7a57", borderRadius: "8px" }}>
+              <div className="card-body">
+                <p className="text-muted mb-2">Approved</p>
+                <h2 className="fw-bold" style={{ color: "#2f6f44", fontSize: "2.5rem" }}>{stats.approved}</h2>
+                <small className="text-muted">{stats.total > 0 ? ((stats.approved / stats.total) * 100).toFixed(0) : 0}% of total</small>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600">Rejected</p>
-                <p className="text-slate-900 mt-1">{stats.rejected}</p>
-              </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <XCircle className="w-6 h-6 text-red-600" />
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="card h-100" style={{ borderTop: "4px solid #ef4444", borderRadius: "8px" }}>
+              <div className="card-body">
+                <p className="text-muted mb-2">Rejected</p>
+                <h2 className="fw-bold" style={{ color: "#dc2626", fontSize: "2.5rem" }}>{stats.rejected}</h2>
+                <small className="text-muted">{stats.total > 0 ? ((stats.rejected / stats.total) * 100).toFixed(0) : 0}% of total</small>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 bg-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-600">Under Review</p>
-                <p className="text-slate-900 mt-1">{stats.pending}</p>
-              </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-amber-600" />
+          <div className="col-12 col-md-6 col-lg-3">
+            <div className="card h-100" style={{ borderTop: "4px solid #f59e0b", borderRadius: "8px" }}>
+              <div className="card-body">
+                <p className="text-muted mb-2">Under Review</p>
+                <h2 className="fw-bold" style={{ color: "#d97706", fontSize: "2.5rem" }}>{stats.pending}</h2>
+                <small className="text-muted">{stats.total > 0 ? ((stats.pending / stats.total) * 100).toFixed(0) : 0}% of total</small>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="row mb-5 g-4">
           {/* Status Distribution */}
-          <Card className="p-6 bg-white">
-            <h3 className="text-slate-900 mb-4">Application Status Distribution</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={statusChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }: { name: string; percent: number }) => {
-                    return `${name}: ${(percent * 100).toFixed(0)}%`;
-                  }}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {statusChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
+          <div className="col-12 col-lg-6">
+            <div className="card" style={{ borderRadius: "8px", borderTop: "4px solid #3b7a57" }}>
+              <div className="card-header" style={{ backgroundColor: "#eef7ee", borderBottom: "1px solid #e6f4e8" }}>
+                <h5 className="card-title mb-0" style={{ color: "#2f6f44", fontWeight: "600" }}>Application Status Distribution</h5>
+              </div>
+              <div className="card-body">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statusChartData.filter(d => d.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }: { name?: string; percent?: number } = {}): string => {
+                        return `${name || 'N/A'}: ${((percent || 0) * 100).toFixed(0)}%`;
+                      }}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {statusChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
 
           {/* Grant-wise Applications */}
-          <Card className="p-6 bg-white">
-            <h3 className="text-slate-900 mb-4">Applications by Grant</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={grantWiseData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="applications" fill="#10b981" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
+          <div className="col-12 col-lg-6">
+            <div className="card" style={{ borderRadius: "8px", borderTop: "4px solid #3b7a57" }}>
+              <div className="card-header" style={{ backgroundColor: "#eef7ee", borderBottom: "1px solid #e6f4e8" }}>
+                <h5 className="card-title mb-0" style={{ color: "#2f6f44", fontWeight: "600" }}>Applications by Grant</h5>
+              </div>
+              <div className="card-body">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={grantWiseData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e6f4e8" />
+                    <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 12 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="applications" fill="#3b7a57" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Applications Management */}
-        <Card className="p-6 bg-white">
-          <Tabs defaultValue="all" className="w-full">
-            <div className="flex items-center justify-between mb-6">
-              <TabsList>
-                <TabsTrigger value="all" onClick={() => setStatusFilter('all')}>
-                  All Applications
-                </TabsTrigger>
-                <TabsTrigger value="pending" onClick={() => setStatusFilter('pending' as Application['status'])}>
-                  Pending Review
-                </TabsTrigger>
-                <TabsTrigger value="approved" onClick={() => setStatusFilter('approved' as Application['status'])}>
-                  Approved
-                </TabsTrigger>
-                <TabsTrigger value="rejected" onClick={() => setStatusFilter('rejected' as Application['status'])}>
-                  Rejected
-                </TabsTrigger>
-              </TabsList>
+        <div className="card" style={{ borderRadius: "8px", borderTop: "4px solid #3b7a57" }}>
+          <div className="card-header" style={{ backgroundColor: "#eef7ee", borderBottom: "1px solid #e6f4e8" }}>
+            <h5 className="card-title mb-0" style={{ color: "#2f6f44", fontWeight: "600" }}>Applications</h5>
+          </div>
+          <div className="card-body">
+            <div className="row mb-4 g-3">
+              <div className="col-auto">
+                <div className="btn-group" role="group">
+                  <button
+                    type="button"
+                    className={`btn ${statusFilter === 'all' ? 'btn' : 'btn-outline'}`}
+                    style={{ 
+                      backgroundColor: statusFilter === 'all' ? '#3b7a57' : 'transparent',
+                      color: statusFilter === 'all' ? 'white' : '#3b7a57',
+                      borderColor: '#3b7a57'
+                    }}
+                    onClick={() => setStatusFilter('all')}
+                  >
+                    All Applications
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${statusFilter === 'pending_review' ? 'btn' : 'btn-outline'}`}
+                    style={{ 
+                      backgroundColor: statusFilter === 'pending_review' ? '#3b7a57' : 'transparent',
+                      color: statusFilter === 'pending_review' ? 'white' : '#3b7a57',
+                      borderColor: '#3b7a57'
+                    }}
+                    onClick={() => setStatusFilter('pending_review' as Application['status'])}
+                  >
+                    Pending Review
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${statusFilter === 'approved' ? 'btn' : 'btn-outline'}`}
+                    style={{ 
+                      backgroundColor: statusFilter === 'approved' ? '#3b7a57' : 'transparent',
+                      color: statusFilter === 'approved' ? 'white' : '#3b7a57',
+                      borderColor: '#3b7a57'
+                    }}
+                    onClick={() => setStatusFilter('approved' as Application['status'])}
+                  >
+                    Approved
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${statusFilter === 'denied' ? 'btn' : 'btn-outline'}`}
+                    style={{ 
+                      backgroundColor: statusFilter === 'denied' ? '#3b7a57' : 'transparent',
+                      color: statusFilter === 'denied' ? 'white' : '#3b7a57',
+                      borderColor: '#3b7a57'
+                    }}
+                    onClick={() => setStatusFilter('denied' as Application['status'])}
+                  >
+                    Rejected
+                  </button>
+                </div>
+              </div>
 
               {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search by ID or Organization..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+              <div className="col">
+                <div className="input-group">
+                  <span className="input-group-text" style={{ backgroundColor: "#eef7ee", borderColor: "#e6f4e8" }}>
+                    <Search size={18} style={{ color: "#3b7a57" }} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search by ID or Organization..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="form-control"
+                    style={{ borderColor: "#d1fae5" }}
+                  />
+                </div>
               </div>
             </div>
 
-            <TabsContent value="all" className="mt-0">
-              <ApplicationsTable 
-                applications={filteredApplications} 
-                onViewApplication={onViewApplication}
-              />
-            </TabsContent>
-
-            <TabsContent value="pending" className="mt-0">
-              <ApplicationsTable 
-                applications={filteredApplications} 
-                onViewApplication={onViewApplication}
-              />
-            </TabsContent>
-
-            <TabsContent value="approved" className="mt-0">
-              <ApplicationsTable 
-                applications={filteredApplications} 
-                onViewApplication={onViewApplication}
-              />
-            </TabsContent>
-
-            <TabsContent value="rejected" className="mt-0">
-              <ApplicationsTable 
-                applications={filteredApplications} 
-                onViewApplication={onViewApplication}
-              />
-            </TabsContent>
-          </Tabs>
-        </Card>
+            <ApplicationsTable 
+                      applications={filteredApplications} 
+                      onViewApplication={onViewApplication}
+                    />
+          </div>
       </div>
-    </div>
+        </div>
+      </div>
   );
 }
 
@@ -269,65 +293,69 @@ function ApplicationsTable({
 }) {
   if (applications.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <p className="text-slate-600">No applications found</p>
+      <div className="text-center py-5">
+        <FileText size={48} style={{ color: "#e6f4e8" }} className="mb-3 mx-auto d-block" />
+        <p className="text-muted">No applications found</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-slate-200">
-            <th className="text-left py-3 px-4 text-slate-700">Application ID</th>
-            <th className="text-left py-3 px-4 text-slate-700">Organization</th>
-            <th className="text-left py-3 px-4 text-slate-700">Grant</th>
-            <th className="text-left py-3 px-4 text-slate-700">Amount</th>
-            <th className="text-left py-3 px-4 text-slate-700">Submitted</th>
-            <th className="text-left py-3 px-4 text-slate-700">Status</th>
-            <th className="text-left py-3 px-4 text-slate-700">Actions</th>
+    <table className="table table-hover">
+      <thead style={{ backgroundColor: "#eef7ee" }}>
+        <tr>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Application ID</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Organization</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Grant</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Amount</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Submitted</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Status</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {applications.map((app) => (
+          <tr key={app.id} style={{ borderColor: "#f0fdf4" }}>
+            <td><code style={{ color: "#3b7a57", fontWeight: "600" }}>{app.id}</code></td>
+            <td style={{ color: "#047857", fontWeight: "500" }}>{app.organization}</td>
+            <td>{app.grantTitle}</td>
+            <td className="fw-bold">${app.requestedAmount.toLocaleString()}</td>
+            <td className="text-muted">{app.submittedDate}</td>
+            <td>
+              <span
+                className="badge"
+                style={{
+                  backgroundColor: app.status === 'approved'
+                    ? '#eef7ee'
+                    : app.status === 'denied'
+                      ? '#fee2e2'
+                      : '#fff4e6',
+                  color: app.status === 'approved'
+                    ? '#2f6f44'
+                    : app.status === 'denied'
+                      ? '#dc2626'
+                      : '#d97706',
+                  padding: '0.5rem 0.75rem'
+                }}
+              >
+                {app.status === 'approved' && 'Approved'}
+                {app.status === 'denied' && 'Denied'}
+                {app.status === 'pending_review' && 'Pending Review'}
+                {app.status === 'in_review' && 'In Review'}
+              </span>
+            </td>
+            <td>
+              <button
+                onClick={() => onViewApplication(app.id)}
+                className="btn btn-sm"
+                style={{ backgroundColor: "#3b7a57", color: "white", fontWeight: "500" }}
+              >
+                Review
+              </button>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {applications.map((app) => (
-            <tr key={app.id} className="border-b border-slate-100 hover:bg-slate-50">
-              <td className="py-3 px-4 text-slate-900">{app.id}</td>
-              <td className="py-3 px-4 text-slate-900">{app.organization}</td>
-              <td className="py-3 px-4 text-slate-600">{app.grantTitle}</td>
-              <td className="py-3 px-4 text-slate-900">
-                ${app.requestedAmount.toLocaleString()}
-              </td>
-              <td className="py-3 px-4 text-slate-600">{app.submittedDate}</td>
-              <td className="py-3 px-4">
-                <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full ${
-                    app.status
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : app.status 
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}
-                >
-                  {app.status  && <CheckCircle2 className="w-3 h-3" />}
-                  {app.status  && <XCircle className="w-3 h-3" />}
-                  {app.status && <Clock className="w-3 h-3" />}
-                  {app.status}
-                </span>
-              </td>
-              <td className="py-3 px-4">
-                <button
-                  onClick={() => onViewApplication(app.id)}
-                  className="text-emerald-600 hover:text-emerald-700 hover:underline"
-                >
-                  Review
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </table>
   );
 }

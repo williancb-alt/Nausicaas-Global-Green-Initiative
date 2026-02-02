@@ -1,12 +1,14 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 
+
 const Navbar: React.FC = () => {
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#3b7a57" }}>
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/">
-          Climate Grant Admin
+        <Link className="navbar-brand fw-bold" to="/admin" style={{ fontSize: "1.1rem" }}>
+          Nausicaas Global Green Initiative
         </Link>
 
         <button
@@ -21,19 +23,34 @@ const Navbar: React.FC = () => {
         <div className="collapse navbar-collapse" id="adminNavbar">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/">
+              <NavLink
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+                to="/admin"
+              >
                 Dashboard
               </NavLink>
             </li>
 
             <li className="nav-item">
-              <NavLink className="nav-link" to="/applications">
+              <NavLink
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+                to="/admin/applications"
+              >
                 Applications
               </NavLink>
             </li>
 
             <li className="nav-item">
-              <NavLink className="nav-link" to="/grants">
+              <NavLink
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+                to="/admin/grants"
+              >
                 Grants
               </NavLink>
             </li>

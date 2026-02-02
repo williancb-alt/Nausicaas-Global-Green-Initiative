@@ -1,62 +1,46 @@
 import { JSX } from "react"
 import { Link } from "react-router-dom"
-import { useAuthStore } from "../../store/authStore"
-import { useLogout } from "../../hooks/useAuthHooks"
-import { Button } from "../button/Button"
-import { BUTTON_TEXT } from "../../utils/constants"
+import NavBar from "../layout/NavBar"
 
 export function Header(): JSX.Element {
-  const { isAuthenticated } = useAuthStore()
-  const logoutMutation = useLogout()
-
-  const handleLogout = () => {
-    logoutMutation.mutate()
-  }
 
   return (
-    <header
-      style={{
-        width: "100%",
-        maxHeight: "104px",
-        backgroundColor: "var(--header-bg)",
-      }}
-      className="d-flex align-items-center p-4"
-    >
-      <div className="w-100">
-        <div className="d-flex justify-content-between align-items-center">
-          <div>
-            <Link to="/" className="text-decoration-none">
-              {/* TODO - replace with actual logo */}
-              <div
-                style={{
-                  width: "75px",
-                  height: "75px",
-                  borderRadius: "50%",
-                  backgroundColor: "#7B9A82",
-                }}
-              />
-            </Link>
-          </div>
-          <nav>
-            {isAuthenticated ? (
-              <div className="d-flex align-items-center gap-3">
-                <Button
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                  variant="primary"
+    <>
+      <header
+        style={{
+          width: "100%",
+          backgroundColor: "#eef7ee",
+          borderBottom: "2px solid #3b7a57",
+        }}
+        className="d-flex align-items-center p-4"
+      >
+        <div className="w-100">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <Link to="/" className="text-decoration-none">
+                <div
+                  style={{
+                    width: "75px",
+                    height: "75px",
+                    borderRadius: "50%",
+                    backgroundColor: "#3b7a57",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "1.1rem",
+                    color: "white",
+                    fontWeight: 700,
+                  }}
                 >
-                  {logoutMutation.isPending
-                    ? BUTTON_TEXT.LOGGING_OUT
-                    : BUTTON_TEXT.LOGOUT}
-                </Button>
-              </div>
-            ) : (
-              // TODO - what should be shown if not authenticated
-              <></>
-            )}
-          </nav>
+                  NG
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <NavBar />
+    </>
   )
 }
