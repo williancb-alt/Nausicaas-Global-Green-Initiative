@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../services/api"
 import { useGrantsStore } from "../store/grantsStore"
 import { CreateGrantParams, UpdateGrantParams } from "../types"
 
-const mockGrants = [
+let mockGrants = [
   {
     name: "Climate Resilience Fund",
     deadline: "03/15/26",
@@ -64,21 +64,48 @@ export function useGrants() {
 }
 
 export function useCreateGrant() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (params: CreateGrantParams) => api.grants.createGrant(params),
+    mutationFn: async (params: CreateGrantParams) => {
+      const now = new Date().toISOString()
+      const newGrant = {
+        ...params,
+        created_at_iso8601: now,
+        created_at_rfc822: new Date(now).toUTCString(),
+        deadline_passed: false,
+        time_remaining: "—",
+        info_url: null,
+      }
+      // prepend to mock list
+      mockGrants = [newGrant, ...mockGrants]
+      return newGrant
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["grants"] }),
   })
 }
 
 export function useUpdateGrant() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (params: UpdateGrantParams) =>
-      api.grants.updateGrant(params.name, { deadline: params.deadline }),
+    mutationFn: async (params: UpdateGrantParams) => {
+      const idx = mockGrants.findIndex((g) => g.name === params.name)
+      if (idx === -1) throw new Error("Grant not found")
+      const updated = { ...mockGrants[idx], ...params }
+      mockGrants = mockGrants.map((g, i) => (i === idx ? updated : g))
+      return updated
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["grants"] }),
   })
 }
 
 export function useDeleteGrant() {
+  const qc = useQueryClient()
   return useMutation({
-    mutationFn: (name: string) => api.grants.deleteGrant(name),
+    mutationFn: async (name: string) => {
+      mockGrants = mockGrants.filter((g) => g.name !== name)
+      return name
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["grants"] }),
   })
 }
 
