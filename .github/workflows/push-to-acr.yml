@@ -2,16 +2,16 @@ name: Build and Push Images to ACR
 
 on:
   push:
-    branches: [ "main", "infra-actions" ]
+    # Disabling for main for now until credentials are resolved
+    branches: [ "infra-actions" ]
   workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-#Github actions uses virtual machines called "runners" to run workflows. Each runner is a fresh instance of a virtual machine that is created when a job starts and destroyed when the job finishes.
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Docker Login to ACR
         run: |
