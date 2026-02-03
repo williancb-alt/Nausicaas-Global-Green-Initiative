@@ -47,9 +47,7 @@ class AuditService:
             user_id=user_id,
             user_email=user_email,
             is_admin=False,
-            details=cls._serialize_details(
-                details or {"event": "Application created"}
-            ),
+            details=cls._serialize_details(details or {"event": "Application created"}),
             ip_address=ip_address,
             user_agent=user_agent,
             success=True,
@@ -185,7 +183,9 @@ class AuditService:
             user_id=user_id,
             user_email=user_email,
             is_admin=is_admin,
-            details=cls._serialize_details({"event": "Grant edited", "changes": changes}),
+            details=cls._serialize_details(
+                {"event": "Grant edited", "changes": changes}
+            ),
             ip_address=ip_address,
             user_agent=user_agent,
             success=True,

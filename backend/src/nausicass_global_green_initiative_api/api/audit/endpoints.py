@@ -5,7 +5,9 @@ from http import HTTPStatus
 from flask import Response, jsonify
 from flask_restx import Namespace, Resource
 
-from nausicass_global_green_initiative_api.api.auth.decorators import admin_token_required
+from nausicass_global_green_initiative_api.api.auth.decorators import (
+    admin_token_required,
+)
 from nausicass_global_green_initiative_api.api.audit.dto import (
     audit_log_model,
     audit_list_reqparser,
@@ -91,9 +93,7 @@ class AuditLogFailed(Resource):
         return response
 
 
-@audit_ns.route(
-    "/entity/<string:entity_type>/<int:entity_id>", endpoint="audit_entity"
-)
+@audit_ns.route("/entity/<string:entity_type>/<int:entity_id>", endpoint="audit_entity")
 @audit_ns.param("entity_type", "Entity type (e.g., 'application', 'grant')")
 @audit_ns.param("entity_id", "Entity ID")
 @audit_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")

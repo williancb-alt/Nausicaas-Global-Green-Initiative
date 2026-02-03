@@ -90,9 +90,7 @@ class AuditLog(db.Model):
         return entry
 
     @classmethod
-    def get_logs_for_entity(
-        cls, entity_type: str, entity_id: int
-    ) -> list["AuditLog"]:
+    def get_logs_for_entity(cls, entity_type: str, entity_id: int) -> list["AuditLog"]:
         """Retrieve all audit logs for a specific entity."""
         return (
             cls.query.filter_by(entity_type=entity_type, entity_id=entity_id)
