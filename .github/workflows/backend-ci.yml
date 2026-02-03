@@ -152,7 +152,7 @@ jobs:
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: snyk-backend.sarif
+          sarif_file: backend/snyk-backend.sarif
 
       - name: Check Snyk exit code
         if: steps.snyk.outcome == 'failure'
