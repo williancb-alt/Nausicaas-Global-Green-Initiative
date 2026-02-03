@@ -6,7 +6,11 @@ DESCRIPTION = (
     "Flask-RESTx, SQLAlchemy, pytest, flake8, tox configured"
 )
 APP_ROOT = Path(__file__).parent
-README = (APP_ROOT / "README.md").read_text()
+try:
+    README = (APP_ROOT / "README.md").read_text()
+except FileNotFoundError:
+    README = ""
+
 AUTHOR = "DevOps Project Management - Group 2"
 PROJECT_URLS = {
     "Documentation": "https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative/wiki",  # noqa: E501
@@ -21,12 +25,14 @@ INSTALL_REQUIRES = [
     "flask-restx",
     "Flask-SQLAlchemy>=3.1.0",
     "gunicorn",
+    "jinja2==3.1.6",
     "psycopg2-binary",
     "PyJWT",
     "python-dateutil",
     "python-dotenv",
     "requests",
-    "urllib3",
+    "urllib3>=2.6.3",
+    "werkzeug==3.1.5",
 ]
 EXTRAS_REQUIRE = {
     "dev": [
