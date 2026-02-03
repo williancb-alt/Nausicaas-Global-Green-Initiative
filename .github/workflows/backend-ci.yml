@@ -144,7 +144,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           snyk test \
-            --file=backend/setup.py \
+            --file=setup.py \
             --package-manager=pip \
             --sarif-file-output=snyk-backend.sarif \
             --severity-threshold=medium
