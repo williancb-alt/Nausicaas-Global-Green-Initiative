@@ -1,4 +1,4 @@
-import { JSX } from "react"
+import React, { JSX } from "react"
 import { Button } from "../button/Button"
 import type { Grant } from "../../services/api/client"
 
@@ -21,7 +21,10 @@ export function ExpandableGrantItem({
 }: ExpandableGrantItemProps): JSX.Element {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onDelete && confirm(`Are you sure you want to delete "${grant.name}"?`)) {
+    if (
+      onDelete &&
+      confirm(`Are you sure you want to delete "${grant.name}"?`)
+    ) {
       onDelete(grant.name)
     }
   }
@@ -52,11 +55,7 @@ export function ExpandableGrantItem({
         </div>
         <div className="d-flex align-items-center gap-2">
           {onEdit && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleEdit}
-            >
+            <Button variant="secondary" size="sm" onClick={handleEdit}>
               Edit
             </Button>
           )}
