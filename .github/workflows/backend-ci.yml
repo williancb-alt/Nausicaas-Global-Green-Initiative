@@ -113,10 +113,22 @@ jobs:
     name: Security Scan with Snyk
     runs-on: ubuntu-latest
     needs: safety-check
+    defaults:
+      run:
+        working-directory: ./backend
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
 
       - name: Set up Node (for Snyk CLI)
         uses: actions/setup-node@v6
