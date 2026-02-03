@@ -42,9 +42,7 @@ export function FieldTypeSelector({
         onClick={() => onSelect("phone")}
       >
         <div className="fw-semibold">Phone Number Field</div>
-        <small className="text-muted">
-          Validated phone number input
-        </small>
+        <small className="text-muted">Validated phone number input</small>
       </button>
 
       <button
@@ -53,9 +51,7 @@ export function FieldTypeSelector({
         onClick={() => onSelect("email")}
       >
         <div className="fw-semibold">Email Field</div>
-        <small className="text-muted">
-          Validated email address input
-        </small>
+        <small className="text-muted">Validated email address input</small>
       </button>
 
       <hr />

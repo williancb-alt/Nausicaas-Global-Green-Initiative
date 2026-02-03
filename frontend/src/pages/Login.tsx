@@ -29,7 +29,7 @@ export function Login(): JSX.Element {
     loginMutation.mutate(data, {
       onSuccess: () => {
         reset()
-        navigate("/")
+        void navigate("/")
       },
     })
   }
