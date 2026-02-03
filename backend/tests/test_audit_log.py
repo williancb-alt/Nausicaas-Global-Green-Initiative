@@ -1,9 +1,7 @@
 """Unit tests for AuditLog model and AuditService."""
 
-import json
 import pytest
 
-from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.models.audit_log import AuditAction, AuditLog
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
