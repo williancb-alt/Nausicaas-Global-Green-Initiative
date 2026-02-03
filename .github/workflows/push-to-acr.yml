@@ -2,7 +2,7 @@ name: Build and Push Images to ACR
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "infra-actions" ]
   workflow_dispatch:
 
 jobs:
