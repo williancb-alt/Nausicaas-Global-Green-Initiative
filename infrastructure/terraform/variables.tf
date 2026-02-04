@@ -2,7 +2,7 @@
 
 variable "location" {
   type    = string
-  default = "northeurope"
+  default = "germanywestcentral"
 }
 
 variable "acr_name" {
