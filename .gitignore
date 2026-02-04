@@ -71,3 +71,11 @@ node_modules
 dist
 dist-ssr
 *.local
+
+#infrastructure
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+terraform.tfvars
+crash.log
+crash.*.log
