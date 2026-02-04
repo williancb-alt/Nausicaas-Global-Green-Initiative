@@ -76,5 +76,6 @@ dist-ssr
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
+terraform.tfvars
 crash.log
 crash.*.log
