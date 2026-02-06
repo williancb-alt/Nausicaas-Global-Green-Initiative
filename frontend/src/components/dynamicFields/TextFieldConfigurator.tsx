@@ -38,7 +38,11 @@ export function TextFieldConfigurator({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)}>
+    <form
+      onSubmit={event => {
+        void handleSubmit(handleFormSubmit)(event)
+      }}
+    >
       <FormField label="Field Label" error={errors.label}>
         <input
           type="text"

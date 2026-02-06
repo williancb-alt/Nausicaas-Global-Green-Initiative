@@ -37,6 +37,12 @@ This will:
 
 Wait until you see logs indicating all services are ready
 
+Note: if running into database migration issues, a fresh rebuild can be completed using the below command:
+
+```
+docker compose --profile dev down -v && docker compose --profile dev up --build
+```
+
 ### 3. Create a User
 
 With a fresh clone, the database has no users. Create one using the signup form or CLI.
@@ -53,7 +59,7 @@ Open a new terminal window in the root directory (don't use the window currently
 
 ```bash
 # Create an admin user
-docker compose exec backend python -m flask --app run.py add-user admin@example.com --admin
+docker compose exec backend python -m flask --app run.py add-user admin@example.com --password yourpassword --admin
 
 # Create a regular user
 docker compose exec backend python -m flask --app run.py add-user user@example.com
@@ -64,7 +70,7 @@ You will be prompted to enter a password.
 **Recommended: Create both user types for testing**
 
 ```bash
-docker compose exec backend python -m flask --app run.py add-user admin@test.com --admin
+docker compose exec backend python -m flask --app run.py add-user admin@test.com --password yourpassword --admin
 docker compose exec backend python -m flask --app run.py add-user user@test.com
 ```
 
@@ -103,6 +109,9 @@ docker compose down -v
 
 # Check service status
 docker compose ps
+
+# Ensure fresh development build (needed after new database migration)
+docker compose --profile dev down -v && docker compose --profile dev up --build
 ```
 
 ## Running Tests

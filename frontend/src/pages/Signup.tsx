@@ -31,7 +31,7 @@ export function Signup(): JSX.Element {
       {
         onSuccess: () => {
           reset()
-          navigate("/")
+          void navigate("/")
         },
       },
     )

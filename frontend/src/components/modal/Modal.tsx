@@ -1,4 +1,4 @@
-import { JSX, useEffect, useRef } from "react"
+import React, { JSX, useEffect, useRef } from "react"
 
 interface ModalProps {
   isOpen: boolean

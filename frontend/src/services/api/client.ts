@@ -21,7 +21,13 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   response => response,
-  (error: AxiosError<{ message?: string; error?: string; errors?: Record<string, string> }>) => {
+  (
+    error: AxiosError<{
+      message?: string
+      error?: string
+      errors?: Record<string, string>
+    }>,
+  ) => {
     let message =
       error.response?.data?.message ||
       error.response?.data?.error ||
