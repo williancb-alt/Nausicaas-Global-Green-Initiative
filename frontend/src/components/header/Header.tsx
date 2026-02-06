@@ -17,7 +17,7 @@ export function Header(): JSX.Element {
         <div className="w-100">
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <Link to="/admin" className="text-decoration-none" aria-label="Go to admin dashboard">
+              <Link to="/" className="text-decoration-none" aria-label="Go to home page">
                 <div
                   style={{
                     width: "75px",

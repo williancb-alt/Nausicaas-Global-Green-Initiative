@@ -23,7 +23,7 @@ export function AdminDashboardPage(): JSX.Element {
     navigate("/login")
   }
 
-  const handleViewApplication = (applicationId: string) => {
+  const handleViewApplication = (applicationId: number) => {
     navigate(`/admin/applications/${applicationId}`)
   }
 

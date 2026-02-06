@@ -55,22 +55,28 @@ export type ApplicationStatus =
   | "pending_review"
   | "in_review"
   | "approved"
-  | "denied";
+  | "denied"
+
+export interface ApplicationApplicant {
+  email: string
+  public_id: string
+}
+
+export interface ApplicationGrant {
+  name: string
+  description?: string
+  custom_fields?: {
+    configs: DynamicFieldConfig[]
+  }
+}
 
 export interface Application {
-  id: string;
-  userId: string;
-  grantId: string;
-  grantTitle: string;
-  submittedDate: string;
-  status: ApplicationStatus;
-  fullName: string;
-  organization: string;
-  email: string;
-  projectTitle: string;
-  projectPurpose: string;
-  requestedAmount: number;
-  projectDescription: string;
-  documents: string[];
-  feedback?: string;
+  id: number
+  submitted_at: string
+  submitted_date: string
+  status: ApplicationStatus
+  field_values?: Record<string, string>
+  feedback?: string
+  applicant: ApplicationApplicant
+  grant: ApplicationGrant
 }

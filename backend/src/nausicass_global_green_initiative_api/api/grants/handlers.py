@@ -64,8 +64,8 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
     return response
 
 
-@token_required
 def retrieve_grant_list(page: int, per_page: int) -> Response:
+    """Public endpoint - no authentication required."""
     pagination = Grant.query.paginate(page=page, per_page=per_page, error_out=False)
     response_data = marshal(pagination, pagination_model)
     response_data["links"] = _pagination_nav_links(pagination)
@@ -75,8 +75,8 @@ def retrieve_grant_list(page: int, per_page: int) -> Response:
     return response
 
 
-@token_required
 def retrieve_grant(name: str) -> Grant:
+    """Public endpoint - no authentication required."""
     return Grant.query.filter_by(name=name).first_or_404(
         description=f"{name} not found in database."
     )

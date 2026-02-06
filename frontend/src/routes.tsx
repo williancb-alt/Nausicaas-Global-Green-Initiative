@@ -1,19 +1,25 @@
 import { ProtectedRoute } from "./components/protectedRoute/ProtectedRoute"
 import { ForgotPassword } from "./pages/ForgotPassword"
-import { Home } from "./pages/Home"
 import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
 import { Applications } from "./pages/Applications"
+import { MyApplications } from "./pages/MyApplications"
 import { AdminDashboardPage } from "./pages/AdminDashboardPage"
 import { AdminApplicationView } from "./pages/AdminApplicationView"
 import { GrantManagementPage } from "./pages/GrantManagementPage"
+import { LandingPage } from "./pages/LandingPage"
+import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 
 export const routes = [
   {
     path: "/",
+    element: <LandingPage />,
+  },
+  {
+    path: "/grants/:grantName/apply",
     element: (
       <ProtectedRoute>
-        <Home />
+        <GrantApplicationPage />
       </ProtectedRoute>
     ),
   },
@@ -21,7 +27,7 @@ export const routes = [
     path: "/applications",
     element: (
       <ProtectedRoute>
-        <Applications />
+        <MyApplications />
       </ProtectedRoute>
     ),
   },

@@ -36,11 +36,10 @@ grant_ns.models[pagination_model.name] = pagination_model
 class GrantList(Resource):
     """Handles HTTP requests to URL: /grants."""
 
-    @grant_ns.doc(security="Bearer")
     @grant_ns.response(int(HTTPStatus.OK), "Retrieved grant list.", pagination_model)
     @grant_ns.expect(pagination_reqparser)
     def get(self) -> Response:
-        """Retrieve a list of grants."""
+        """Retrieve a list of grants (public endpoint)."""
         request_data = pagination_reqparser.parse_args()
         page = request_data.get("page")
         per_page = request_data.get("per_page")
@@ -66,11 +65,10 @@ class GrantList(Resource):
 class Grant(Resource):
     """Handles HTTP requests to URL: /grants/{name}."""
 
-    @grant_ns.doc(security="Bearer")
     @grant_ns.response(int(HTTPStatus.OK), "Retrieved grant.", grant_model)
     @grant_ns.marshal_with(grant_model)
     def get(self, name: str) -> Grant:
-        """Retrieve a grant."""
+        """Retrieve a grant (public endpoint)."""
         return retrieve_grant(name)
 
     @grant_ns.doc(security="Bearer")

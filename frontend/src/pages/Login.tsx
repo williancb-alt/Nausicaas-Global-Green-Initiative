@@ -2,7 +2,7 @@ import React from "react"
 import { JSX } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate, Navigate, Link } from "react-router-dom"
+import { useNavigate, Navigate, Link, useLocation } from "react-router-dom"
 import { Button } from "../components/button/Button"
 import { useLogin } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
@@ -13,8 +13,12 @@ import { BUTTON_TEXT } from "../utils/constants"
 
 export function Login(): JSX.Element {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useAuthStore()
   const loginMutation = useLogin()
+
+  // Get redirect destination from location state (set when redirecting from Apply button)
+  const from = (location.state as { from?: string })?.from
 
   const {
     register,
@@ -29,7 +33,17 @@ export function Login(): JSX.Element {
     loginMutation.mutate(data, {
       onSuccess: () => {
         reset()
-        navigate("/")
+        const user = useAuthStore.getState().user
+
+        // If there's a redirect destination and user is not admin, go there
+        // Admins always go to admin dashboard, regular users go to 'from' or home
+        if (user?.admin) {
+          navigate("/admin", { replace: true })
+        } else if (from) {
+          navigate(from, { replace: true })
+        } else {
+          navigate("/", { replace: true })
+        }
       },
     })
   }
@@ -40,6 +54,10 @@ export function Login(): JSX.Element {
   }
 
   if (isAuthenticated) {
+    const user = useAuthStore.getState().user
+    if (user?.admin) {
+      return <Navigate to="/admin" replace />
+    }
     return <Navigate to="/" replace />
   }
 

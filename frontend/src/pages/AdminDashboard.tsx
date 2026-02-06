@@ -8,13 +8,13 @@ interface AdminDashboardProps {
   applications: Application[];
   grants: Application[];
   onLogout: () => void;
-  onViewApplication: (applicationId: string) => void;
+  onViewApplication: (applicationId: number) => void;
   onManageGrants: () => void;
 }
 
-export function AdminDashboard({ 
-  user, 
-  applications, 
+export function AdminDashboard({
+  user,
+  applications,
   onLogout,
   onViewApplication,
   onManageGrants
@@ -42,9 +42,10 @@ export function AdminDashboard({
   // Grant-wise application data
   const grantWiseData = useMemo(() => {
     const grantMap = new Map<string, number>();
-    
+
     applications.forEach(app => {
-      grantMap.set(app.grantTitle, (grantMap.get(app.grantTitle) || 0) + 1);
+      const grantName = app.grant.name;
+      grantMap.set(grantName, (grantMap.get(grantName) || 0) + 1);
     });
 
     return Array.from(grantMap.entries()).map(([name, count]) => ({
@@ -56,10 +57,11 @@ export function AdminDashboard({
   // Filter applications
   const filteredApplications = useMemo(() => {
     return applications.filter(app => {
-      const matchesSearch = searchTerm === '' || 
-        app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.organization.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const matchesSearch = searchTerm === '' ||
+        String(app.id).includes(searchTerm) ||
+        app.applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.grant.name.toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
 
       return matchesSearch && matchesStatus;
@@ -206,7 +208,7 @@ export function AdminDashboard({
                   <button
                     type="button"
                     className={`btn ${statusFilter === 'all' ? 'btn' : 'btn-outline'}`}
-                    style={{ 
+                    style={{
                       backgroundColor: statusFilter === 'all' ? '#3b7a57' : 'transparent',
                       color: statusFilter === 'all' ? 'white' : '#3b7a57',
                       borderColor: '#3b7a57'
@@ -218,7 +220,7 @@ export function AdminDashboard({
                   <button
                     type="button"
                     className={`btn ${statusFilter === 'pending_review' ? 'btn' : 'btn-outline'}`}
-                    style={{ 
+                    style={{
                       backgroundColor: statusFilter === 'pending_review' ? '#3b7a57' : 'transparent',
                       color: statusFilter === 'pending_review' ? 'white' : '#3b7a57',
                       borderColor: '#3b7a57'
@@ -230,7 +232,7 @@ export function AdminDashboard({
                   <button
                     type="button"
                     className={`btn ${statusFilter === 'approved' ? 'btn' : 'btn-outline'}`}
-                    style={{ 
+                    style={{
                       backgroundColor: statusFilter === 'approved' ? '#3b7a57' : 'transparent',
                       color: statusFilter === 'approved' ? 'white' : '#3b7a57',
                       borderColor: '#3b7a57'
@@ -242,7 +244,7 @@ export function AdminDashboard({
                   <button
                     type="button"
                     className={`btn ${statusFilter === 'denied' ? 'btn' : 'btn-outline'}`}
-                    style={{ 
+                    style={{
                       backgroundColor: statusFilter === 'denied' ? '#3b7a57' : 'transparent',
                       color: statusFilter === 'denied' ? 'white' : '#3b7a57',
                       borderColor: '#3b7a57'
@@ -262,7 +264,7 @@ export function AdminDashboard({
                   </span>
                   <input
                     type="text"
-                    placeholder="Search by ID or Organization..."
+                    placeholder="Search by ID, email or grant..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="form-control"
@@ -272,8 +274,8 @@ export function AdminDashboard({
               </div>
             </div>
 
-            <ApplicationsTable 
-                      applications={filteredApplications} 
+            <ApplicationsTable
+                      applications={filteredApplications}
                       onViewApplication={onViewApplication}
                     />
           </div>
@@ -284,12 +286,12 @@ export function AdminDashboard({
 }
 
 // Applications Table Component
-function ApplicationsTable({ 
-  applications, 
-  onViewApplication 
-}: { 
-  applications: Application[]; 
-  onViewApplication: (id: string) => void;
+function ApplicationsTable({
+  applications,
+  onViewApplication
+}: {
+  applications: Application[];
+  onViewApplication: (id: number) => void;
 }) {
   if (applications.length === 0) {
     return (
@@ -304,10 +306,9 @@ function ApplicationsTable({
     <table className="table table-hover">
       <thead style={{ backgroundColor: "#eef7ee" }}>
         <tr>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Application ID</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Organization</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>ID</th>
+          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Applicant</th>
           <th style={{ color: "#2f6f44", fontWeight: "600" }}>Grant</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Amount</th>
           <th style={{ color: "#2f6f44", fontWeight: "600" }}>Submitted</th>
           <th style={{ color: "#2f6f44", fontWeight: "600" }}>Status</th>
           <th style={{ color: "#2f6f44", fontWeight: "600" }}>Actions</th>
@@ -317,10 +318,9 @@ function ApplicationsTable({
         {applications.map((app) => (
           <tr key={app.id} style={{ borderColor: "#f0fdf4" }}>
             <td><code style={{ color: "#3b7a57", fontWeight: "600" }}>{app.id}</code></td>
-            <td style={{ color: "#047857", fontWeight: "500" }}>{app.organization}</td>
-            <td>{app.grantTitle}</td>
-            <td className="fw-bold">${app.requestedAmount.toLocaleString()}</td>
-            <td className="text-muted">{app.submittedDate}</td>
+            <td style={{ color: "#047857", fontWeight: "500" }}>{app.applicant.email}</td>
+            <td>{app.grant.name}</td>
+            <td className="text-muted">{app.submitted_date}</td>
             <td>
               <span
                 className="badge"
