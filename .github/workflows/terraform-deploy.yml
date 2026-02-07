@@ -29,7 +29,7 @@ env:
   TF_VAR_aks_name: nausicaas-aks
   TF_VAR_aks_dns_prefix: nausicaas
   TF_VAR_aks_node_count: 1
-  TF_VAR_aks_vm_size: Standard_B2s
+  TF_VAR_aks_vm_size: Standard_B2s_v2
 
 jobs:
   terraform:
