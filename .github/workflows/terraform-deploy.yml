@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: infrastructure/terraform
-        run: terraform init
+        run: terraform init -upgrade
 
       - name: Terraform Plan
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
