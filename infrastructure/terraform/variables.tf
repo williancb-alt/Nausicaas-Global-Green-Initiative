@@ -31,6 +31,6 @@ variable "aks_node_count" {
 
 variable "aks_vm_size" {
   type    = string
-  default = "Standard_B2s"
+  default = "Standard_B2ls_v2"
 }
 
