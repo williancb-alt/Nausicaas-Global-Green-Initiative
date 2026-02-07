@@ -25,6 +25,7 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   TF_VAR_location: northeurope
   TF_VAR_acr_name: nausicaasacr12345prod
+  TF_VAR_resource_group_name: nausicaas-rg
 
 jobs:
   terraform:
