@@ -51,19 +51,6 @@ jobs:
         working-directory: infrastructure/terraform
         run: terraform init
 
-    #TEMPORARY - Adding state cleanup step to remove RG + ACR from Terraform state to unblock subsequent runs. This is needed because the RG + ACR were manually deleted outside of Terraform, and thus are now in a "tainted" state in Terraform.   
-      - name: TEMP - State cleanup (remove RG + ACR from Terraform state)
-        working-directory: infrastructure/terraform
-        run: |
-          echo "State BEFORE cleanup:"
-          terraform state list || true
-
-          terraform state rm azurerm_resource_group.main || true
-          terraform state rm azurerm_container_registry.acr || true
-
-          echo "State AFTER cleanup:"
-          terraform state list || true
-
       - name: Terraform Plan
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
         working-directory: infrastructure/terraform
