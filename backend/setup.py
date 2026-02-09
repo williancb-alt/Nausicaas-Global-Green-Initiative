@@ -1,7 +1,7 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 DESCRIPTION = (
     "Boilerplate Flask API for Nausicaas Global Green Initiative with"
