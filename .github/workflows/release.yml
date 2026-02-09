@@ -38,7 +38,7 @@ jobs:
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: Update backend version in setup.py
-        if: github.event_name == "workflow_dispatch"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           cd backend
           sed -i.bak "s/^VERSION = .*/VERSION = \"${{ steps.version.outputs.version }}\"/" setup.py
@@ -46,14 +46,14 @@ jobs:
           echo "Updated backend/setup.py to VERSION = ${{ steps.version.outputs.version }}"
 
       - name: Update frontend version in package.json
-        if: github.event_name == "workflow_dispatch"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           cd frontend
           npm version ${{ steps.version.outputs.version }} --no-git-tag-version
           echo "Updated frontend/package.json to version ${{ steps.version.outputs.version }}"
 
       - name: Commit updates
-        if: github.event_name == "workflow_dispatch"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -62,7 +62,7 @@ jobs:
           git push origin HEAD:${{ github.ref_name }}
 
       - name: Ensure tag exists
-        if: github.event_name == "workflow_dispatch"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           git fetch --tags
@@ -75,7 +75,7 @@ jobs:
           fi
       
       - name: Ensure user has updated to new version
-        if: github.event_name != "workflow_dispatch"
+        if: ${{ github.event_name != 'workflow_dispatch'}}
         run: |
           EXPECTED="${{ steps.version.outputs.version }}"
           echo "Checking that backend & frontend files match expected version: $EXPECTED"
@@ -95,12 +95,12 @@ jobs:
           echo "Versions as expected in both frontend and backend"
 
       - name: Docker Login to ACR
-        if: github.event_name != "workflow_dispatch"
+        if: ${{ github.event_name != 'workflow_dispatch' }} 
         run: |
           echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
 
       - name: Build and push backend image
-        if: github.event_name != "workflow_dispatch"
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         run: |
           BACKEND_IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/backend"
           docker build -t $BACKEND_IMAGE:${{ steps.version.outputs.version }} -t $BACKEND_IMAGE:latest ./backend
@@ -108,7 +108,7 @@ jobs:
           docker push $BACKEND_IMAGE:latest
 
       - name: Build and push frontend image
-        if: github.event_name != "workflow_dispatch"
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         run: |
           FRONTEND_IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/frontend"
           docker build -t $FRONTEND_IMAGE:${{ steps.version.outputs.version }} -t $FRONTEND_IMAGE:latest ./frontend
@@ -116,7 +116,7 @@ jobs:
           docker push $FRONTEND_IMAGE:latest
 
       - name: Create GitHub Release
-        if: github.event_name != "workflow_dispatch"
+        if: ${{ github.event_name != 'workflow_dispatch' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
