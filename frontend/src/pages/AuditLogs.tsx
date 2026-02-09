@@ -39,7 +39,7 @@ export function AuditLogs(): JSX.Element {
   const formatDetails = (details: string | null): string => {
     if (!details) return "N/A"
     try {
-      const parsed = JSON.parse(details)
+      const parsed: unknown = JSON.parse(details)
       return JSON.stringify(parsed, null, 2)
     } catch {
       return details
