@@ -125,7 +125,9 @@ export function AuditLogs(): JSX.Element {
       </div>
 
       {/* Error Display */}
-      {isError && <AlertError error={error} fallback="Failed to load audit logs" />}
+      {isError && (
+        <AlertError error={error} fallback="Failed to load audit logs" />
+      )}
 
       {/* Loading State */}
       {isLoading && (
@@ -165,7 +167,9 @@ export function AuditLogs(): JSX.Element {
                 ) : (
                   auditData.logs.map(log => (
                     <tr key={log.id}>
-                      <td className="small">{formatTimestamp(log.timestamp)}</td>
+                      <td className="small">
+                        {formatTimestamp(log.timestamp)}
+                      </td>
                       <td>
                         <div>
                           {log.user_email || "System"}
