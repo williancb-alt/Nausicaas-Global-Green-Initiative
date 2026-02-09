@@ -34,3 +34,7 @@ variable "aks_vm_size" {
   default = "Standard_B2s_v2"
 }
 
+variable "enable_acr_role_assignment" {
+  type    = bool
+  default = false
+}
