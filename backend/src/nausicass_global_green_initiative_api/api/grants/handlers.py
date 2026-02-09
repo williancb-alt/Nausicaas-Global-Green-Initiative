@@ -71,7 +71,8 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
 
     response = jsonify(status="success", message=f"New grant added: {name}.")
     response.status_code = HTTPStatus.CREATED
-    response.headers["Location"] = url_for("api.grant", name=name, _external=True)
+    location_url = url_for("api.grant", name=name, _external=True)
+    response.headers["Location"] = location_url
     return response
 
 
@@ -135,7 +136,9 @@ def update_grant(
 
         # Log the edit if something actually changed
         if changes:
-            user = User.find_by_public_id(update_grant.public_id)  # type: ignore[attr-defined]
+            user = User.find_by_public_id(
+                update_grant.public_id  # type: ignore[attr-defined]
+            )
             AuditService.log_grant_edited(
                 grant_id=grant.id,
                 user_id=user.id,
