@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nausicaas
+  labels:
+    app.kubernetes.io/name: nausicaas
+    app.kubernetes.io/part-of: nausicaas-global-green-initiative
