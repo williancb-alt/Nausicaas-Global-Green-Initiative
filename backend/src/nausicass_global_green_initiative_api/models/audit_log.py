@@ -17,6 +17,11 @@ class AuditAction(str, Enum):
     APPLICATION_EDITED = "application_edited"
     APPLICATION_DELETED = "application_deleted"
 
+    # Award-related actions
+    AWARD_CREATED = "award_created"
+    AWARD_EDITED = "award_edited"
+    AWARD_DELETED = "award_deleted"
+
     # Grant-related actions
     GRANT_CREATED = "grant_created"
     GRANT_EDITED = "grant_edited"

@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from nausicass_global_green_initiative_api import create_app, db
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 from nausicass_global_green_initiative_api.models.award import Award
@@ -24,6 +25,7 @@ def shell() -> Dict[
         "User": User,
         "BlacklistedToken": BlacklistedToken,
         "Grant": Grant,
+        "Award": Award,
         "AuditLog": AuditLog,
         "Award": Award,
     }
