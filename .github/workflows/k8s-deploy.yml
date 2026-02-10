@@ -3,8 +3,6 @@ name: Deploy Kubernetes Manifests
 on:
   push:
     branches: [ "infra-actions" ]
-    paths:
-      - "k8s/**"
   workflow_dispatch:
 
 permissions:
