@@ -28,6 +28,7 @@ award_ns.models[award_model.name] = award_model
 award_ns.models[pagination_links_model.name] = pagination_links_model
 award_ns.models[pagination_model.name] = pagination_model
 
+
 @award_ns.route("", endpoint="award_list")
 @award_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @award_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")

@@ -1,7 +1,6 @@
 from http import HTTPStatus
 from datetime import datetime
-import json
-from typing import Any, TypedDict
+from typing import TypedDict
 
 from flask import Response, jsonify, url_for
 from flask_restx import abort, marshal
@@ -22,6 +21,7 @@ from nausicass_global_green_initiative_api.models.award import Award
 
 class AwardDictionary(TypedDict, total=False):
     """Type definition for API requests regarding awards"""
+
     name: str
     deadline: datetime
     description: str

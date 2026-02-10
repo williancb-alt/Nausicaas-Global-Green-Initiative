@@ -3,7 +3,7 @@ from datetime import date, datetime, time, timezone
 
 from dateutil import parser
 from flask_restx import Model
-from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
+from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, String, Url
 from flask_restx.inputs import positive
 from flask_restx.reqparse import RequestParser
 
@@ -45,6 +45,7 @@ def future_date_from_string(date_str: str) -> datetime:
     deadline = datetime.combine(parsed_date.date(), time.max)
     deadline_utc = make_tzaware(deadline, use_tz=timezone.utc)
     return deadline_utc
+
 
 create_award_reqparser = RequestParser(bundle_errors=True)
 create_award_reqparser.add_argument(
