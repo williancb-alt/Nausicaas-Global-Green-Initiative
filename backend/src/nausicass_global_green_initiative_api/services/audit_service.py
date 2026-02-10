@@ -217,3 +217,84 @@ class AuditService:
             user_agent=user_agent,
             success=True,
         )
+
+    @classmethod
+    def log_award_created(
+        cls,
+        award_id: int,
+        user_id: int,
+        user_email: str,
+        is_admin: bool,
+        award_name: str,
+    ) -> AuditLog:
+        """Log when an award is created."""
+        ip_address, user_agent = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.AWARD_CREATED.value,
+            entity_type="award",
+            entity_id=award_id,
+            user_id=user_id,
+            user_email=user_email,
+            is_admin=is_admin,
+            details=cls._serialize_details(
+                {"event": "Award created", "award_name": award_name}
+            ),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+        )
+
+    @classmethod
+    def log_award_edited(
+        cls,
+        award_id: int,
+        user_id: int,
+        user_email: str,
+        is_admin: bool,
+        changes: dict,
+    ) -> AuditLog:
+        """Log when an award is edited."""
+        ip_address, user_agent = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.AWARD_EDITED.value,
+            entity_type="award",
+            entity_id=award_id,
+            user_id=user_id,
+            user_email=user_email,
+            is_admin=is_admin,
+            details=cls._serialize_details(
+                {"event": "Award edited", "changes": changes}
+            ),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+        )
+
+    @classmethod
+    def log_award_deleted(
+        cls,
+        award_id: int,
+        user_id: int,
+        user_email: str,
+        is_admin: bool,
+        award_name: str,
+    ) -> AuditLog:
+        """Log when an award is deleted."""
+        ip_address, user_agent = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.AWARD_DELETED.value,
+            entity_type="award",
+            entity_id=award_id,
+            user_id=user_id,
+            user_email=user_email,
+            is_admin=is_admin,
+            details=cls._serialize_details(
+                {"event": "Award deleted", "award_name": award_name}
+            ),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+        )
