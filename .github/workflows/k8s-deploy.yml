@@ -1,0 +1,45 @@
+name: Deploy Kubernetes Manifests
+
+on:
+  push:
+    branches: [ "infra-actions" ]
+    paths:
+      - "k8s/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AKS_RG: nausicaas-rg
+  AKS_NAME: nausicaas-aks
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ env.AKS_RG }}
+          cluster-name: ${{ env.AKS_NAME }}
+
+      - name: Apply Namespace
+        run: |
+          kubectl apply -f k8s/00-namespace.yaml
+
+      - name: Verify Namespace
+        run: |
+          kubectl get ns nausicaas
