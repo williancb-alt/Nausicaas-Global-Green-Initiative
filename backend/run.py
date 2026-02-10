@@ -9,6 +9,7 @@ from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
+from nausicass_global_green_initiative_api.models.award import Award
 
 app = create_app(os.getenv("FLASK_ENV", "development"))
 
