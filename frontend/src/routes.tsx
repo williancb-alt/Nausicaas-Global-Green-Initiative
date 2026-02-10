@@ -3,6 +3,7 @@ import { ForgotPassword } from "./pages/ForgotPassword"
 import { Home } from "./pages/Home"
 import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
+import { AuditLogs } from "./pages/AuditLogs"
 
 export const routes = [
   {
@@ -24,5 +25,13 @@ export const routes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/admin/audit",
+    element: (
+      <ProtectedRoute>
+        <AuditLogs />
+      </ProtectedRoute>
+    ),
   },
 ]
