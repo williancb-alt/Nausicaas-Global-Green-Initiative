@@ -12,6 +12,11 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 env:
   PYTHON_VERSION: "3.11"
   COVERAGE_THRESHOLD: "80"
