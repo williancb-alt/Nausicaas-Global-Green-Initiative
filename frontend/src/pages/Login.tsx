@@ -96,6 +96,15 @@ export function Login(): JSX.Element {
                 Forgot password?
               </Link>
             </div>
+            <div className="mt-3">
+              <Link
+                to="/dashboard"
+                className="text-decoration-underline"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Dashboard
+              </Link>
+            </div>
           </form>
         </div>
       </div>

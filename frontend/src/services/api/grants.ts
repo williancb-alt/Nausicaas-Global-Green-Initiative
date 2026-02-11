@@ -38,6 +38,7 @@ export const grantsApi = {
     const { data } = await apiClient.get<Grant>(
       `/api/v1/grants/${encodeURIComponent(name)}`,
     )
+    console.log("Fetched grant:", data)
     return data
   },
 

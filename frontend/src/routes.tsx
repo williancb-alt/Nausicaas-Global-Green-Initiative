@@ -1,5 +1,6 @@
 import { ProtectedRoute } from "./components/protectedRoute/ProtectedRoute"
 import { ForgotPassword } from "./pages/ForgotPassword"
+import Dashboard  from "./pages/Dashboard"
 import { Home } from "./pages/Home"
 import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
@@ -25,6 +26,10 @@ export const routes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
   },
   {
     path: "/admin/audit",
