@@ -1,24 +1,78 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { api } from "../services/api"
 import { useAuthStore } from "../store/authStore"
-import type { LoginFormData } from "../schemas/authSchema"
+import { LoginCredentials } from "../types"
 
 export function useLogin() {
-  const setUser = useAuthStore((state) => state.setUser)
-  const setToken = useAuthStore((state) => state.setToken)
+  const { setUser } = useAuthStore()
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (data: LoginFormData) => {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) throw new Error("Login failed")
-      return response.json()
-    },
-    onSuccess: (data) => {
-      setUser(data.user)
-      setToken(data.token)
+    mutationFn: ({ email, password }: LoginCredentials) =>
+      api.auth.login(email, password),
+    onSuccess: async () => {
+      try {
+        const user = await api.auth.getUser()
+        setUser(user)
+        await queryClient.invalidateQueries({ queryKey: ["user"] })
+      } catch (error) {
+        // TODO - error handling - trigger state or dispatch to show message to user informing of error
+        console.error("Failed to fetch user after login:", error)
+      }
     },
   })
+}
+
+export function useLogout() {
+  const { clearAuth } = useAuthStore()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => api.auth.logout(),
+    onSuccess: () => {
+      clearAuth()
+      queryClient.clear()
+    },
+  })
+}
+
+export function useRegister() {
+  const { setUser } = useAuthStore()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ email, password }: LoginCredentials) =>
+      api.auth.register(email, password),
+    onSuccess: async () => {
+      try {
+        const user = await api.auth.getUser()
+        setUser(user)
+        await queryClient.invalidateQueries({ queryKey: ["user"] })
+      } catch (error) {
+        // TODO - error handling - trigger state or dispatch to show message to user informing of error
+        console.error("Failed to fetch user after registration:", error)
+      }
+    },
+  })
+}
+
+export function useUser() {
+  const { setUser, clearAuth } = useAuthStore()
+
+  const query = useQuery({
+    queryKey: ["user"],
+    queryFn: () => api.auth.getUser(),
+    retry: false,
+  })
+
+  useEffect(() => {
+    if (query.data) {
+      setUser(query.data)
+    } else if (query.isError) {
+      clearAuth()
+    }
+  }, [query.data, query.isError, setUser, clearAuth])
+
+  return query
 }

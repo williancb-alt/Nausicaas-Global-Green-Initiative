@@ -15,9 +15,11 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.90.16",
+    "@types/react-bootstrap": "^1.0.1",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.69.0",
     "react-router-dom": "^7.8.2",

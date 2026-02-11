@@ -3,6 +3,7 @@ import LandingPage from './components/LandingPage';
 import AdminLogin from './components/auth/AdminLogin';
 import UserLogin from './components/auth/UserLogin';
 import Dashboard from './Dashboard';
+import UserDashboard from './pages/UserDashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
@@ -20,7 +21,7 @@ function App() {
 
   // Show dashboard if logged in
   if (isLoggedIn) {
-    return <Dashboard />;
+    return selectedRole === 'admin' ? <Dashboard /> : <UserDashboard />;
   }
 
   // Show login flow if role selected  
