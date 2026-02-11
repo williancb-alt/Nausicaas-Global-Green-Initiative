@@ -9,6 +9,7 @@ import { AdminApplicationView } from "./pages/AdminApplicationView"
 import { GrantManagementPage } from "./pages/GrantManagementPage"
 import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
+import { AuditLogs } from "./pages/AuditLogs"
 
 export const routes = [
   {
@@ -74,5 +75,13 @@ export const routes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/admin/audit",
+    element: (
+      <ProtectedRoute>
+        <AuditLogs />
+      </ProtectedRoute>
+    ),
   },
 ]

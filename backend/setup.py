@@ -1,6 +1,8 @@
 from pathlib import Path
 from setuptools import setup, find_packages
 
+VERSION = "1.0.0"
+
 DESCRIPTION = (
     "Boilerplate Flask API for Nausicaas Global Green Initiative with"
     "Flask-RESTx, SQLAlchemy, pytest, flake8, tox configured"
@@ -56,7 +58,7 @@ setup(
     description=DESCRIPTION,
     long_description=README,
     long_description_content_type="text/markdown",
-    version="0.1",
+    version=VERSION,
     author=AUTHOR,
     maintainer=AUTHOR,
     license="MIT",
