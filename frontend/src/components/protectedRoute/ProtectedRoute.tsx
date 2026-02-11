@@ -1,22 +1,28 @@
-import { useUser } from "../../hooks/useAuthHooks"
-import { JSX } from "react"
+import { JSX, ReactNode } from "react"
 import { Navigate } from "react-router-dom"
+import { useAuthStore } from "../../store/authStore"
 
 interface ProtectedRouteProps {
-  children: JSX.Element
+  children: ReactNode
+  requireAdmin?: boolean
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps): JSX.Element {
-  const { data: user, isLoading, isError } = useUser()
+export function ProtectedRoute({
+  children,
+  requireAdmin = false,
+}: ProtectedRouteProps): JSX.Element {
+  const { isAuthenticated, user } = useAuthStore()
 
-  if (isLoading) {
-    // TODO - implement proper spinner component
-    return <div>Loading...</div>
-  }
-
-  if (isError || !user) {
+  // Not logged in at all - redirect to login
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  return children
+  // Logged in but need admin and user is not admin - redirect to home
+  if (requireAdmin && user && !user.admin) {
+    return <Navigate to="/" replace />
+  }
+
+  // All checks passed - render children
+  return <>{children}</>
 }

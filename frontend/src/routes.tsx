@@ -27,9 +27,9 @@ export const routes = [
     element: <ForgotPassword />,
   },
   {
-    path: "/admin/audit",
+    path: "/admin/audit-logs",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin={true}>  {/* ← Only admins can access */}
         <AuditLogs />
       </ProtectedRoute>
     ),
