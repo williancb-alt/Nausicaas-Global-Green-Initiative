@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 from typing import Any, TypedDict
 
-from flask import Response, jsonify, url_for
+from flask import Response, jsonify, request, url_for
 from flask_restx import abort, marshal
 from flask_sqlalchemy.pagination import Pagination
 
@@ -28,6 +28,7 @@ class GrantDictionary(TypedDict, total=False):
     deadline: datetime
     description: str
     custom_fields: str | None
+    hidden: bool
 
 
 @admin_token_required
@@ -77,8 +78,22 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
 
 
 def retrieve_grant_list(page: int, per_page: int) -> Response:
-    """Public endpoint - no authentication required."""
-    pagination = Grant.query.paginate(page=page, per_page=per_page, error_out=False)
+    """Public endpoint - no authentication required. Hides grants marked as hidden from non-admin users."""
+    # Check if the user is an admin
+    is_admin = False
+    token = request.cookies.get("access_token")
+    if token:
+        result = User.decode_access_token(token)
+        if not result.failure:
+            is_admin = result.value.get("admin", False)
+
+    # Filter out hidden grants unless user is admin
+    if is_admin:
+        query = Grant.query
+    else:
+        query = Grant.query.filter_by(hidden=False)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     response_data = marshal(pagination, pagination_model)
     response_data["links"] = _pagination_nav_links(pagination)
     response = jsonify(response_data)
@@ -123,7 +138,7 @@ def update_grant(
 
         # Check other field changes
         for k, v in grant_dict.items():
-            if k != "custom_fields":
+            if k != "custom_fields" and v is not None:
                 old_value = getattr(grant, k)
                 if old_value != v:
                     changes[k] = {

@@ -20,14 +20,7 @@ export function GrantManagementPage(): JSX.Element {
   // page-level state
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editFormData, setEditFormData] = useState({ name: "", deadline: "", description: "" })
-  const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>(() => {
-    try {
-      const raw = localStorage.getItem("grantVisibility")
-      return raw ? JSON.parse(raw) : {}
-    } catch {
-      return {}
-    }
-  })
+  const [togglingGrant, setTogglingGrant] = useState<string | null>(null)
 
   // Dynamic fields for create and edit flows
   const [customFieldConfigs, setCustomFieldConfigs] = useState<DynamicFieldConfig[]>([])
@@ -106,12 +99,27 @@ export function GrantManagementPage(): JSX.Element {
     deleteGrant.mutate(name)
   }
 
-  const toggleVisibility = (name: string) => {
-    setVisibilityMap(prev => {
-      const next = { ...prev, [name]: !prev[name] }
-      try { localStorage.setItem("grantVisibility", JSON.stringify(next)) } catch {}
-      return next
-    })
+  const toggleVisibility = (grant: any) => {
+    const newHiddenState = !grant.hidden
+    console.log('Toggling visibility for grant:', grant.name, 'from', grant.hidden, 'to', newHiddenState)
+    setTogglingGrant(grant.name)
+    updateGrant.mutate(
+      {
+        name: grant.name,
+        hidden: newHiddenState,
+      },
+      {
+        onSuccess: () => {
+          console.log('Successfully toggled visibility for:', grant.name)
+          setTogglingGrant(null)
+        },
+        onError: (error) => {
+          console.error('Failed to toggle visibility:', error)
+          alert(`Failed to toggle visibility: ${error.message}`)
+          setTogglingGrant(null)
+        },
+      }
+    )
   }
 
   // Dynamic field helpers
@@ -270,8 +278,8 @@ export function GrantManagementPage(): JSX.Element {
                         <td>{grant.deadline || "—"}</td>
 
                         <td>
-                          <span className="badge" style={{ backgroundColor: visibilityMap[grant.name] ? "#3b7a57" : "#9ca3af", color: "white" }}>
-                            {visibilityMap[grant.name] ? "Visible" : "Hidden"}
+                          <span className="badge" style={{ backgroundColor: grant.hidden ? "#9ca3af" : "#3b7a57", color: "white" }}>
+                            {grant.hidden ? "Hidden" : "Visible"}
                           </span>
                         </td>
 
@@ -288,10 +296,11 @@ export function GrantManagementPage(): JSX.Element {
                             <button
                               className="btn btn-sm"
                               style={{ backgroundColor: "#eef7ee", color: "#2f6f44", border: "none" }}
-                              onClick={() => toggleVisibility(grant.name)}
-                              title={visibilityMap[grant.name] ? "Hide grant" : "Show grant"}
+                              onClick={() => toggleVisibility(grant)}
+                              title={grant.hidden ? "Show grant" : "Hide grant"}
+                              disabled={togglingGrant === grant.name}
                             >
-                              {visibilityMap[grant.name] ? <Eye size={14} /> : <EyeOff size={14} />}
+                              {togglingGrant === grant.name ? "..." : (grant.hidden ? <EyeOff size={14} /> : <Eye size={14} />)}
                             </button>
                             <button
                               className="btn btn-sm"

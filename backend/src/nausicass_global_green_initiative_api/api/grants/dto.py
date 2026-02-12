@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timezone
 from dateutil import parser
 from flask_restx import Model
 from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
-from flask_restx.inputs import positive
+from flask_restx.inputs import positive, boolean
 from flask_restx.reqparse import RequestParser
 
 from nausicass_global_green_initiative_api.util.datetime_util import (
@@ -99,6 +99,13 @@ create_grant_reqparser.add_argument(
     required=False,
     nullable=True,
 )
+create_grant_reqparser.add_argument(
+    "hidden",
+    type=boolean,
+    location="form",
+    required=False,
+    default=False,
+)
 
 pagination_reqparser = RequestParser(bundle_errors=True)
 pagination_reqparser.add_argument("page", type=positive, required=False, default=1)
@@ -119,6 +126,7 @@ grant_model = Model(
         "time_remaining": String(attribute="time_remaining_str"),
         "description": String,
         "custom_fields": Raw,
+        "hidden": Boolean,
         "owner": Nested(grant_owner_model),
         "link": Url("api.grant"),
     },
@@ -145,3 +153,17 @@ pagination_model = Model(
 
 update_grant_reqparser = create_grant_reqparser.copy()
 update_grant_reqparser.remove_argument("name")
+update_grant_reqparser.replace_argument(
+    "deadline",
+    type=future_date_from_string,
+    location="form",
+    required=False,
+    nullable=True,
+)
+update_grant_reqparser.replace_argument(
+    "description",
+    type=str,
+    location="form",
+    required=False,
+    nullable=True,
+)

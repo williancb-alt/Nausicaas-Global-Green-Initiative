@@ -46,9 +46,10 @@ export type CreateGrantParams = {
 
 export type UpdateGrantParams = {
   name: string
-  deadline: string
-  description: string
+  deadline?: string
+  description?: string
   custom_fields?: string // JSON string
+  hidden?: boolean
 }
 
 export type ApplicationStatus =
