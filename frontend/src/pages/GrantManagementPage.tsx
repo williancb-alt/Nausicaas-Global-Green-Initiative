@@ -85,14 +85,31 @@ export function GrantManagementPage(): JSX.Element {
 
   const saveEdit = () => {
     if (!editingId) return
-    const payload = {
+    const payload: any = {
       name: editingId,
-      deadline: editFormData.deadline,
-      description: editFormData.description,
-      custom_fields: JSON.stringify({ configs: editCustomFieldConfigs, values: editCustomFieldValues }),
     }
 
-    updateGrant.mutate(payload, { onSuccess: () => setEditingId(null) })
+    // Only include fields that have values
+    if (editFormData.deadline) payload.deadline = editFormData.deadline
+    if (editFormData.description) payload.description = editFormData.description
+
+    // Always include custom_fields if there are configs
+    payload.custom_fields = JSON.stringify({
+      configs: editCustomFieldConfigs,
+      values: editCustomFieldValues
+    })
+
+    console.log('Saving grant edits:', payload)
+    updateGrant.mutate(payload, {
+      onSuccess: () => {
+        console.log('Successfully saved edits')
+        setEditingId(null)
+      },
+      onError: (error) => {
+        console.error('Failed to save edits:', error)
+        alert(`Failed to save changes: ${error.message}`)
+      }
+    })
   }
 
   const onDelete = (name: string) => {
@@ -363,11 +380,37 @@ export function GrantManagementPage(): JSX.Element {
                   />
                 </div>
               </div>
+
+              {/* Custom fields for edit */}
+              <div className="mt-3">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <label className="form-label mb-0" style={{ color: "#2f6f44", fontWeight: 600 }}>Custom Fields</label>
+                  <button type="button" className="btn btn-sm" style={{ backgroundColor: "#3b7a57", color: "white" }} onClick={() => setIsFieldModalOpen(true)}>Add Field</button>
+                </div>
+
+                <DynamicFieldPreview fields={editCustomFieldConfigs} />
+                {editCustomFieldConfigs.map((f, idx) => (
+                  <div key={idx} className="d-flex align-items-start gap-2 mb-2">
+                    <div className="flex-grow-1">
+                      <DynamicFieldInput
+                        field={f}
+                        index={idx}
+                        value={editCustomFieldValues[f.label] || ""}
+                        onChange={(v) => setFieldValue(f.label, v, true)}
+                      />
+                    </div>
+                    <div>
+                      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => handleRemoveField(idx, true)}>-</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="d-flex gap-2 mt-3">
-                <button className="btn" style={{ backgroundColor: "#3b7a57", color: "white" }} onClick={saveEdit}>
-                  Save Changes
+                <button className="btn" style={{ backgroundColor: "#3b7a57", color: "white" }} onClick={saveEdit} disabled={updateGrant.isPending}>
+                  {updateGrant.isPending ? "Saving..." : "Save Changes"}
                 </button>
-                <button className="btn btn-secondary" onClick={() => setEditingId(null)}>
+                <button className="btn btn-secondary" onClick={() => setEditingId(null)} disabled={updateGrant.isPending}>
                   Cancel
                 </button>
               </div>
