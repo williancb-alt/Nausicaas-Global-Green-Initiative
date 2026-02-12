@@ -13,7 +13,7 @@ export function AuditStats({ logs, timeRange }: AuditStatsProps): JSX.Element {
       log.action === "application_edit_blocked" ||
       log.action === "unauthorized_access" ||
       log.action === "login_failed" ||
-      !log.success
+      !log.success,
   ).length
 
   const adminActions = logs.filter(log => log.is_admin && log.success).length
@@ -21,7 +21,7 @@ export function AuditStats({ logs, timeRange }: AuditStatsProps): JSX.Element {
   const grantActions = logs.filter(log => log.entity_type === "grant").length
 
   const applicationActions = logs.filter(
-    log => log.entity_type === "application"
+    log => log.entity_type === "application",
   ).length
 
   return (
@@ -36,9 +36,7 @@ export function AuditStats({ logs, timeRange }: AuditStatsProps): JSX.Element {
             </div>
             <div className="fw-semibold">Security Events</div>
             {securityEvents > 0 && (
-              <div className="text-danger small mt-1">
-                Requires Attention
-              </div>
+              <div className="text-danger small mt-1">Requires Attention</div>
             )}
           </div>
         </div>
@@ -63,9 +61,7 @@ export function AuditStats({ logs, timeRange }: AuditStatsProps): JSX.Element {
             <div className="text-muted small">{timeRange}</div>
             <div className="display-6 my-2">🎯 {grantActions}</div>
             <div className="fw-semibold">Grant Actions</div>
-            <div className="text-muted small mt-1">
-              Created/Edited/Deleted
-            </div>
+            <div className="text-muted small mt-1">Created/Edited/Deleted</div>
           </div>
         </div>
       </div>

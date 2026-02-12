@@ -50,7 +50,7 @@ export function AuditLogs(): JSX.Element {
             log.action === "application_edit_blocked" ||
             log.action === "unauthorized_access" ||
             log.action === "login_failed" ||
-            !log.success
+            !log.success,
         )
         break
       case "admins":
@@ -74,8 +74,9 @@ export function AuditLogs(): JSX.Element {
     new Set(
       auditData?.logs
         .filter(log => log.is_admin)
-        .filter(log => log.user_email !== null).map(log => log.user_email as string) ?? []
-    )
+        .filter(log => log.user_email !== null)
+        .map(log => log.user_email as string) ?? [],
+    ),
   )
 
   const getTabLabel = (tab: AuditTabType): string => {
@@ -136,24 +137,30 @@ export function AuditLogs(): JSX.Element {
 
       {/* Tab Navigation */}
       <ul className="nav nav-tabs mb-4">
-        {(["all", "grants", "applications", "security", "admins"] as AuditTabType[]).map(
-          tab => (
-            <li key={tab} className="nav-item">
-              <button
-                className={`nav-link ${activeTab === tab ? "active" : ""} ${
-                  isTabDisabled(tab) ? "disabled" : ""
-                }`}
-                onClick={() => !isTabDisabled(tab) && setActiveTab(tab)}
-                disabled={isTabDisabled(tab)}
-              >
-                {getTabLabel(tab)}
-                {isTabDisabled(tab) && (
-                  <span className="badge bg-secondary ms-2">Coming Soon</span>
-                )}
-              </button>
-            </li>
-          )
-        )}
+        {(
+          [
+            "all",
+            "grants",
+            "applications",
+            "security",
+            "admins",
+          ] as AuditTabType[]
+        ).map(tab => (
+          <li key={tab} className="nav-item">
+            <button
+              className={`nav-link ${activeTab === tab ? "active" : ""} ${
+                isTabDisabled(tab) ? "disabled" : ""
+              }`}
+              onClick={() => !isTabDisabled(tab) && setActiveTab(tab)}
+              disabled={isTabDisabled(tab)}
+            >
+              {getTabLabel(tab)}
+              {isTabDisabled(tab) && (
+                <span className="badge bg-secondary ms-2">Coming Soon</span>
+              )}
+            </button>
+          </li>
+        ))}
       </ul>
 
       {/* Info Banner for Current Tab */}
@@ -190,10 +197,7 @@ export function AuditLogs(): JSX.Element {
 
       {/* Filters */}
       {!isTabDisabled(activeTab) && (
-        <AuditFilters
-          onFilterChange={_setFilters}
-          adminEmails={adminEmails}
-        />
+        <AuditFilters onFilterChange={_setFilters} adminEmails={adminEmails} />
       )}
 
       {/* Loading State */}

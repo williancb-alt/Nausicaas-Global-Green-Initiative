@@ -44,9 +44,7 @@ export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
 
     const badge = badges[action] || { color: "secondary", label: action }
 
-    return (
-      <span className={`badge bg-${badge.color}`}>{badge.label}</span>
-    )
+    return <span className={`badge bg-${badge.color}`}>{badge.label}</span>
   }
 
   const getStatusIcon = (log: AuditLog): string => {
@@ -62,7 +60,8 @@ export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
 
   const getEntityDisplay = (log: AuditLog): string => {
     const entityName =
-      parseDetails(log.details)?.grant_name || `${log.entity_type} #${log.entity_id}`
+      parseDetails(log.details)?.grant_name ||
+      `${log.entity_type} #${log.entity_id}`
     return entityName
   }
 
