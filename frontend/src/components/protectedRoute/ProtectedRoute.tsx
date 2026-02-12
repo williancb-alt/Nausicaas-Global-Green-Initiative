@@ -1,6 +1,6 @@
 import { JSX, ReactNode } from "react"
 import { Navigate } from "react-router-dom"
-import { useAuthStore } from "../../store/authStore"
+import { useUser } from "../../hooks/useAuthHooks"
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -11,15 +11,21 @@ export function ProtectedRoute({
   children,
   requireAdmin = false,
 }: ProtectedRouteProps): JSX.Element {
-  const { isAuthenticated, user } = useAuthStore()
+  const { data: user, isLoading, isError } = useUser()
 
-  // Not logged in at all - redirect to login
-  if (!isAuthenticated) {
+  // Show loading state while checking authentication
+  if (isLoading) {
+    // TODO - implement proper spinner component
+    return <div>Loading...</div>
+  }
+
+  // Not authenticated - redirect to login
+  if (isError || !user) {
     return <Navigate to="/login" replace />
   }
 
-  // Logged in but need admin and user is not admin - redirect to home
-  if (requireAdmin && user && !user.admin) {
+  // Authenticated but need admin and user is not admin - redirect to home
+  if (requireAdmin && !user.admin) {
     return <Navigate to="/" replace />
   }
 
