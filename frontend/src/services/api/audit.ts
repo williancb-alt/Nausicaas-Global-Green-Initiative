@@ -33,9 +33,12 @@ export const auditApi = {
    * Get recent audit logs (admin only)
    */
   getRecentLogs: async (limit = 100): Promise<AuditLogsResponse> => {
-    const { data } = await apiClient.get<BackendAuditResponse>("/api/v1/audit", {
-      params: { limit },
-    })
+    const { data } = await apiClient.get<BackendAuditResponse>(
+      "/api/v1/audit",
+      {
+        params: { limit },
+      },
+    )
     return {
       status: data.status,
       count: data.count,
