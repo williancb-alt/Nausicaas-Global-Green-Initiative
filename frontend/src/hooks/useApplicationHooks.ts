@@ -44,3 +44,29 @@ export function useSubmitApplication() {
     },
   })
 }
+
+// Update application status/feedback (admin only)
+export function useUpdateApplication() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      applicationId,
+      status,
+      feedback,
+    }: {
+      applicationId: string
+      status?: string
+      feedback?: string
+    }) => {
+      const data: { status?: string; feedback?: string } = {}
+      if (status !== undefined) data.status = status
+      if (feedback !== undefined) data.feedback = feedback
+      return api.applications.updateApplication(applicationId, data)
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["application", variables.applicationId] })
+      queryClient.invalidateQueries({ queryKey: ["applications"] })
+    },
+  })
+}

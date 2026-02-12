@@ -1,7 +1,7 @@
 import { JSX } from "react"
 import { useMyApplications } from "../hooks/useApplicationHooks"
 import { CheckCircle2, XCircle, Clock } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 const statusConfig = {
   approved: { label: "Approved", color: "success", icon: CheckCircle2 },
@@ -13,6 +13,7 @@ const statusConfig = {
 export function MyApplications(): JSX.Element {
   const { data: applicationsData, isLoading, isError } = useMyApplications()
   const applications = applicationsData?.items ?? []
+  const navigate = useNavigate()
 
   return (
     <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }} className="py-4">
@@ -83,12 +84,19 @@ export function MyApplications(): JSX.Element {
                       {app.grant.description && (
                         <p className="mb-2 text-muted">{app.grant.description}</p>
                       )}
-                      <p className="mb-0 text-muted">
+                      <p className="mb-2 text-muted">
                         <small>
                           Submitted:{" "}
                           {new Date(app.submitted_date).toLocaleDateString()}
                         </small>
                       </p>
+                      <button
+                        className="btn btn-sm"
+                        style={{ backgroundColor: "#3b7a57", color: "white" }}
+                        onClick={() => navigate(`/applications/${app.id}`)}
+                      >
+                        View Details
+                      </button>
                     </div>
                     {app.feedback && (
                       <div className="card-footer bg-light">

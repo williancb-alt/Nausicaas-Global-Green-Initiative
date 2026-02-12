@@ -16,9 +16,9 @@ export function LandingPage(): JSX.Element {
     enabled: isAuthenticated,
   })
 
-  // Create a Set of grant names the user has applied to
-  const appliedGrantNames = new Set(
-    myApplicationsData?.items.map(app => app.grant.name) || []
+  // Create a Map of grant names to application status
+  const applicationStatusMap = new Map(
+    myApplicationsData?.items.map(app => [app.grant.name, app.status]) || []
   )
 
   const grants = grantsData?.items ?? []
@@ -89,7 +89,7 @@ export function LandingPage(): JSX.Element {
                 <div key={grant.name} className="col-lg-6 mb-4">
                   <PublicGrantCard
                     grant={grant}
-                    hasApplied={appliedGrantNames.has(grant.name)}
+                    applicationStatus={applicationStatusMap.get(grant.name)}
                   />
                 </div>
               ))}

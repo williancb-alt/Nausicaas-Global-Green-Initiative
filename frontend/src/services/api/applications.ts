@@ -55,4 +55,17 @@ export const applications = {
     )
     return response.data
   },
+
+  // Update application status/feedback (admin only)
+  updateApplication: async (
+    applicationId: string,
+    data: { status?: string; feedback?: string }
+  ): Promise<{ status: string; message: string }> => {
+    const response = await apiClient.put<{ status: string; message: string }>(
+      `/api/v1/applications/${applicationId}`,
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    )
+    return response.data
+  },
 }

@@ -4,6 +4,7 @@ import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
 import { Applications } from "./pages/Applications"
 import { MyApplications } from "./pages/MyApplications"
+import { UserApplicationView } from "./pages/UserApplicationView"
 import { AdminDashboardPage } from "./pages/AdminDashboardPage"
 import { AdminApplicationView } from "./pages/AdminApplicationView"
 import { GrantManagementPage } from "./pages/GrantManagementPage"
@@ -29,6 +30,14 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <MyApplications />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/applications/:id",
+    element: (
+      <ProtectedRoute>
+        <UserApplicationView />
       </ProtectedRoute>
     ),
   },

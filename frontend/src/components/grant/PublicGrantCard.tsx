@@ -6,10 +6,11 @@ import type { Grant } from "../../services/api/client"
 
 interface PublicGrantCardProps {
   grant: Grant
-  hasApplied?: boolean
+  applicationStatus?: string | undefined
 }
 
-export function PublicGrantCard({ grant, hasApplied = false }: PublicGrantCardProps): JSX.Element {
+export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardProps): JSX.Element {
+  const hasApplied = !!applicationStatus
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
   const [showAdminAlert, setShowAdminAlert] = useState(false)
@@ -45,9 +46,25 @@ export function PublicGrantCard({ grant, hasApplied = false }: PublicGrantCardPr
       >
         <h5 className="mb-0 fw-bold">{grant.name}</h5>
         <div className="d-flex gap-2">
-          {hasApplied && (
-            <span className="badge bg-success">
-              ✓ Applied
+          {applicationStatus && (
+            <span
+              className={`badge ${
+                applicationStatus === "approved"
+                  ? "bg-success"
+                  : applicationStatus === "denied"
+                  ? "bg-danger"
+                  : applicationStatus === "in_review"
+                  ? "bg-info"
+                  : "bg-warning text-dark"
+              }`}
+            >
+              {applicationStatus === "approved"
+                ? "✓ Approved"
+                : applicationStatus === "denied"
+                ? "✗ Denied"
+                : applicationStatus === "in_review"
+                ? "In Review"
+                : "Pending Review"}
             </span>
           )}
           {grant.deadline_passed ? (
@@ -72,8 +89,21 @@ export function PublicGrantCard({ grant, hasApplied = false }: PublicGrantCardPr
 
           {!grant.deadline_passed && (
             hasApplied ? (
-              <Button variant="secondary" disabled>
-                ✓ Already Applied
+              <Button
+                variant={
+                  applicationStatus === "approved"
+                    ? "success"
+                    : applicationStatus === "denied"
+                    ? "danger"
+                    : "secondary"
+                }
+                disabled
+              >
+                {applicationStatus === "approved"
+                  ? "✓ Application Approved"
+                  : applicationStatus === "denied"
+                  ? "✗ Application Denied"
+                  : "Application Submitted"}
               </Button>
             ) : (
               <Button variant="success" onClick={handleApply}>

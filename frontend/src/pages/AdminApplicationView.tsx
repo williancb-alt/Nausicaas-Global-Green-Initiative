@@ -1,11 +1,53 @@
-import { JSX } from "react"
+import { JSX, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { useApplication } from "../hooks/useApplicationHooks"
+import { useApplication, useUpdateApplication } from "../hooks/useApplicationHooks"
 
 export function AdminApplicationView(): JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: application, isLoading } = useApplication(id)
+  const updateApplication = useUpdateApplication()
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const handleApprove = () => {
+    if (!id) return
+    setIsUpdating(true)
+    updateApplication.mutate(
+      { applicationId: id, status: "approved" },
+      {
+        onSuccess: () => {
+          setIsUpdating(false)
+          alert("Application approved successfully!")
+        },
+        onError: (error) => {
+          setIsUpdating(false)
+          alert(`Failed to approve application: ${error.message}`)
+        },
+      }
+    )
+  }
+
+  const handleDeny = () => {
+    if (!id) return
+    setIsUpdating(true)
+    updateApplication.mutate(
+      { applicationId: id, status: "denied" },
+      {
+        onSuccess: () => {
+          setIsUpdating(false)
+          alert("Application denied successfully!")
+        },
+        onError: (error) => {
+          setIsUpdating(false)
+          alert(`Failed to deny application: ${error.message}`)
+        },
+      }
+    )
+  }
+
+  const handleBack = () => {
+    navigate(-1)
+  }
 
   if (isLoading) {
     return <div className="container py-4">Loading...</div>
@@ -89,9 +131,25 @@ export function AdminApplicationView(): JSX.Element {
           )}
 
           <div className="d-flex gap-2">
-            <button className="btn btn-success">Approve</button>
-            <button className="btn btn-danger">Deny</button>
-            <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+            <button
+              className="btn btn-success"
+              onClick={handleApprove}
+              disabled={isUpdating || application.status === "approved"}
+            >
+              {application.status === "approved" ? "✓ Approved" : isUpdating ? "Updating..." : "Approve"}
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleDeny}
+              disabled={isUpdating || application.status === "denied"}
+            >
+              {application.status === "denied" ? "✗ Denied" : isUpdating ? "Updating..." : "Deny"}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={handleBack}
+              disabled={isUpdating}
+            >
               Back
             </button>
           </div>
