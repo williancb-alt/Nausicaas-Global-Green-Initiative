@@ -6,9 +6,10 @@ import type { Grant } from "../../services/api/client"
 
 interface PublicGrantCardProps {
   grant: Grant
+  hasApplied?: boolean
 }
 
-export function PublicGrantCard({ grant }: PublicGrantCardProps): JSX.Element {
+export function PublicGrantCard({ grant, hasApplied = false }: PublicGrantCardProps): JSX.Element {
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
   const [showAdminAlert, setShowAdminAlert] = useState(false)
@@ -43,13 +44,20 @@ export function PublicGrantCard({ grant }: PublicGrantCardProps): JSX.Element {
         }}
       >
         <h5 className="mb-0 fw-bold">{grant.name}</h5>
-        {grant.deadline_passed ? (
-          <span className="badge bg-danger">Deadline Passed</span>
-        ) : (
-          <span className="badge bg-light text-dark">
-            {grant.time_remaining} remaining
-          </span>
-        )}
+        <div className="d-flex gap-2">
+          {hasApplied && (
+            <span className="badge bg-success">
+              ✓ Applied
+            </span>
+          )}
+          {grant.deadline_passed ? (
+            <span className="badge bg-danger">Deadline Passed</span>
+          ) : (
+            <span className="badge bg-light text-dark">
+              {grant.time_remaining} remaining
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="card-body" style={{ backgroundColor: "#f8fdf8" }}>
@@ -63,9 +71,15 @@ export function PublicGrantCard({ grant }: PublicGrantCardProps): JSX.Element {
           </div>
 
           {!grant.deadline_passed && (
-            <Button variant="success" onClick={handleApply}>
-              Apply Now
-            </Button>
+            hasApplied ? (
+              <Button variant="secondary" disabled>
+                ✓ Already Applied
+              </Button>
+            ) : (
+              <Button variant="success" onClick={handleApply}>
+                Apply Now
+              </Button>
+            )
           )}
         </div>
 

@@ -9,6 +9,7 @@ interface ExpandableGrantItemProps {
   onDelete?: (name: string) => void
   onEdit?: (grant: Grant) => void
   isDeleting?: boolean
+  hasApplied?: boolean
 }
 
 export function ExpandableGrantItem({
@@ -18,6 +19,7 @@ export function ExpandableGrantItem({
   onDelete,
   onEdit,
   isDeleting,
+  hasApplied = false,
 }: ExpandableGrantItemProps): JSX.Element {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -48,7 +50,14 @@ export function ExpandableGrantItem({
         aria-expanded={isExpanded}
       >
         <div>
-          <div className="fw-semibold">{grant.name}</div>
+          <div className="fw-semibold d-flex align-items-center gap-2">
+            {grant.name}
+            {hasApplied && (
+              <span className="badge bg-success" style={{ fontSize: "0.7rem" }}>
+                ✓ Applied
+              </span>
+            )}
+          </div>
           {grant.deadline && (
             <div className="text-muted small">Deadline: {grant.deadline}</div>
           )}

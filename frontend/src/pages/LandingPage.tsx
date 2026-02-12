@@ -1,9 +1,25 @@
 import { JSX } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useGrants } from "../hooks/useGrantHooks"
 import { PublicGrantCard } from "../components/grant/PublicGrantCard"
+import { applications } from "../services/api/applications"
+import { useAuthStore } from "../store/authStore"
 
 export function LandingPage(): JSX.Element {
   const { data: grantsData, isLoading, isError } = useGrants()
+  const { isAuthenticated } = useAuthStore()
+
+  // Fetch user's applications to show which grants they've applied to
+  const { data: myApplicationsData } = useQuery({
+    queryKey: ["myApplications"],
+    queryFn: () => applications.getMyApplications(1, 100),
+    enabled: isAuthenticated,
+  })
+
+  // Create a Set of grant names the user has applied to
+  const appliedGrantNames = new Set(
+    myApplicationsData?.items.map(app => app.grant.name) || []
+  )
 
   const grants = grantsData?.items ?? []
 
@@ -71,7 +87,10 @@ export function LandingPage(): JSX.Element {
             <div className="row">
               {grants.map(grant => (
                 <div key={grant.name} className="col-lg-6 mb-4">
-                  <PublicGrantCard grant={grant} />
+                  <PublicGrantCard
+                    grant={grant}
+                    hasApplied={appliedGrantNames.has(grant.name)}
+                  />
                 </div>
               ))}
             </div>
