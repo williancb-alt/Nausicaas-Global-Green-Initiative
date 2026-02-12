@@ -1,6 +1,6 @@
-import { JSX } from "react"
-// AuditAction type available in ../../types if needed
+import { type ChangeEvent, JSX } from "react"
 
+// AuditAction type available in ../../types if needed
 interface AuditFiltersProps {
   onFilterChange: (filters: {
     action: string
@@ -14,7 +14,7 @@ export function AuditFilters({
   onFilterChange,
   adminEmails,
 }: AuditFiltersProps): JSX.Element {
-  const handleActionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleActionChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const action = e.target.value
     onFilterChange({
       action,

@@ -2,9 +2,14 @@ import { JSX } from "react"
 import type { AuditLog } from "../../services/api/audit"
 
 // Helper to parse details JSON string
+interface ChangeDetail {
+  old: unknown
+  new: unknown
+}
+
 interface AuditDetails {
   grant_name?: string
-  changes?: Record<string, { old: unknown; new: unknown }>
+  changes?: Record<string, ChangeDetail>
   [key: string]: unknown
 }
 
@@ -42,7 +47,7 @@ export function AuditDetailModal({
     })
   }
 
-  const renderChanges = (changes: Record<string, any>) => {
+  const renderChanges = (changes: Record<string, ChangeDetail>) => {
     if (!changes || Object.keys(changes).length === 0) {
       return <div className="text-muted">No changes tracked</div>
     }
@@ -57,14 +62,18 @@ export function AuditDetailModal({
           </tr>
         </thead>
         <tbody>
-          {Object.entries(changes).map(([field, change]: [string, any]) => (
+          {Object.entries(changes).map(([field, change]) => (
             <tr key={field}>
               <td className="fw-semibold">{field}</td>
               <td>
-                <code className="text-danger">{change.old || "N/A"}</code>
+                <code className="text-danger">
+                  {String(change.old ?? "N/A")}
+                </code>
               </td>
               <td>
-                <code className="text-success">{change.new || "N/A"}</code>
+                <code className="text-success">
+                  {String(change.new ?? "N/A")}
+                </code>
               </td>
             </tr>
           ))}
@@ -126,9 +135,7 @@ export function AuditDetailModal({
                     {log.entity_type} #{log.entity_id}
                   </div>
                   {details?.grant_name && (
-                    <small className="text-muted">
-                      {details?.grant_name}
-                    </small>
+                    <small className="text-muted">{details.grant_name}</small>
                   )}
                 </div>
                 <div className="col-md-6">
@@ -168,10 +175,8 @@ export function AuditDetailModal({
               {/* Changes Made (for edit actions) */}
               {log.action.includes("edited") && details?.changes && (
                 <div className="mb-4">
-                  <label className="form-label fw-semibold">
-                    Changes Made
-                  </label>
-                  {renderChanges(details?.changes)}
+                  <label className="form-label fw-semibold">Changes Made</label>
+                  {renderChanges(details.changes)}
                 </div>
               )}
 
