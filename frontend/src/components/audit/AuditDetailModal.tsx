@@ -22,6 +22,21 @@ function parseDetails(details: string | null): AuditDetails | null {
   }
 }
 
+// Helper to safely format a value for display
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "N/A"
+  }
+  if (typeof value === "string") {
+    return value
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value)
+  }
+  // For objects/arrays, use JSON.stringify
+  return JSON.stringify(value)
+}
+
 interface AuditDetailModalProps {
   log: AuditLog | null
   onClose: () => void
@@ -66,14 +81,10 @@ export function AuditDetailModal({
             <tr key={field}>
               <td className="fw-semibold">{field}</td>
               <td>
-                <code className="text-danger">
-                  {String(change.old ?? "N/A")}
-                </code>
+                <code className="text-danger">{formatValue(change.old)}</code>
               </td>
               <td>
-                <code className="text-success">
-                  {String(change.new ?? "N/A")}
-                </code>
+                <code className="text-success">{formatValue(change.new)}</code>
               </td>
             </tr>
           ))}
