@@ -8,8 +8,9 @@ def valid_status(status: str) -> str:
     """Validate application status."""
     valid_statuses = ["pending_review", "in_review", "approved", "denied"]
     if status not in valid_statuses:
+        statuses_str = ", ".join(valid_statuses)
         raise ValueError(
-            f"'{status}' is not a valid status. Must be one of: {', '.join(valid_statuses)}"
+            f"'{status}' is not a valid status. Must be one of: {statuses_str}"
         )
     return status
 

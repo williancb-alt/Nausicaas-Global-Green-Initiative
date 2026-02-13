@@ -42,9 +42,7 @@ class ApplicationList(Resource):
     @application_ns.response(
         int(HTTPStatus.OK), "Retrieved application list.", application_pagination_model
     )
-    @application_ns.response(
-        int(HTTPStatus.FORBIDDEN), "Administrator token required."
-    )
+    @application_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
     @application_ns.expect(pagination_reqparser)
     def get(self) -> Response:
         """Retrieve all applications (admin only)."""
@@ -76,7 +74,9 @@ class MyApplications(Resource):
 
     @application_ns.doc(security="Bearer")
     @application_ns.response(
-        int(HTTPStatus.OK), "Retrieved user's applications.", application_pagination_model
+        int(HTTPStatus.OK),
+        "Retrieved user's applications.",
+        application_pagination_model,
     )
     @application_ns.expect(pagination_reqparser)
     def get(self) -> Response:
@@ -110,9 +110,7 @@ class ApplicationResource(Resource):
 
     @application_ns.doc(security="Bearer")
     @application_ns.response(int(HTTPStatus.OK), "Application updated.")
-    @application_ns.response(
-        int(HTTPStatus.FORBIDDEN), "Administrator token required."
-    )
+    @application_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
     @application_ns.expect(update_application_reqparser)
     def put(self, application_id: int) -> Response:
         """Update application status/feedback (admin only)."""
@@ -121,9 +119,7 @@ class ApplicationResource(Resource):
 
     @application_ns.doc(security="Bearer")
     @application_ns.response(int(HTTPStatus.NO_CONTENT), "Application deleted.")
-    @application_ns.response(
-        int(HTTPStatus.FORBIDDEN), "Administrator token required."
-    )
+    @application_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
     def delete(self, application_id: int) -> tuple[str, HTTPStatus]:
         """Delete an application (admin only)."""
         return delete_application(application_id)

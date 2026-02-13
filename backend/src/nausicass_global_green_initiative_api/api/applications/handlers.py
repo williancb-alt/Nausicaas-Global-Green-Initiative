@@ -52,7 +52,8 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
         )
 
     # Get current user
-    user = User.find_by_public_id(create_application.public_id)  # type: ignore[attr-defined]
+    public_id = create_application.public_id  # type: ignore[attr-defined]
+    user = User.find_by_public_id(public_id)
     if not user:
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
@@ -99,7 +100,8 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
 @token_required
 def retrieve_my_applications(page: int, per_page: int) -> Response:
     """Retrieve applications for the current user."""
-    user = User.find_by_public_id(retrieve_my_applications.public_id)  # type: ignore[attr-defined]
+    public_id = retrieve_my_applications.public_id  # type: ignore[attr-defined]
+    user = User.find_by_public_id(public_id)
     if not user:
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
@@ -142,7 +144,8 @@ def retrieve_application(application_id: int) -> Application:
     )
 
     # Check if user is admin or the owner of the application
-    user = User.find_by_public_id(retrieve_application.public_id)  # type: ignore[attr-defined]
+    public_id = retrieve_application.public_id  # type: ignore[attr-defined]
+    user = User.find_by_public_id(public_id)
     if not user:
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 

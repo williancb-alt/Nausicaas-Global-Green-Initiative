@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import timezone
 from typing import Optional
 
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -36,7 +36,10 @@ class Application(db.Model):
     grant = db.relationship("Grant", backref=db.backref("applications"))
 
     def __repr__(self) -> str:
-        return f"<Application id={self.id}, user_id={self.user_id}, grant_id={self.grant_id}>"
+        return (
+            f"<Application id={self.id}, "
+            f"user_id={self.user_id}, grant_id={self.grant_id}>"
+        )
 
     @hybrid_property
     def submitted_at_str(self) -> str:

@@ -9,7 +9,6 @@ from flask_sqlalchemy.pagination import Pagination
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import (
-    token_required,
     admin_token_required,
 )
 from nausicass_global_green_initiative_api.api.grants.dto import (
@@ -78,7 +77,10 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
 
 
 def retrieve_grant_list(page: int, per_page: int) -> Response:
-    """Public endpoint - no authentication required. Hides grants marked as hidden from non-admin users."""
+    """
+    Public endpoint - no authentication required.
+    Hides grants marked as hidden from non-admin users.
+    """
     # Check if the user is an admin
     is_admin = False
     token = request.cookies.get("access_token")

@@ -4,7 +4,9 @@ from flask_restx import Api
 from nausicass_global_green_initiative_api.api.auth.endpoints import auth_ns
 from nausicass_global_green_initiative_api.api.awards.endpoints import award_ns
 from nausicass_global_green_initiative_api.api.grants.endpoints import grant_ns
-from nausicass_global_green_initiative_api.api.applications.endpoints import application_ns
+from nausicass_global_green_initiative_api.api.applications.endpoints import (
+    application_ns,
+)
 from nausicass_global_green_initiative_api.api.audit.endpoints import audit_ns
 
 api_bp = Blueprint("api", __name__, url_prefix="/api/v1")
