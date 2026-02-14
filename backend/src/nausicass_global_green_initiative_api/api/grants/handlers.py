@@ -56,6 +56,8 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
     grant.custom_fields = parsed_custom_fields
 
     owner = User.find_by_public_id(create_grant.public_id)  # type: ignore[attr-defined]
+    if not owner:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     grant.owner_id = owner.id
     db.session.add(grant)
     db.session.commit()
@@ -81,9 +83,13 @@ def retrieve_grant_list(page: int, per_page: int) -> Response:
     Public endpoint - no authentication required.
     Hides grants marked as hidden from non-admin users.
     """
-    # Check if the user is an admin
+    # Check if the user is an admin (check both cookie and Authorization header)
     is_admin = False
     token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
     if token:
         result = User.decode_access_token(token)
         if not result.failure:
@@ -156,6 +162,8 @@ def update_grant(
             user = User.find_by_public_id(
                 update_grant.public_id  # type: ignore[attr-defined]
             )
+            if not user:
+                abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
             AuditService.log_grant_edited(
                 grant_id=grant.id,
                 user_id=user.id,
@@ -183,6 +191,8 @@ def delete_grant(name: str) -> tuple[str, HTTPStatus]:
 
     # Log deletion before it happens
     user = User.find_by_public_id(delete_grant.public_id)  # type: ignore[attr-defined]
+    if not user:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     AuditService.log_grant_deleted(
         grant_id=grant.id,
         user_id=user.id,

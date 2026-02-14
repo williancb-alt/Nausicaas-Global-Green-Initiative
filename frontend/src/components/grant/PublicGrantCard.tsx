@@ -17,7 +17,7 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
 
   const handleApply = () => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: `/grants/${grant.name}/apply` } })
+      navigate("/login", { state: { from: `/grants/${encodeURIComponent(grant.name)}/apply` } })
       return
     }
 
@@ -26,7 +26,7 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
       return
     }
 
-    navigate(`/grants/${grant.name}/apply`)
+    navigate(`/grants/${encodeURIComponent(grant.name)}/apply`)
   }
 
   return (

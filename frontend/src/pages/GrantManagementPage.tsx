@@ -8,7 +8,8 @@ import { Edit2, Trash2, Eye, EyeOff, Plus } from "lucide-react"
 import { DynamicFieldModal } from "../components/dynamicFields/DynamicFieldModal"
 import { DynamicFieldPreview } from "../components/dynamicFields/DynamicFieldPreview"
 import { DynamicFieldInput } from "../components/dynamicFields/DynamicFieldInput"
-import type { DynamicFieldConfig } from "../types"
+import type { DynamicFieldConfig, UpdateGrantParams } from "../types"
+import type { Grant } from "../services/api/client"
 
 export function GrantManagementPage(): JSX.Element {
   const { data: grantsData, isLoading } = useGrants()
@@ -55,7 +56,7 @@ export function GrantManagementPage(): JSX.Element {
   }
 
   // Edit
-  const startEdit = (grant: any) => {
+  const startEdit = (grant: Grant) => {
     setEditingId(grant.name)
     setEditFormData({
       name: grant.name,
@@ -85,7 +86,7 @@ export function GrantManagementPage(): JSX.Element {
 
   const saveEdit = () => {
     if (!editingId) return
-    const payload: any = {
+    const payload: UpdateGrantParams = {
       name: editingId,
     }
 
@@ -99,26 +100,25 @@ export function GrantManagementPage(): JSX.Element {
       values: editCustomFieldValues
     })
 
-    console.log('Saving grant edits:', payload)
     updateGrant.mutate(payload, {
       onSuccess: () => {
-        console.log('Successfully saved edits')
         setEditingId(null)
       },
       onError: (error) => {
-        console.error('Failed to save edits:', error)
         alert(`Failed to save changes: ${error.message}`)
       }
     })
   }
 
   const onDelete = (name: string) => {
+    if (!window.confirm(`Are you sure you want to delete the grant "${name}"? This action cannot be undone.`)) {
+      return
+    }
     deleteGrant.mutate(name)
   }
 
-  const toggleVisibility = (grant: any) => {
+  const toggleVisibility = (grant: Grant) => {
     const newHiddenState = !grant.hidden
-    console.log('Toggling visibility for grant:', grant.name, 'from', grant.hidden, 'to', newHiddenState)
     setTogglingGrant(grant.name)
     updateGrant.mutate(
       {
@@ -127,11 +127,9 @@ export function GrantManagementPage(): JSX.Element {
       },
       {
         onSuccess: () => {
-          console.log('Successfully toggled visibility for:', grant.name)
           setTogglingGrant(null)
         },
         onError: (error) => {
-          console.error('Failed to toggle visibility:', error)
           alert(`Failed to toggle visibility: ${error.message}`)
           setTogglingGrant(null)
         },
