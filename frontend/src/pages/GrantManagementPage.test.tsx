@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query"
 import { GrantManagementPage } from "./GrantManagementPage"
 import type { GrantPage, BaseResponse, Grant } from "../services/api/client"
+import type { MutationFunctionContext } from "@tanstack/query-core"
 import type { CreateGrantParams, UpdateGrantParams } from "../types"
 
 // Mock the hooks
@@ -158,6 +159,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
         {} as BaseResponse | Grant,
         {} as UpdateGrantParams,
         undefined,
+        {} as MutationFunctionContext,
       )
     })
 
@@ -185,6 +187,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
         {} as BaseResponse | Grant,
         {} as UpdateGrantParams,
         undefined,
+        {} as MutationFunctionContext,
       )
     })
 
@@ -218,6 +221,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
           {} as BaseResponse | Grant,
           {} as UpdateGrantParams,
           undefined,
+          {} as MutationFunctionContext,
         )
       })
     })
@@ -255,6 +259,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
           {} as BaseResponse | Grant,
           {} as UpdateGrantParams,
           undefined,
+          {} as MutationFunctionContext,
         )
       })
     })
@@ -283,6 +288,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
         new Error(errorMessage),
         {} as UpdateGrantParams,
         undefined,
+        {} as MutationFunctionContext,
       )
     })
 

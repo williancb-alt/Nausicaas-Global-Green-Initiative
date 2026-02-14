@@ -120,7 +120,6 @@ const mockApplication: Application = {
   field_values: {
     field_0: "Green Initiative Inc",
   },
-  feedback: undefined,
 }
 
 describe("AdminApplicationView", () => {
