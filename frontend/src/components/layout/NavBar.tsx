@@ -10,9 +10,16 @@ const Navbar: React.FC = () => {
     isActive ? "nav-link active" : "nav-link"
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark" style={{ backgroundColor: "#3b7a57" }}>
+    <nav
+      className="navbar navbar-expand-lg navbar-dark"
+      style={{ backgroundColor: "#3b7a57" }}
+    >
       <div className="container-fluid">
-        <Link className="navbar-brand fw-bold" to="/" style={{ fontSize: "1.1rem" }}>
+        <Link
+          className="navbar-brand fw-bold"
+          to="/"
+          style={{ fontSize: "1.1rem" }}
+        >
           Nausicaas Global Green Initiative
         </Link>
 

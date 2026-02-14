@@ -38,11 +38,11 @@ export function Login(): JSX.Element {
         // If there's a redirect destination and user is not admin, go there
         // Admins always go to admin dashboard, regular users go to 'from' or home
         if (user?.admin) {
-          navigate("/admin", { replace: true })
+          void navigate("/admin", { replace: true })
         } else if (from) {
-          navigate(from, { replace: true })
+          void navigate(from, { replace: true })
         } else {
-          navigate("/", { replace: true })
+          void navigate("/", { replace: true })
         }
       },
     })

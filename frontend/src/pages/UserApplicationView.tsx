@@ -9,7 +9,10 @@ export function UserApplicationView(): JSX.Element {
 
   if (isLoading) {
     return (
-      <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }} className="py-4">
+      <div
+        style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}
+        className="py-4"
+      >
         <div className="container">
           <div className="text-center py-5">
             <div className="spinner-border text-success" role="status">
@@ -24,14 +27,15 @@ export function UserApplicationView(): JSX.Element {
 
   if (!application) {
     return (
-      <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }} className="py-4">
+      <div
+        style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}
+        className="py-4"
+      >
         <div className="container">
-          <div className="alert alert-danger">
-            Application not found
-          </div>
+          <div className="alert alert-danger">Application not found</div>
           <button
             className="btn btn-secondary"
-            onClick={() => navigate("/applications")}
+            onClick={() => void navigate("/applications")}
           >
             Back to My Applications
           </button>
@@ -41,7 +45,10 @@ export function UserApplicationView(): JSX.Element {
   }
 
   return (
-    <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }} className="py-4">
+    <div
+      style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}
+      className="py-4"
+    >
       <div className="container">
         <div className="card mb-4" style={{ border: "2px solid #3b7a57" }}>
           <div
@@ -58,7 +65,9 @@ export function UserApplicationView(): JSX.Element {
             {application.grant.description && (
               <div className="mb-3">
                 <strong>Grant Description:</strong>
-                <p className="mb-0 mt-1 text-muted">{application.grant.description}</p>
+                <p className="mb-0 mt-1 text-muted">
+                  {application.grant.description}
+                </p>
               </div>
             )}
 
@@ -73,19 +82,19 @@ export function UserApplicationView(): JSX.Element {
                   application.status === "approved"
                     ? "success"
                     : application.status === "denied"
-                    ? "danger"
-                    : application.status === "in_review"
-                    ? "info"
-                    : "warning"
+                      ? "danger"
+                      : application.status === "in_review"
+                        ? "info"
+                        : "warning"
                 }`}
               >
                 {application.status === "approved"
                   ? "Approved"
                   : application.status === "denied"
-                  ? "Denied"
-                  : application.status === "in_review"
-                  ? "In Review"
-                  : "Pending Review"}
+                    ? "Denied"
+                    : application.status === "in_review"
+                      ? "In Review"
+                      : "Pending Review"}
               </span>
             </div>
 
@@ -94,25 +103,32 @@ export function UserApplicationView(): JSX.Element {
                 <div className="mb-3">
                   <strong>Your Responses:</strong>
                   <div className="mt-2 p-3 bg-light rounded">
-                    {Object.entries(application.field_values).map(([key, value]) => {
-                      // Extract index from keys like "field_0", "field_1"
-                      const indexMatch = key.match(/^field_(\d+)$/)
-                      let label = key
-                      if (indexMatch && application.grant.custom_fields?.configs) {
-                        const fieldIndex = parseInt(indexMatch[1], 10)
-                        const fieldConfig =
-                          application.grant.custom_fields.configs[fieldIndex]
-                        if (fieldConfig) {
-                          label = fieldConfig.label
+                    {Object.entries(application.field_values).map(
+                      ([key, value]) => {
+                        // Extract index from keys like "field_0", "field_1"
+                        const indexMatch = key.match(/^field_(\d+)$/)
+                        let label = key
+                        if (
+                          indexMatch &&
+                          application.grant.custom_fields?.configs
+                        ) {
+                          const fieldIndex = parseInt(indexMatch[1], 10)
+                          const fieldConfig =
+                            application.grant.custom_fields.configs[fieldIndex]
+                          if (fieldConfig) {
+                            label = fieldConfig.label
+                          }
                         }
-                      }
-                      return (
-                        <div key={key} className="mb-2">
-                          <strong style={{ color: "#2f6f44" }}>{label}:</strong>{" "}
-                          {value}
-                        </div>
-                      )
-                    })}
+                        return (
+                          <div key={key} className="mb-2">
+                            <strong style={{ color: "#2f6f44" }}>
+                              {label}:
+                            </strong>{" "}
+                            {value}
+                          </div>
+                        )
+                      },
+                    )}
                   </div>
                 </div>
               )}
@@ -129,7 +145,7 @@ export function UserApplicationView(): JSX.Element {
             <div className="d-flex gap-2">
               <button
                 className="btn btn-secondary"
-                onClick={() => navigate("/applications")}
+                onClick={() => void navigate("/applications")}
               >
                 Back to My Applications
               </button>

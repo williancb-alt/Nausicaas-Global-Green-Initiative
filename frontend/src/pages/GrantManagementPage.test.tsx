@@ -2,7 +2,10 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { BrowserRouter } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query"
 import { GrantManagementPage } from "./GrantManagementPage"
+import type { GrantPage, BaseResponse, Grant } from "../services/api/client"
+import type { CreateGrantParams, UpdateGrantParams } from "../types"
 
 // Mock the hooks
 vi.mock("../hooks/useGrantHooks", () => ({
@@ -19,9 +22,14 @@ vi.mock("../store/grantsStore", () => ({
 }))
 
 // Import mocked hooks
-import { useGrants, useCreateGrant, useUpdateGrant, useDeleteGrant } from "../hooks/useGrantHooks"
+import {
+  useGrants,
+  useCreateGrant,
+  useUpdateGrant,
+  useDeleteGrant,
+} from "../hooks/useGrantHooks"
 
-const mockGrants = {
+const mockGrants: GrantPage = {
   items: [
     {
       name: "visible-grant",
@@ -42,11 +50,46 @@ const mockGrants = {
   ],
   page: 1,
   total_pages: 1,
+  links: {
+    self: "/api/v1/grants?page=1",
+    first: "/api/v1/grants?page=1",
+    last: "/api/v1/grants?page=1",
+  },
+  has_prev: false,
+  has_next: false,
+  items_per_page: 10,
+  total_items: 2,
+}
+
+type UpdateMutateFn = UseMutationResult<
+  BaseResponse | Grant,
+  Error,
+  UpdateGrantParams
+>["mutate"]
+
+function mockAllHooks(mutateFn: UpdateMutateFn) {
+  vi.mocked(useGrants).mockReturnValue({
+    data: mockGrants,
+    isLoading: false,
+  } as unknown as UseQueryResult<GrantPage, Error>)
+  vi.mocked(useCreateGrant).mockReturnValue({
+    mutate: vi.fn(),
+  } as unknown as UseMutationResult<BaseResponse, Error, CreateGrantParams>)
+  vi.mocked(useUpdateGrant).mockReturnValue({
+    mutate: mutateFn,
+  } as unknown as UseMutationResult<
+    BaseResponse | Grant,
+    Error,
+    UpdateGrantParams
+  >)
+  vi.mocked(useDeleteGrant).mockReturnValue({
+    mutate: vi.fn(),
+  } as unknown as UseMutationResult<void, Error, string>)
 }
 
 describe("GrantManagementPage - Visibility Toggle", () => {
   let queryClient: QueryClient
-  let updateGrantMutate: any
+  let updateGrantMutate: UpdateMutateFn
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -65,18 +108,12 @@ describe("GrantManagementPage - Visibility Toggle", () => {
         <BrowserRouter>
           <GrantManagementPage />
         </BrowserRouter>
-      </QueryClientProvider>
+      </QueryClientProvider>,
     )
   }
 
   it("displays visibility badge as Visible for non-hidden grant", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -86,13 +123,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   })
 
   it("displays visibility badge as Hidden for hidden grant", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -102,13 +133,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   })
 
   it("shows Eye icon for visible grant", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -118,13 +143,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   })
 
   it("shows EyeOff icon for hidden grant", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -134,17 +153,15 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   })
 
   it("calls updateGrant with hidden=true when hiding a visible grant", async () => {
-    updateGrantMutate = vi.fn((_params, callbacks) => {
-      callbacks?.onSuccess?.()
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      options?.onSuccess?.(
+        {} as BaseResponse | Grant,
+        {} as UpdateGrantParams,
+        undefined,
+      )
     })
 
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -157,23 +174,21 @@ describe("GrantManagementPage - Visibility Toggle", () => {
           name: "visible-grant",
           hidden: true,
         },
-        expect.any(Object)
+        expect.any(Object),
       )
     })
   })
 
   it("calls updateGrant with hidden=false when showing a hidden grant", async () => {
-    updateGrantMutate = vi.fn((_params, callbacks) => {
-      callbacks?.onSuccess?.()
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      options?.onSuccess?.(
+        {} as BaseResponse | Grant,
+        {} as UpdateGrantParams,
+        undefined,
+      )
     })
 
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -186,28 +201,28 @@ describe("GrantManagementPage - Visibility Toggle", () => {
           name: "hidden-grant",
           hidden: false,
         },
-        expect.any(Object)
+        expect.any(Object),
       )
     })
   })
 
   it("disables toggle button while updating", async () => {
-    let resolveUpdate: any
-    const updatePromise = new Promise((resolve) => {
+    let resolveUpdate: () => void
+    const updatePromise = new Promise<void>(resolve => {
       resolveUpdate = resolve
     })
 
-    updateGrantMutate = vi.fn((_params, callbacks) => {
-      updatePromise.then(() => callbacks?.onSuccess?.())
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      void updatePromise.then(() => {
+        options?.onSuccess?.(
+          {} as BaseResponse | Grant,
+          {} as UpdateGrantParams,
+          undefined,
+        )
+      })
     })
 
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -220,7 +235,7 @@ describe("GrantManagementPage - Visibility Toggle", () => {
     })
 
     // Resolve the update
-    resolveUpdate()
+    resolveUpdate!()
 
     // Wait for button to be enabled again
     await waitFor(() => {
@@ -229,22 +244,22 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   })
 
   it("shows loading indicator while toggling", async () => {
-    let resolveUpdate: any
-    const updatePromise = new Promise((resolve) => {
+    let resolveUpdate: () => void
+    const updatePromise = new Promise<void>(resolve => {
       resolveUpdate = resolve
     })
 
-    updateGrantMutate = vi.fn((_params, callbacks) => {
-      updatePromise.then(() => callbacks?.onSuccess?.())
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      void updatePromise.then(() => {
+        options?.onSuccess?.(
+          {} as BaseResponse | Grant,
+          {} as UpdateGrantParams,
+          undefined,
+        )
+      })
     })
 
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     renderComponent()
 
@@ -256,24 +271,22 @@ describe("GrantManagementPage - Visibility Toggle", () => {
       expect(hideButton).toHaveTextContent("...")
     })
 
-    await act(async () => {
-      resolveUpdate()
+    act(() => {
+      resolveUpdate!()
     })
   })
 
   it("handles toggle error gracefully", async () => {
     const errorMessage = "Network error"
-    updateGrantMutate = vi.fn((_params, callbacks) => {
-      callbacks?.onError?.(new Error(errorMessage))
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      options?.onError?.(
+        new Error(errorMessage),
+        {} as UpdateGrantParams,
+        undefined,
+      )
     })
 
-    vi.mocked(useGrants).mockReturnValue({
-      data: mockGrants,
-      isLoading: false,
-    } as any)
-    vi.mocked(useCreateGrant).mockReturnValue({ mutate: vi.fn() } as any)
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateGrantMutate } as any)
-    vi.mocked(useDeleteGrant).mockReturnValue({ mutate: vi.fn() } as any)
+    mockAllHooks(updateGrantMutate)
 
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
@@ -283,7 +296,9 @@ describe("GrantManagementPage - Visibility Toggle", () => {
     fireEvent.click(hideButton)
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith(`Failed to toggle visibility: ${errorMessage}`)
+      expect(alertSpy).toHaveBeenCalledWith(
+        `Failed to toggle visibility: ${errorMessage}`,
+      )
     })
 
     alertSpy.mockRestore()

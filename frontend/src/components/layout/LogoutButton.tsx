@@ -9,7 +9,7 @@ export function LogoutButton(): JSX.Element {
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
-        navigate("/")
+        void navigate("/")
       },
     })
   }

@@ -34,19 +34,29 @@ export function Applications(): JSX.Element {
   }
 
   const handleViewApplication = (id: number) => {
-    navigate(`/admin/applications/${id}`)
+    void navigate(`/admin/applications/${id}`)
   }
 
   return (
-    <div style={{ backgroundColor: "#f0fdf4", minHeight: "100vh" }} className="py-4">
+    <div
+      style={{ backgroundColor: "#f0fdf4", minHeight: "100vh" }}
+      className="py-4"
+    >
       <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1 className="h3 mb-0" style={{ color: "#2f6f44", fontWeight: "700" }}>
+          <h1
+            className="h3 mb-0"
+            style={{ color: "#2f6f44", fontWeight: "700" }}
+          >
             All Applications
           </h1>
           <span
             className="badge"
-            style={{ backgroundColor: "#3b7a57", color: "white", fontSize: "0.95rem" }}
+            style={{
+              backgroundColor: "#3b7a57",
+              color: "white",
+              fontSize: "0.95rem",
+            }}
           >
             {applications.length} total
           </span>
@@ -65,7 +75,10 @@ export function Applications(): JSX.Element {
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="table table-hover" style={{ backgroundColor: "white" }}>
+            <table
+              className="table table-hover"
+              style={{ backgroundColor: "white" }}
+            >
               <thead style={{ backgroundColor: "#d1fae5" }}>
                 <tr>
                   <th style={{ color: "#047857" }}>ID</th>
@@ -78,7 +91,8 @@ export function Applications(): JSX.Element {
               </thead>
               <tbody>
                 {applications.map(app => {
-                  const status = statusConfig[app.status] || statusConfig.pending_review
+                  const status =
+                    statusConfig[app.status] || statusConfig.pending_review
                   const StatusIcon = status.icon
                   return (
                     <tr key={app.id}>
@@ -91,7 +105,10 @@ export function Applications(): JSX.Element {
                       <td>{app.grant.name}</td>
                       <td>
                         <div className="d-flex align-items-center gap-2">
-                          <StatusIcon size={16} className={`text-${status.color}`} />
+                          <StatusIcon
+                            size={16}
+                            className={`text-${status.color}`}
+                          />
                           <span className={`badge bg-${status.color}`}>
                             {status.label}
                           </span>

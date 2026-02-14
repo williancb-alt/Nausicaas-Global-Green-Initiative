@@ -18,7 +18,7 @@ export function LandingPage(): JSX.Element {
 
   // Create a Map of grant names to application status
   const applicationStatusMap = new Map(
-    myApplicationsData?.items.map(app => [app.grant.name, app.status]) || []
+    myApplicationsData?.items.map(app => [app.grant.name, app.status]) || [],
   )
 
   const grants = grantsData?.items ?? []
@@ -37,11 +37,14 @@ export function LandingPage(): JSX.Element {
           <h1 className="display-4 fw-bold mb-4">
             Nausicaas Global Green Initiative
           </h1>
-          <p className="lead mb-4" style={{ maxWidth: "800px", margin: "0 auto" }}>
-            We are dedicated to supporting environmental projects and sustainable
-            initiatives worldwide. Our grants program provides funding for
-            individuals and organizations committed to making a positive impact
-            on our planet.
+          <p
+            className="lead mb-4"
+            style={{ maxWidth: "800px", margin: "0 auto" }}
+          >
+            We are dedicated to supporting environmental projects and
+            sustainable initiatives worldwide. Our grants program provides
+            funding for individuals and organizations committed to making a
+            positive impact on our planet.
           </p>
           <p className="mb-0" style={{ fontSize: "1.1rem" }}>
             Browse our available grants below and apply to receive funding for
@@ -99,7 +102,8 @@ export function LandingPage(): JSX.Element {
           {grantsData && grantsData.total_pages > 1 && (
             <div className="text-center mt-4">
               <p className="text-muted">
-                Showing page {grantsData.page} of {grantsData.total_pages} ({grantsData.total_items} total grants)
+                Showing page {grantsData.page} of {grantsData.total_pages} (
+                {grantsData.total_items} total grants)
               </p>
             </div>
           )}

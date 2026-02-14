@@ -39,8 +39,8 @@ export function useSubmitApplication() {
       fieldValues: Record<string, string>
     }) => api.applications.submitApplication(grantName, fieldValues),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["myApplications"] })
-      queryClient.invalidateQueries({ queryKey: ["applications"] })
+      void queryClient.invalidateQueries({ queryKey: ["myApplications"] })
+      void queryClient.invalidateQueries({ queryKey: ["applications"] })
     },
   })
 }
@@ -65,8 +65,10 @@ export function useUpdateApplication() {
       return api.applications.updateApplication(applicationId, data)
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["application", variables.applicationId] })
-      queryClient.invalidateQueries({ queryKey: ["applications"] })
+      void queryClient.invalidateQueries({
+        queryKey: ["application", variables.applicationId],
+      })
+      void queryClient.invalidateQueries({ queryKey: ["applications"] })
     },
   })
 }

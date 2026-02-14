@@ -30,11 +30,14 @@ describe("PublicGrantCard - Application Status Display", () => {
     vi.clearAllMocks()
   })
 
-  const renderComponent = (grant: Grant = mockGrant, applicationStatus?: string) => {
+  const renderComponent = (
+    grant: Grant = mockGrant,
+    applicationStatus?: string,
+  ) => {
     return render(
       <BrowserRouter>
         <PublicGrantCard grant={grant} applicationStatus={applicationStatus} />
-      </BrowserRouter>
+      </BrowserRouter>,
     )
   }
 
@@ -99,7 +102,9 @@ describe("PublicGrantCard - Application Status Display", () => {
   it("displays submitted button state when application is in_review", () => {
     renderComponent(mockGrant, "in_review")
 
-    const button = screen.getByRole("button", { name: /Application Submitted/i })
+    const button = screen.getByRole("button", {
+      name: /Application Submitted/i,
+    })
     expect(button).toBeInTheDocument()
     expect(button).toBeDisabled()
     expect(button).toHaveClass("btn-secondary")
@@ -108,7 +113,9 @@ describe("PublicGrantCard - Application Status Display", () => {
   it("displays submitted button state when application is pending_review", () => {
     renderComponent(mockGrant, "pending_review")
 
-    const button = screen.getByRole("button", { name: /Application Submitted/i })
+    const button = screen.getByRole("button", {
+      name: /Application Submitted/i,
+    })
     expect(button).toBeInTheDocument()
     expect(button).toBeDisabled()
     expect(button).toHaveClass("btn-secondary")
@@ -127,7 +134,9 @@ describe("PublicGrantCard - Application Status Display", () => {
     const passedGrant = { ...mockGrant, deadline_passed: true }
     renderComponent(passedGrant)
 
-    expect(screen.queryByRole("button", { name: /Apply/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("button", { name: /Apply/i }),
+    ).not.toBeInTheDocument()
   })
 
   it("shows both status badge and deadline badge together", () => {
@@ -142,7 +151,11 @@ describe("PublicGrantCard - Application Status Display", () => {
       { status: "approved", text: "✓ Approved", badgeClass: "bg-success" },
       { status: "denied", text: "✗ Denied", badgeClass: "bg-danger" },
       { status: "in_review", text: "In Review", badgeClass: "bg-info" },
-      { status: "pending_review", text: "Pending Review", badgeClass: "bg-warning" },
+      {
+        status: "pending_review",
+        text: "Pending Review",
+        badgeClass: "bg-warning",
+      },
     ]
 
     statuses.forEach(({ status, text, badgeClass }) => {

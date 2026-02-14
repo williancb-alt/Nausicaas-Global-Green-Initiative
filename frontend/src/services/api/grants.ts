@@ -43,12 +43,19 @@ export const grantsApi = {
 
   updateGrant: async (
     name: string,
-    data: { deadline?: string; description?: string; custom_fields?: string; hidden?: boolean },
+    data: {
+      deadline?: string
+      description?: string
+      custom_fields?: string
+      hidden?: boolean
+    },
   ): Promise<BaseResponse | Grant> => {
     const params = new URLSearchParams()
     if (data.deadline !== undefined) params.append("deadline", data.deadline)
-    if (data.description !== undefined) params.append("description", data.description)
-    if (data.custom_fields !== undefined) params.append("custom_fields", data.custom_fields)
+    if (data.description !== undefined)
+      params.append("description", data.description)
+    if (data.custom_fields !== undefined)
+      params.append("custom_fields", data.custom_fields)
     if (data.hidden !== undefined) params.append("hidden", String(data.hidden))
 
     const { data: responseData } = await apiClient.put<BaseResponse | Grant>(

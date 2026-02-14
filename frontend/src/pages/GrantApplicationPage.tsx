@@ -1,4 +1,4 @@
-import { JSX, useState } from "react"
+import { type FormEvent, JSX, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { Button } from "../components/button/Button"
 import { DynamicFieldInput } from "../components/dynamicFields/DynamicFieldInput"
@@ -21,7 +21,7 @@ export function GrantApplicationPage(): JSX.Element {
     setFieldValues(prev => ({ ...prev, [fieldKey]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     setSubmitError(null)
 
@@ -31,12 +31,14 @@ export function GrantApplicationPage(): JSX.Element {
         onSuccess: () => {
           setSubmitSuccess(true)
         },
-        onError: (error) => {
+        onError: error => {
           setSubmitError(
-            error instanceof Error ? error.message : "Failed to submit application"
+            error instanceof Error
+              ? error.message
+              : "Failed to submit application",
           )
         },
-      }
+      },
     )
   }
 
@@ -63,7 +65,7 @@ export function GrantApplicationPage(): JSX.Element {
         <div className="alert alert-danger" role="alert">
           Unable to load grant details. The grant may not exist.
         </div>
-        <Button variant="secondary" onClick={() => navigate("/")}>
+        <Button variant="secondary" onClick={() => void navigate("/")}>
           Return to Home
         </Button>
       </div>
@@ -101,7 +103,7 @@ export function GrantApplicationPage(): JSX.Element {
                   submitted successfully. We will review your application and
                   contact you at {user?.email}.
                 </p>
-                <Button variant="success" onClick={() => navigate("/")}>
+                <Button variant="success" onClick={() => void navigate("/")}>
                   Return to Home
                 </Button>
               </div>
@@ -158,7 +160,7 @@ export function GrantApplicationPage(): JSX.Element {
                   )}
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={e => handleSubmit(e)}>
                   {hasFields && (
                     <>
                       <h5
@@ -195,12 +197,14 @@ export function GrantApplicationPage(): JSX.Element {
                       disabled={submitApplication.isPending}
                       className="px-4"
                     >
-                      {submitApplication.isPending ? "Submitting..." : "Submit Application"}
+                      {submitApplication.isPending
+                        ? "Submitting..."
+                        : "Submit Application"}
                     </Button>
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() => navigate("/")}
+                      onClick={() => void navigate("/")}
                     >
                       Cancel
                     </Button>

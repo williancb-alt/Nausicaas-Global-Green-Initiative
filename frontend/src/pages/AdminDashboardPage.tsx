@@ -20,15 +20,15 @@ export function AdminDashboardPage(): JSX.Element {
 
   const handleLogout = () => {
     logoutMutation.mutate()
-    navigate("/login")
+    void navigate("/login")
   }
 
   const handleViewApplication = (applicationId: number) => {
-    navigate(`/admin/applications/${applicationId}`)
+    void navigate(`/admin/applications/${applicationId}`)
   }
 
   const handleManageGrants = () => {
-    navigate("/admin/grants")
+    void navigate("/admin/grants")
   }
 
   const applications = applicationsData?.items ?? []

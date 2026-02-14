@@ -1,6 +1,9 @@
 import { JSX, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { useApplication, useUpdateApplication } from "../hooks/useApplicationHooks"
+import {
+  useApplication,
+  useUpdateApplication,
+} from "../hooks/useApplicationHooks"
 
 export function AdminApplicationView(): JSX.Element {
   const { id } = useParams<{ id: string }>()
@@ -19,11 +22,11 @@ export function AdminApplicationView(): JSX.Element {
           setIsUpdating(false)
           alert("Application approved successfully!")
         },
-        onError: (error) => {
+        onError: error => {
           setIsUpdating(false)
           alert(`Failed to approve application: ${error.message}`)
         },
-      }
+      },
     )
   }
 
@@ -37,16 +40,16 @@ export function AdminApplicationView(): JSX.Element {
           setIsUpdating(false)
           alert("Application denied successfully!")
         },
-        onError: (error) => {
+        onError: error => {
           setIsUpdating(false)
           alert(`Failed to deny application: ${error.message}`)
         },
-      }
+      },
     )
   }
 
   const handleBack = () => {
-    navigate(-1)
+    void navigate(-1)
   }
 
   if (isLoading) {
@@ -57,7 +60,7 @@ export function AdminApplicationView(): JSX.Element {
     return (
       <div className="container py-4">
         <p className="text-danger">Application not found</p>
-        <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+        <button className="btn btn-secondary" onClick={() => void navigate(-1)}>
           Back
         </button>
       </div>
@@ -67,7 +70,10 @@ export function AdminApplicationView(): JSX.Element {
   return (
     <div className="container py-4">
       <div className="card mb-4">
-        <div className="card-header" style={{ backgroundColor: "#3b7a57", color: "white" }}>
+        <div
+          className="card-header"
+          style={{ backgroundColor: "#3b7a57", color: "white" }}
+        >
           <h3 className="h5 mb-0">Application #{application.id}</h3>
         </div>
         <div className="card-body">
@@ -90,38 +96,45 @@ export function AdminApplicationView(): JSX.Element {
                 application.status === "approved"
                   ? "success"
                   : application.status === "denied"
-                  ? "danger"
-                  : "warning"
+                    ? "danger"
+                    : "warning"
               }`}
             >
               {application.status.replace("_", " ")}
             </span>
           </div>
 
-          {application.field_values && Object.keys(application.field_values).length > 0 && (
-            <div className="mb-3">
-              <strong>Application Details:</strong>
-              <div className="mt-2 p-3 bg-light rounded">
-                {Object.entries(application.field_values).map(([key, value]) => {
-                  // Extract index from keys like "field_0", "field_1"
-                  const indexMatch = key.match(/^field_(\d+)$/)
-                  let label = key
-                  if (indexMatch && application.grant.custom_fields?.configs) {
-                    const fieldIndex = parseInt(indexMatch[1], 10)
-                    const fieldConfig = application.grant.custom_fields.configs[fieldIndex]
-                    if (fieldConfig) {
-                      label = fieldConfig.label
-                    }
-                  }
-                  return (
-                    <div key={key} className="mb-2">
-                      <strong>{label}:</strong> {value}
-                    </div>
-                  )
-                })}
+          {application.field_values &&
+            Object.keys(application.field_values).length > 0 && (
+              <div className="mb-3">
+                <strong>Application Details:</strong>
+                <div className="mt-2 p-3 bg-light rounded">
+                  {Object.entries(application.field_values).map(
+                    ([key, value]) => {
+                      // Extract index from keys like "field_0", "field_1"
+                      const indexMatch = key.match(/^field_(\d+)$/)
+                      let label = key
+                      if (
+                        indexMatch &&
+                        application.grant.custom_fields?.configs
+                      ) {
+                        const fieldIndex = parseInt(indexMatch[1], 10)
+                        const fieldConfig =
+                          application.grant.custom_fields.configs[fieldIndex]
+                        if (fieldConfig) {
+                          label = fieldConfig.label
+                        }
+                      }
+                      return (
+                        <div key={key} className="mb-2">
+                          <strong>{label}:</strong> {value}
+                        </div>
+                      )
+                    },
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {application.feedback && (
             <div className="mb-3">
@@ -136,14 +149,22 @@ export function AdminApplicationView(): JSX.Element {
               onClick={handleApprove}
               disabled={isUpdating || application.status === "approved"}
             >
-              {application.status === "approved" ? "✓ Approved" : isUpdating ? "Updating..." : "Approve"}
+              {application.status === "approved"
+                ? "✓ Approved"
+                : isUpdating
+                  ? "Updating..."
+                  : "Approve"}
             </button>
             <button
               className="btn btn-danger"
               onClick={handleDeny}
               disabled={isUpdating || application.status === "denied"}
             >
-              {application.status === "denied" ? "✗ Denied" : isUpdating ? "Updating..." : "Deny"}
+              {application.status === "denied"
+                ? "✗ Denied"
+                : isUpdating
+                  ? "Updating..."
+                  : "Deny"}
             </button>
             <button
               className="btn btn-secondary"

@@ -16,7 +16,10 @@ export function MyApplications(): JSX.Element {
   const navigate = useNavigate()
 
   return (
-    <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }} className="py-4">
+    <div
+      style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}
+      className="py-4"
+    >
       <div className="container">
         <h1 className="h3 mb-4" style={{ color: "#2f6f44", fontWeight: "700" }}>
           My Applications
@@ -59,7 +62,8 @@ export function MyApplications(): JSX.Element {
         {!isLoading && !isError && applications.length > 0 && (
           <div className="row">
             {applications.map(app => {
-              const status = statusConfig[app.status] || statusConfig.pending_review
+              const status =
+                statusConfig[app.status] || statusConfig.pending_review
               const StatusIcon = status.icon
 
               return (
@@ -82,7 +86,9 @@ export function MyApplications(): JSX.Element {
                     </div>
                     <div className="card-body">
                       {app.grant.description && (
-                        <p className="mb-2 text-muted">{app.grant.description}</p>
+                        <p className="mb-2 text-muted">
+                          {app.grant.description}
+                        </p>
                       )}
                       <p className="mb-2 text-muted">
                         <small>
@@ -93,7 +99,7 @@ export function MyApplications(): JSX.Element {
                       <button
                         className="btn btn-sm"
                         style={{ backgroundColor: "#3b7a57", color: "white" }}
-                        onClick={() => navigate(`/applications/${app.id}`)}
+                        onClick={() => void navigate(`/applications/${app.id}`)}
                       >
                         View Details
                       </button>

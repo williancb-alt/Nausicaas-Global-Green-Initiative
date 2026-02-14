@@ -9,7 +9,10 @@ interface PublicGrantCardProps {
   applicationStatus?: string | undefined
 }
 
-export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardProps): JSX.Element {
+export function PublicGrantCard({
+  grant,
+  applicationStatus,
+}: PublicGrantCardProps): JSX.Element {
   const hasApplied = !!applicationStatus
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
@@ -17,7 +20,9 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
 
   const handleApply = () => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: `/grants/${encodeURIComponent(grant.name)}/apply` } })
+      void navigate("/login", {
+        state: { from: `/grants/${encodeURIComponent(grant.name)}/apply` },
+      })
       return
     }
 
@@ -26,7 +31,7 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
       return
     }
 
-    navigate(`/grants/${encodeURIComponent(grant.name)}/apply`)
+    void navigate(`/grants/${encodeURIComponent(grant.name)}/apply`)
   }
 
   return (
@@ -52,19 +57,19 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
                 applicationStatus === "approved"
                   ? "bg-success"
                   : applicationStatus === "denied"
-                  ? "bg-danger"
-                  : applicationStatus === "in_review"
-                  ? "bg-info"
-                  : "bg-warning text-dark"
+                    ? "bg-danger"
+                    : applicationStatus === "in_review"
+                      ? "bg-info"
+                      : "bg-warning text-dark"
               }`}
             >
               {applicationStatus === "approved"
                 ? "✓ Approved"
                 : applicationStatus === "denied"
-                ? "✗ Denied"
-                : applicationStatus === "in_review"
-                ? "In Review"
-                : "Pending Review"}
+                  ? "✗ Denied"
+                  : applicationStatus === "in_review"
+                    ? "In Review"
+                    : "Pending Review"}
             </span>
           )}
           {grant.deadline_passed ? (
@@ -87,30 +92,29 @@ export function PublicGrantCard({ grant, applicationStatus }: PublicGrantCardPro
             <strong>Deadline:</strong> {grant.deadline}
           </div>
 
-          {!grant.deadline_passed && (
-            hasApplied ? (
+          {!grant.deadline_passed &&
+            (hasApplied ? (
               <Button
                 variant={
                   applicationStatus === "approved"
                     ? "success"
                     : applicationStatus === "denied"
-                    ? "danger"
-                    : "secondary"
+                      ? "danger"
+                      : "secondary"
                 }
                 disabled
               >
                 {applicationStatus === "approved"
                   ? "✓ Application Approved"
                   : applicationStatus === "denied"
-                  ? "✗ Application Denied"
-                  : "Application Submitted"}
+                    ? "✗ Application Denied"
+                    : "Application Submitted"}
               </Button>
             ) : (
               <Button variant="success" onClick={handleApply}>
                 Apply Now
               </Button>
-            )
-          )}
+            ))}
         </div>
 
         {showAdminAlert && (
