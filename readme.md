@@ -211,3 +211,7 @@ The team's current story point velocity is "N/A".
 
 # Definition of Ready
 <<List criteria that are common here>>
+
+# Code Quality
+
+Code Scene implemented as an automated code quality gate check on creation of pull requests.

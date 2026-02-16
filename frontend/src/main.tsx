@@ -22,9 +22,7 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-    </QueryClientProvider>
-  </StrictMode>,
+    </QueryClientProvider>,
 )
