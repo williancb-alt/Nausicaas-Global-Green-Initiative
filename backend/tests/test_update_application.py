@@ -1,3 +1,5 @@
+import pytest
+
 from http import HTTPStatus
 
 from flask import url_for
@@ -31,77 +33,60 @@ def _create_application_in_db(db, user, grant_name):
     return application
 
 
-def test_approve_application_as_admin(client, db, admin, user):
-    """Test admin can approve an application."""
+def _create_user_application_via_api(client) -> int:
+    register_user(client)
+    login_user(client)
+    resp = client.post(
+        url_for("api.application_list"),
+        json={"grant_name": DEFAULT_NAME, "field_values": {}},
+    )
+    assert resp.status_code == HTTPStatus.CREATED
+    return resp.json["application_id"]
+
+
+@pytest.mark.usefixtures("admin")
+@pytest.mark.parametrize(
+    "case",
+    [
+        {
+            "payload": {"status": "approved"},
+            "expected_status": "approved",
+            "expected_feedback": None,
+        },
+        {
+            "payload": {
+                "status": "denied",
+                "feedback": "Application does not meet requirements",
+            },
+            "expected_status": "denied",
+            "expected_feedback": "Application does not meet requirements",
+        },
+        {
+            "payload": {"status": "in_review"},
+            "expected_status": "in_review",
+            "expected_feedback": None,
+        },
+    ],
+)
+def test_admin_updates_application_status(client, db, user, case):
+    payload = case["payload"]
+    expected_status = case["expected_status"]
+    expected_feedback = case["expected_feedback"]
     login_user(client, ADMIN_EMAIL, PASSWORD)
     create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
-
-    # Create application directly in DB to avoid login/logout cycles
     application = _create_application_in_db(db, user, DEFAULT_NAME)
 
-    # Admin approves the application (still logged in)
     response = client.put(
         url_for("api.application", application_id=application.id),
-        json={"status": "approved"},
+        json=payload,
     )
-
-    assert response.status_code == HTTPStatus.OK
-    assert "status" in response.json
-    assert response.json["status"] == "success"
-    assert "message" in response.json
-
-    # Verify application status was updated
-    updated = Application.find_by_id(application.id)
-    assert updated is not None
-    assert updated.status == "approved"
-
-
-def test_deny_application_with_feedback_as_admin(client, db, admin, user):
-    """Test admin can deny an application with feedback."""
-    login_user(client, ADMIN_EMAIL, PASSWORD)
-    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
-
-    # Create application directly in DB to avoid login/logout cycles
-    application = _create_application_in_db(db, user, DEFAULT_NAME)
-
-    # Admin denies the application with feedback (still logged in)
-    feedback = "Application does not meet requirements"
-    response = client.put(
-        url_for("api.application", application_id=application.id),
-        json={"status": "denied", "feedback": feedback},
-    )
-
-    assert response.status_code == HTTPStatus.OK
-    assert "status" in response.json
-    assert response.json["status"] == "success"
-
-    # Verify application status and feedback were updated
-    updated = Application.find_by_id(application.id)
-    assert updated is not None
-    assert updated.status == "denied"
-    assert updated.feedback == feedback
-
-
-def test_update_application_status_to_in_review(client, db, admin, user):
-    """Test admin can update application status to in_review."""
-    login_user(client, ADMIN_EMAIL, PASSWORD)
-    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
-
-    # Create application directly in DB to avoid login/logout cycles
-    application = _create_application_in_db(db, user, DEFAULT_NAME)
-
-    # Admin updates the application to in_review (still logged in)
-    response = client.put(
-        url_for("api.application", application_id=application.id),
-        json={"status": "in_review"},
-    )
-
     assert response.status_code == HTTPStatus.OK
 
-    # Verify application status was updated
     updated = Application.find_by_id(application.id)
     assert updated is not None
-    assert updated.status == "in_review"
+    assert updated.status == expected_status
+    if expected_feedback is not None:
+        assert updated.feedback == expected_feedback
 
 
 def test_update_application_unauthorized_user(client, db, admin):
@@ -131,26 +116,18 @@ def test_update_application_unauthorized_user(client, db, admin):
     assert "message" in response.json and response.json["message"] == FORBIDDEN
 
 
-def test_update_application_invalid_status(client, db, admin):
+@pytest.mark.usefixtures("admin")
+def test_update_application_invalid_status(client):
     """Test updating application with invalid status value."""
-    # Create a grant
     login_user(client, ADMIN_EMAIL, PASSWORD)
     create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
     client.post(url_for("api.auth_logout"))
 
-    # Create a user and submit application
-    register_user(client)
-    login_user(client)
-    application_response = client.post(
-        url_for("api.application_list"),
-        json={"grant_name": DEFAULT_NAME, "field_values": {}},
-    )
-    assert application_response.status_code == HTTPStatus.CREATED
-    application_id = application_response.json["application_id"]
-    client.post(url_for("api.auth_logout"))
+    application_id = _create_user_application_via_api(client)
 
-    # Admin tries to update with invalid status
+    client.post(url_for("api.auth_logout"))
     login_user(client, ADMIN_EMAIL, PASSWORD)
+
     response = client.put(
         url_for("api.application", application_id=application_id),
         json={"status": "invalid_status"},

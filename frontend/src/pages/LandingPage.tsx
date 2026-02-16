@@ -1,23 +1,24 @@
 import { JSX } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useGrants } from "../hooks/useGrantHooks"
-import { PublicGrantCard } from "../components/grant/PublicGrantCard"
 import { applications } from "../services/api/applications"
 import { useAuthStore } from "../store/authStore"
+import { GrantsList } from "../components/grant/GrantList"
+import { ApplicationStatus } from "../types"
+
+export type ApplicationStatusMap = Map<string, ApplicationStatus>
 
 export function LandingPage(): JSX.Element {
   const { data: grantsData, isLoading, isError } = useGrants()
   const { isAuthenticated } = useAuthStore()
 
-  // Fetch user's applications to show which grants they've applied to
   const { data: myApplicationsData } = useQuery({
     queryKey: ["myApplications"],
     queryFn: () => applications.getMyApplications(1, 100),
     enabled: isAuthenticated,
   })
 
-  // Create a Map of grant names to application status
-  const applicationStatusMap = new Map(
+  const applicationStatusMap: ApplicationStatusMap = new Map(
     myApplicationsData?.items.map(app => [app.grant.name, app.status]) || [],
   )
 
@@ -63,50 +64,13 @@ export function LandingPage(): JSX.Element {
             Available Grants
           </h2>
 
-          {isLoading && (
-            <div className="text-center py-5">
-              <div className="spinner-border text-success" role="status">
-                <span className="visually-hidden">Loading grants...</span>
-              </div>
-              <p className="mt-3 text-muted">Loading available grants...</p>
-            </div>
-          )}
-
-          {isError && (
-            <div className="alert alert-danger" role="alert">
-              Unable to load grants. Please try again later.
-            </div>
-          )}
-
-          {!isLoading && !isError && grants.length === 0 && (
-            <div className="text-center py-5">
-              <p className="text-muted fs-5">
-                No grants are currently available. Please check back later.
-              </p>
-            </div>
-          )}
-
-          {!isLoading && !isError && grants.length > 0 && (
-            <div className="row">
-              {grants.map(grant => (
-                <div key={grant.name} className="col-lg-6 mb-4">
-                  <PublicGrantCard
-                    grant={grant}
-                    applicationStatus={applicationStatusMap.get(grant.name)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {grantsData && grantsData.total_pages > 1 && (
-            <div className="text-center mt-4">
-              <p className="text-muted">
-                Showing page {grantsData.page} of {grantsData.total_pages} (
-                {grantsData.total_items} total grants)
-              </p>
-            </div>
-          )}
+          <GrantsList
+            isLoading={isLoading}
+            isError={isError}
+            grants={grants}
+            grantsData={grantsData}
+            applicationStatusMap={applicationStatusMap}
+          />
         </div>
       </section>
     </div>

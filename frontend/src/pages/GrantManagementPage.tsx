@@ -18,9 +18,16 @@ import { DynamicFieldPreview } from "../components/dynamicFields/DynamicFieldPre
 import { DynamicFieldInput } from "../components/dynamicFields/DynamicFieldInput"
 import type { DynamicFieldConfig, UpdateGrantParams } from "../types"
 import type { Grant } from "../services/api/client"
-import { GRANT_FORM_FIELDS, GRANT_MANAGEMENT_STYLES } from "../utils/constants"
+import {
+  GRANT_FORM_FIELDS,
+  GRANT_MANAGEMENT_STYLES,
+  GRANT_MESSAGES,
+} from "../utils/constants"
 
 export function GrantManagementPage(): JSX.Element {
+  type GrantEditField =
+    | typeof GRANT_FORM_FIELDS.DEADLINE
+    | typeof GRANT_FORM_FIELDS.DESCRIPTION
   const { data: grantsData, isLoading } = useGrants()
   const createGrant = useCreateGrant()
   const updateGrant = useUpdateGrant()
@@ -115,7 +122,7 @@ export function GrantManagementPage(): JSX.Element {
     }
   }
 
-  const handleEditChange = (field: string, value: string) => {
+  const handleEditChange = (field: GrantEditField, value: string) => {
     setEditFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -140,17 +147,13 @@ export function GrantManagementPage(): JSX.Element {
         setEditingId(null)
       },
       onError: error => {
-        alert(`Failed to save changes: ${error.message}`)
+        alert(GRANT_MESSAGES.saveError(error.message))
       },
     })
   }
 
   const onDelete = (name: string) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the grant "${name}"? This action cannot be undone.`,
-      )
-    ) {
+    if (!window.confirm(GRANT_MESSAGES.deleteConfirm(name))) {
       return
     }
     deleteGrant.mutate(name)
@@ -169,7 +172,7 @@ export function GrantManagementPage(): JSX.Element {
           setTogglingGrant(null)
         },
         onError: error => {
-          alert(`Failed to toggle visibility: ${error.message}`)
+          alert(GRANT_MESSAGES.toggleError(error.message))
           setTogglingGrant(null)
         },
       },
@@ -382,7 +385,7 @@ export function GrantManagementPage(): JSX.Element {
                   border: "1px solid #3b7a57",
                 }}
               >
-                Loading grants...
+                {GRANT_MESSAGES.loadingGrants}
               </div>
             ) : grants.length === 0 ? (
               <div
@@ -393,7 +396,7 @@ export function GrantManagementPage(): JSX.Element {
                   border: "1px solid #3b7a57",
                 }}
               >
-                No grants created yet. Create one above to get started.
+                {GRANT_MESSAGES.noGrants}
               </div>
             ) : (
               <div className="table-responsive">

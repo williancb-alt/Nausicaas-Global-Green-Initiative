@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { BrowserRouter } from "react-router-dom"
 import { PublicGrantCard } from "./PublicGrantCard"
 import type { Grant } from "../../services/api/client"
+import { ApplicationStatus } from "../../types"
 
 // Mock the auth store
 vi.mock("../../store/authStore", () => ({
@@ -32,7 +33,7 @@ describe("PublicGrantCard - Application Status Display", () => {
 
   const renderComponent = (
     grant: Grant = mockGrant,
-    applicationStatus?: string,
+    applicationStatus?: ApplicationStatus,
   ) => {
     return render(
       <BrowserRouter>
@@ -147,7 +148,11 @@ describe("PublicGrantCard - Application Status Display", () => {
   })
 
   it("renders all application statuses correctly", () => {
-    const statuses = [
+    const statuses: {
+      status: ApplicationStatus
+      text: string
+      badgeClass: string
+    }[] = [
       { status: "approved", text: "✓ Approved", badgeClass: "bg-success" },
       { status: "denied", text: "✗ Denied", badgeClass: "bg-danger" },
       { status: "in_review", text: "In Review", badgeClass: "bg-info" },

@@ -1,6 +1,8 @@
 import React, { JSX } from "react"
-import { Button } from "../button/Button"
 import type { Grant } from "../../services/api/client"
+import { GrantHeader } from "./GrantHeader"
+import { GrantActions } from "./GrantActions"
+import { GrantDetails } from "./GrantDetails"
 
 interface ExpandableGrantItemProps {
   grant: Grant
@@ -49,71 +51,20 @@ export function ExpandableGrantItem({
         onKeyDown={e => e.key === "Enter" && onToggle()}
         aria-expanded={isExpanded}
       >
-        <div>
-          <div className="fw-semibold d-flex align-items-center gap-2">
-            {grant.name}
-            {hasApplied && (
-              <span className="badge bg-success" style={{ fontSize: "0.7rem" }}>
-                ✓ Applied
-              </span>
-            )}
-          </div>
-          {grant.deadline && (
-            <div className="text-muted small">Deadline: {grant.deadline}</div>
-          )}
-        </div>
-        <div className="d-flex align-items-center gap-2">
-          {onEdit && (
-            <Button variant="secondary" size="sm" onClick={handleEdit}>
-              Edit
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "..." : "Delete"}
-            </Button>
-          )}
-          <span className="ms-2">{isExpanded ? "\u25B2" : "\u25BC"}</span>
-        </div>
+        <GrantHeader grant={grant} hasApplied={hasApplied} />
+        <GrantActions
+          isExpanded={isExpanded}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isDeleting={isDeleting}
+          onEditClick={handleEdit}
+          onDeleteClick={handleDelete}
+        />
       </div>
 
       {isExpanded && (
         <div className="p-3 pt-0 border-top bg-light">
-          {grant.description && (
-            <div className="mb-2">
-              <strong>Description:</strong>
-              <p className="mb-1">{grant.description}</p>
-            </div>
-          )}
-
-          {grant.custom_fields &&
-            grant.custom_fields.configs &&
-            grant.custom_fields.configs.length > 0 && (
-              <>
-                <hr />
-                <h6>Custom Fields</h6>
-                {grant.custom_fields.configs.map((field, index) => (
-                  <div key={index} className="mb-2">
-                    <strong>{field.label}:</strong>
-                    <span className="ms-2">
-                      {grant.custom_fields?.values[`field_${index}`] || "N/A"}
-                    </span>
-                  </div>
-                ))}
-              </>
-            )}
-
-          {!grant.description &&
-            (!grant.custom_fields || !grant.custom_fields.configs?.length) && (
-              <div className="text-muted">
-                <em>No additional field data available for this grant.</em>
-              </div>
-            )}
+          <GrantDetails grant={grant} />
         </div>
       )}
     </li>

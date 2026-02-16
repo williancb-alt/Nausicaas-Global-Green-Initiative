@@ -1,7 +1,6 @@
 from http import HTTPStatus
-from datetime import datetime
 import json
-from typing import Any, TypedDict
+from typing import Any
 
 from flask import Response, jsonify, request, url_for
 from flask_restx import abort, marshal
@@ -11,23 +10,17 @@ from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import (
     admin_token_required,
 )
+from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
 from nausicass_global_green_initiative_api.api.grants.dto import (
     pagination_model,
     grant_name,
+    apply_custom_fields_change,
+    apply_standard_field_changes,
+    is_admin_check,
 )
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
-
-
-class GrantDictionary(TypedDict, total=False):
-    """Type definition for API requests regarding grants"""
-
-    name: str
-    deadline: datetime
-    description: str
-    custom_fields: str | None
-    hidden: bool
 
 
 @admin_token_required
@@ -84,22 +77,10 @@ def retrieve_grant_list(page: int, per_page: int) -> Response:
     Hides grants marked as hidden from non-admin users.
     """
     # Check if the user is an admin (check both cookie and Authorization header)
-    is_admin = False
-    token = request.cookies.get("access_token")
-    if not token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ", 1)[1]
-    if token:
-        result = User.decode_access_token(token)
-        if not result.failure:
-            is_admin = result.value.get("admin", False)
+    is_admin = is_admin_check(request)
 
     # Filter out hidden grants unless user is admin
-    if is_admin:
-        query = Grant.query
-    else:
-        query = Grant.query.filter_by(hidden=False)
+    query = Grant.query if is_admin else Grant.query.filter_by(hidden=False)
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     response_data = marshal(pagination, pagination_model)
@@ -124,36 +105,10 @@ def update_grant(
     grant = Grant.find_by_name(name)
     if grant:
         # Capture what changed before updating
-        changes = {}
+        changes: dict[str, Any] = {}
 
-        # Check custom_fields change
-        custom_fields_str = grant_dict.get("custom_fields")
-        if custom_fields_str:
-            try:
-                parsed_custom_fields = json.loads(custom_fields_str)
-                if grant.custom_fields != parsed_custom_fields:
-                    changes["custom_fields"] = {
-                        "old": grant.custom_fields,
-                        "new": parsed_custom_fields,
-                    }
-                grant.custom_fields = parsed_custom_fields
-            except json.JSONDecodeError:
-                abort(
-                    HTTPStatus.BAD_REQUEST,
-                    "custom_fields must be valid JSON",
-                    status="fail",
-                )
-
-        # Check other field changes
-        for k, v in grant_dict.items():
-            if k != "custom_fields" and v is not None:
-                old_value = getattr(grant, k)
-                if old_value != v:
-                    changes[k] = {
-                        "old": str(old_value) if old_value is not None else None,
-                        "new": str(v) if v is not None else None,
-                    }
-                setattr(grant, k, v)
+        apply_custom_fields_change(grant, grant_dict, changes)
+        apply_standard_field_changes(grant, grant_dict, changes)
 
         db.session.commit()
 
