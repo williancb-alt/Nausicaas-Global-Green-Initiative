@@ -10,12 +10,31 @@ import { GrantManagementPage } from "./pages/GrantManagementPage"
 import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 import { AuditLogs } from "./pages/AuditLogs"
+import { UserDashboard } from "./pages/UserDashboard"
+import { useAuthStore } from "./store/authStore"
+
 
 export const routes = [
   {
     path: "/",
     element: <LandingPage />,
   },
+  {
+    path: "/userdashboard",
+    element: (
+      <ProtectedRoute>
+        <UserDashboard 
+          onLogout={() => {
+            useAuthStore.getState().clearAuth();
+            window.location.href = '/login';  // Simple redirect
+          }}
+          onNewApplication={() => window.location.href = '/grants/demo/apply'}
+          onViewApplication={(id: number) => window.location.href = `/applications/${id}`}
+        />
+      </ProtectedRoute>
+    ),
+  },
+
   {
     path: "/grants/:grantName/apply",
     element: (

@@ -8,6 +8,7 @@ const statusConfig = {
   denied: { label: "Denied", color: "danger", icon: XCircle },
   pending_review: { label: "Pending Review", color: "warning", icon: Clock },
   in_review: { label: "In Review", color: "info", icon: Clock },
+  opened: { label: 'Opened', color: 'text-blue-600 bg-blue-100', icon: FileText },
 }
 
 export function Applications(): JSX.Element {

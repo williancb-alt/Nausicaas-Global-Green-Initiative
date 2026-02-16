@@ -56,6 +56,7 @@ export type ApplicationStatus =
   | "in_review"
   | "approved"
   | "denied"
+  | "opened"
 
 export interface ApplicationApplicant {
   email: string

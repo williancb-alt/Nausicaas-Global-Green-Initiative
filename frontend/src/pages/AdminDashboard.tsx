@@ -73,7 +73,7 @@ export function AdminDashboard({
       {/* Header */}
       <header style={{ backgroundColor: "#2f6f44", color: "white" }} className="border-bottom">
         <div className="container-fluid py-4">
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-con0tent-between align-items-center">
             <div>
               <h1 className="h3 mb-0 fw-bold">Admin Dashboard</h1>
               <p className="mb-0 mt-2" style={{ opacity: 0.9 }}>Welcome back, {user.email}</p>
