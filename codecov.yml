@@ -1,0 +1,13 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 0%
+      backend:
+        target: 80%
+        threshold: 0%
+      frontend:
+        target: 80%
+        threshold: 0%
+    patch: off

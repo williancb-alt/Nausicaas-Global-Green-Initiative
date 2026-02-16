@@ -224,21 +224,14 @@ jobs:
         run: |
           source .venv/bin/activate
           pytest --cov=src --cov-report=xml --cov-report=term --cov-report=json
-
-      - name: Check coverage threshold
-        env:
-          COVERAGE_THRESHOLD: ${{ env.COVERAGE_THRESHOLD }}
-        run: |
-          source .venv/bin/activate
-          COVERAGE=$(coverage report | grep TOTAL | awk '{print $NF}' | sed 's/%//')
-          echo "Current coverage: ${COVERAGE}%"
-          echo "Required threshold: ${COVERAGE_THRESHOLD}%"
-          if (( $(echo "$COVERAGE < $COVERAGE_THRESHOLD" | bc -l) )); then
-            echo "Coverage ${COVERAGE}% is below threshold ${COVERAGE_THRESHOLD}%"
-            exit 1
-          else
-            echo "Coverage ${COVERAGE}% meets threshold ${COVERAGE_THRESHOLD}%"
-          fi
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODE_COV_TOKEN }}
+          files: backend/coverage.xml
+          flags: backend
+          name: backend-coverage
 
   build:
     name: Build
