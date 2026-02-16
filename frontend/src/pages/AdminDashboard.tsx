@@ -16,6 +16,8 @@ import { StatCard } from "../components/card/StatsCard"
 import { ApplicationStatusFilterBar } from "../components/filter/ApplicationStatusFilterBar"
 import { AdminDashboardApplicationsTable } from "../components/table/AdminDashboardApplicationsTable"
 import { filterApplications } from "../utils/applications"
+import { AdminDashboardHeader } from "../components/header/AdminDashboardHeader"
+import { ChartCard } from "../components/card/ChartCard"
 
 interface AdminDashboardProps {
   user: LoginCredentials
@@ -85,37 +87,11 @@ export function AdminDashboard({
   return (
     <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}>
       {/* Header */}
-      <header
-        style={{ backgroundColor: "#2f6f44", color: "white" }}
-        className="border-bottom"
-      >
-        <div className="container-fluid py-4">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 className="h3 mb-0 fw-bold">Admin Dashboard</h1>
-              <p className="mb-0 mt-2" style={{ opacity: 0.9 }}>
-                Welcome back, {user.email}
-              </p>
-            </div>
-            <div className="d-flex gap-3">
-              <button
-                onClick={onManageGrants}
-                className="btn"
-                style={{
-                  backgroundColor: "white",
-                  color: "#3b7a57",
-                  fontWeight: "500",
-                }}
-              >
-                Manage Grants
-              </button>
-              <button onClick={onLogout} className="btn btn-outline-light">
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminDashboardHeader
+        userEmail={user.email}
+        onManageGrants={onManageGrants}
+        onLogout={onLogout}
+      />
 
       <div className="container-fluid py-5">
         {/* Stats Overview */}
@@ -164,95 +140,57 @@ export function AdminDashboard({
         <div className="row mb-5 g-4">
           {/* Status Distribution */}
           <div className="col-12 col-lg-6">
-            <div
-              className="card"
-              style={{ borderRadius: "8px", borderTop: "4px solid #3b7a57" }}
-            >
-              <div
-                className="card-header"
-                style={{
-                  backgroundColor: "#eef7ee",
-                  borderBottom: "1px solid #e6f4e8",
-                }}
-              >
-                <h5
-                  className="card-title mb-0"
-                  style={{ color: "#2f6f44", fontWeight: "600" }}
-                >
-                  Application Status Distribution
-                </h5>
-              </div>
-              <div className="card-body">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={statusChartData.filter(d => d.value > 0)}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({
-                        name,
-                        percent,
-                      }: { name?: string; percent?: number } = {}): string => {
-                        return `${name || "N/A"}: ${((percent || 0) * 100).toFixed(0)}%`
-                      }}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {statusChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <ChartCard title="Application Status Distribution">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={statusChartData.filter(d => d.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({
+                      name,
+                      percent,
+                    }: { name?: string; percent?: number } = {}): string => {
+                      return `${name || "N/A"}: ${((percent || 0) * 100).toFixed(0)}%`
+                    }}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {statusChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
           </div>
 
           {/* Grant-wise Applications */}
           <div className="col-12 col-lg-6">
-            <div
-              className="card"
-              style={{ borderRadius: "8px", borderTop: "4px solid #3b7a57" }}
-            >
-              <div
-                className="card-header"
-                style={{
-                  backgroundColor: "#eef7ee",
-                  borderBottom: "1px solid #e6f4e8",
-                }}
-              >
-                <h5
-                  className="card-title mb-0"
-                  style={{ color: "#2f6f44", fontWeight: "600" }}
-                >
-                  Applications by Grant
-                </h5>
-              </div>
-              <div className="card-body">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={grantWiseData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e6f4e8" />
-                    <XAxis
-                      dataKey="name"
-                      angle={-45}
-                      textAnchor="end"
-                      height={100}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar
-                      dataKey="applications"
-                      fill="#3b7a57"
-                      radius={[8, 8, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+            <ChartCard title="Applications by Grant">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={grantWiseData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e6f4e8" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar
+                    dataKey="applications"
+                    fill="#3b7a57"
+                    radius={[8, 8, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
           </div>
         </div>
 

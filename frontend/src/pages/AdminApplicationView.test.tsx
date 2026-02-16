@@ -149,6 +149,19 @@ describe("AdminApplicationView", () => {
     )
   }
 
+  function renderWithStatus(status: Application["status"]) {
+    vi.mocked(useApplication).mockReturnValue(
+      mockUseApplicationReturn({
+        data: { ...mockApplication, status },
+        isLoading: false,
+      }),
+    )
+    vi.mocked(useUpdateApplication).mockReturnValue(
+      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
+    )
+    renderComponent()
+  }
+
   it("renders loading state", () => {
     vi.mocked(useApplication).mockReturnValue(
       mockUseApplicationReturn({
@@ -257,16 +270,7 @@ describe("AdminApplicationView", () => {
   ] as const)(
     "disables correct button when application is %s",
     (status, buttonName) => {
-      vi.mocked(useApplication).mockReturnValue(
-        mockUseApplicationReturn({
-          data: { ...mockApplication, status },
-          isLoading: false,
-        }),
-      )
-      vi.mocked(useUpdateApplication).mockReturnValue(
-        mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-      )
-      renderComponent()
+      renderWithStatus(status)
       expect(screen.getByRole("button", { name: buttonName })).toBeDisabled()
     },
   )
