@@ -1,23 +1,13 @@
 import { useState, useMemo } from "react"
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
 import { Application, LoginCredentials } from "../types/index"
 import { StatCard } from "../components/card/StatsCard"
 import { ApplicationStatusFilterBar } from "../components/filter/ApplicationStatusFilterBar"
 import { AdminDashboardApplicationsTable } from "../components/table/AdminDashboardApplicationsTable"
 import { filterApplications } from "../utils/applications"
 import { AdminDashboardHeader } from "../components/header/AdminDashboardHeader"
-import { ChartCard } from "../components/card/ChartCard"
+import { useAdminStats } from "../hooks/useAdminStatsHooks"
+import { ApplicationStatusChart } from "../components/chart/ApplicationStatusChart"
+import { GrantDistributionChart } from "../components/chart/GrantDistributionChart"
 
 interface AdminDashboardProps {
   user: LoginCredentials
@@ -40,44 +30,7 @@ export function AdminDashboard({
     "all" | Application["status"]
   >("all")
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const total = applications.length
-    const approved = applications.filter(
-      app => app.status === "approved",
-    ).length
-    const rejected = applications.filter(app => app.status === "denied").length
-    const pending = applications.filter(
-      app => app.status === "pending_review" || app.status === "in_review",
-    ).length
-
-    return { total, approved, rejected, pending }
-  }, [applications])
-
-  // Prepare chart data
-  const statusChartData = useMemo(
-    () => [
-      { name: "Approved", value: stats.approved, color: "#3b7a57" },
-      { name: "Rejected", value: stats.rejected, color: "#ef4444" },
-      { name: "Pending Review", value: stats.pending, color: "#f59e0b" },
-    ],
-    [stats],
-  )
-
-  // Grant-wise application data
-  const grantWiseData = useMemo(() => {
-    const grantMap = new Map<string, number>()
-
-    applications.forEach(app => {
-      const grantName = app.grant.name
-      grantMap.set(grantName, (grantMap.get(grantName) || 0) + 1)
-    })
-
-    return Array.from(grantMap.entries()).map(([name, count]) => ({
-      name,
-      applications: count,
-    }))
-  }, [applications])
+  const { stats, statusChartData, grantWiseData } = useAdminStats(applications)
 
   const filteredApplications = useMemo(
     () => filterApplications(applications, searchTerm, statusFilter),
@@ -138,60 +91,8 @@ export function AdminDashboard({
 
         {/* Charts Section */}
         <div className="row mb-5 g-4">
-          {/* Status Distribution */}
-          <div className="col-12 col-lg-6">
-            <ChartCard title="Application Status Distribution">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={statusChartData.filter(d => d.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({
-                      name,
-                      percent,
-                    }: { name?: string; percent?: number } = {}): string => {
-                      return `${name || "N/A"}: ${((percent || 0) * 100).toFixed(0)}%`
-                    }}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {statusChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
-
-          {/* Grant-wise Applications */}
-          <div className="col-12 col-lg-6">
-            <ChartCard title="Applications by Grant">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={grantWiseData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e6f4e8" />
-                  <XAxis
-                    dataKey="name"
-                    angle={-45}
-                    textAnchor="end"
-                    height={100}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar
-                    dataKey="applications"
-                    fill="#3b7a57"
-                    radius={[8, 8, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-          </div>
+          <ApplicationStatusChart data={statusChartData} />
+          <GrantDistributionChart data={grantWiseData} />
         </div>
 
         {/* Applications Management */}

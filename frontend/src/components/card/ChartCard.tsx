@@ -1,3 +1,5 @@
+import React from "react"
+
 interface ChartCardProps {
   title: string
   children: React.ReactNode
