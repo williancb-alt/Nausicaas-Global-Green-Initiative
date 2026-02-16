@@ -27,3 +27,13 @@ export const GRANT_FORM_FIELDS = {
   DEADLINE: "deadline",
   DESCRIPTION: "description",
 } as const
+
+export const GRANT_MANAGEMENT_STYLES = {
+  pageBg: { backgroundColor: "#eef7ee", minHeight: "100vh" },
+  header: { color: "#2f6f44", fontWeight: "700" },
+  badge: { backgroundColor: "#3b7a57", color: "white", fontSize: "0.95rem" },
+  card: { borderColor: "#3b7a57", borderWidth: "2px" },
+  cardHeader: { backgroundColor: "#eef7ee", borderColor: "#3b7a57" },
+  input: { borderColor: "#3b7a57" },
+  btnPrimary: { backgroundColor: "#3b7a57", color: "white" },
+} as const

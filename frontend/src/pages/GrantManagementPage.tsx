@@ -18,7 +18,7 @@ import { DynamicFieldPreview } from "../components/dynamicFields/DynamicFieldPre
 import { DynamicFieldInput } from "../components/dynamicFields/DynamicFieldInput"
 import type { DynamicFieldConfig, UpdateGrantParams } from "../types"
 import type { Grant } from "../services/api/client"
-import { GRANT_FORM_FIELDS } from "../utils/constants"
+import { GRANT_FORM_FIELDS, GRANT_MANAGEMENT_STYLES } from "../utils/constants"
 
 export function GrantManagementPage(): JSX.Element {
   const { data: grantsData, isLoading } = useGrants()
@@ -215,38 +215,22 @@ export function GrantManagementPage(): JSX.Element {
   }
 
   return (
-    <div
-      style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}
-      className="py-4"
-    >
+    <div style={GRANT_MANAGEMENT_STYLES.pageBg} className="py-4">
       <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1
-            className="h3 mb-0"
-            style={{ color: "#2f6f44", fontWeight: "700" }}
-          >
+          <h1 className="h3 mb-0" style={GRANT_MANAGEMENT_STYLES.header}>
             Grant Management
           </h1>
-          <span
-            className="badge"
-            style={{
-              backgroundColor: "#3b7a57",
-              color: "white",
-              fontSize: "0.95rem",
-            }}
-          >
+          <span className="badge" style={GRANT_MANAGEMENT_STYLES.badge}>
             {grants.length} grants
           </span>
         </div>
 
         {/* Create Grant Form */}
-        <div
-          className="card mb-4"
-          style={{ borderColor: "#3b7a57", borderWidth: "2px" }}
-        >
+        <div className="card mb-4" style={GRANT_MANAGEMENT_STYLES.card}>
           <div
             className="card-header"
-            style={{ backgroundColor: "#eef7ee", borderColor: "#3b7a57" }}
+            style={GRANT_MANAGEMENT_STYLES.cardHeader}
           >
             <h5
               className="card-title mb-0 d-flex align-items-center gap-2"
@@ -269,7 +253,7 @@ export function GrantManagementPage(): JSX.Element {
                     {...register(GRANT_FORM_FIELDS.NAME)}
                     placeholder="Grant name"
                     className={`form-control ${errors.name ? "is-invalid" : ""}`}
-                    style={{ borderColor: "#3b7a57" }}
+                    style={GRANT_MANAGEMENT_STYLES.input}
                   />
                   {errors.name && (
                     <div className="invalid-feedback d-block">
@@ -289,7 +273,7 @@ export function GrantManagementPage(): JSX.Element {
                     {...register(GRANT_FORM_FIELDS.DEADLINE)}
                     placeholder="MM/DD/YY"
                     className={`form-control ${errors.deadline ? "is-invalid" : ""}`}
-                    style={{ borderColor: "#3b7a57" }}
+                    style={GRANT_MANAGEMENT_STYLES.input}
                   />
                   {errors.deadline && (
                     <div className="invalid-feedback d-block">
@@ -310,7 +294,7 @@ export function GrantManagementPage(): JSX.Element {
                     placeholder="Grant description"
                     className={`form-control ${errors.description ? "is-invalid" : ""}`}
                     rows={1}
-                    style={{ borderColor: "#3b7a57" }}
+                    style={GRANT_MANAGEMENT_STYLES.input}
                   />
                   {errors.description && (
                     <div className="invalid-feedback d-block">
@@ -333,7 +317,7 @@ export function GrantManagementPage(): JSX.Element {
                     <button
                       type="button"
                       className="btn btn-sm me-2"
-                      style={{ backgroundColor: "#3b7a57", color: "white" }}
+                      style={GRANT_MANAGEMENT_STYLES.btnPrimary}
                       onClick={() => setIsFieldModalOpen(true)}
                     >
                       Add Field
@@ -341,7 +325,7 @@ export function GrantManagementPage(): JSX.Element {
                     <button
                       type="submit"
                       className="btn btn-sm"
-                      style={{ backgroundColor: "#3b7a57", color: "white" }}
+                      style={GRANT_MANAGEMENT_STYLES.btnPrimary}
                     >
                       Create Grant
                     </button>
@@ -556,7 +540,7 @@ export function GrantManagementPage(): JSX.Element {
                     value={editFormData.deadline}
                     onChange={e => handleEditChange("deadline", e.target.value)}
                     placeholder="MM/DD/YY"
-                    style={{ borderColor: "#3b7a57" }}
+                    style={GRANT_MANAGEMENT_STYLES.input}
                   />
                 </div>
                 <div className="col-md-12">
@@ -574,7 +558,7 @@ export function GrantManagementPage(): JSX.Element {
                     }
                     placeholder="Grant description"
                     rows={3}
-                    style={{ borderColor: "#3b7a57" }}
+                    style={GRANT_MANAGEMENT_STYLES.input}
                   />
                 </div>
               </div>
