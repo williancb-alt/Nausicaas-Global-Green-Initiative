@@ -21,3 +21,9 @@ export const MESSAGES = {
   LOADING_GRANTS: "Loading grants...",
   NO_GRANTS_LOADED: "No grants loaded.",
 } as const
+
+export const GRANT_FORM_FIELDS = {
+  NAME: "name",
+  DEADLINE: "deadline",
+  DESCRIPTION: "description",
+} as const

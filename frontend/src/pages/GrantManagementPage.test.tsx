@@ -92,6 +92,28 @@ describe("GrantManagementPage - Visibility Toggle", () => {
   let queryClient: QueryClient
   let updateGrantMutate: UpdateMutateFn
 
+  function setupAsyncToggle() {
+    let resolveUpdate: () => void
+    const updatePromise = new Promise<void>(resolve => {
+      resolveUpdate = resolve
+    })
+    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
+      void updatePromise.then(() => {
+        options?.onSuccess?.(
+          {} as BaseResponse | Grant,
+          {} as UpdateGrantParams,
+          undefined,
+          {} as MutationFunctionContext,
+        )
+      })
+    })
+    mockAllHooks(updateGrantMutate)
+    const result = renderComponent()
+    const hideButton = screen.getByTitle("Hide grant")
+    fireEvent.click(hideButton)
+    return { hideButton, resolveUpdate: resolveUpdate!, result }
+  }
+
   beforeEach(() => {
     queryClient = new QueryClient({
       defaultOptions: {
@@ -153,70 +175,19 @@ describe("GrantManagementPage - Visibility Toggle", () => {
     expect(showButton).toBeInTheDocument()
   })
 
-  it("calls updateGrant with hidden=true when hiding a visible grant", async () => {
-    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
-      options?.onSuccess?.(
-        {} as BaseResponse | Grant,
-        {} as UpdateGrantParams,
-        undefined,
-        {} as MutationFunctionContext,
-      )
-    })
-
-    mockAllHooks(updateGrantMutate)
-
-    renderComponent()
-
-    const hideButton = screen.getByTitle("Hide grant")
-    fireEvent.click(hideButton)
-
-    await waitFor(() => {
-      expect(updateGrantMutate).toHaveBeenCalledWith(
-        {
-          name: "visible-grant",
-          hidden: true,
-        },
-        expect.any(Object),
-      )
-    })
-  })
-
-  it("calls updateGrant with hidden=false when showing a hidden grant", async () => {
-    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
-      options?.onSuccess?.(
-        {} as BaseResponse | Grant,
-        {} as UpdateGrantParams,
-        undefined,
-        {} as MutationFunctionContext,
-      )
-    })
-
-    mockAllHooks(updateGrantMutate)
-
-    renderComponent()
-
-    const showButton = screen.getByTitle("Show grant")
-    fireEvent.click(showButton)
-
-    await waitFor(() => {
-      expect(updateGrantMutate).toHaveBeenCalledWith(
-        {
-          name: "hidden-grant",
-          hidden: false,
-        },
-        expect.any(Object),
-      )
-    })
-  })
-
-  it("disables toggle button while updating", async () => {
-    let resolveUpdate: () => void
-    const updatePromise = new Promise<void>(resolve => {
-      resolveUpdate = resolve
-    })
-
-    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
-      void updatePromise.then(() => {
+  it.each([
+    {
+      buttonTitle: "Hide grant",
+      expectedPayload: { name: "visible-grant", hidden: true },
+    },
+    {
+      buttonTitle: "Show grant",
+      expectedPayload: { name: "hidden-grant", hidden: false },
+    },
+  ])(
+    "calls updateGrant with correct payload when clicking $buttonTitle",
+    async ({ buttonTitle, expectedPayload }) => {
+      updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
         options?.onSuccess?.(
           {} as BaseResponse | Grant,
           {} as UpdateGrantParams,
@@ -224,61 +195,30 @@ describe("GrantManagementPage - Visibility Toggle", () => {
           {} as MutationFunctionContext,
         )
       })
-    })
+      mockAllHooks(updateGrantMutate)
+      renderComponent()
+      const button = screen.getByTitle(buttonTitle)
+      fireEvent.click(button)
+      await waitFor(() => {
+        expect(updateGrantMutate).toHaveBeenCalledWith(
+          expectedPayload,
+          expect.any(Object),
+        )
+      })
+    },
+  )
 
-    mockAllHooks(updateGrantMutate)
-
-    renderComponent()
-
-    const hideButton = screen.getByTitle("Hide grant")
-    fireEvent.click(hideButton)
-
-    // Button should be disabled while updating
-    await waitFor(() => {
-      expect(hideButton).toBeDisabled()
-    })
-
-    // Resolve the update
-    resolveUpdate!()
-
-    // Wait for button to be enabled again
-    await waitFor(() => {
-      expect(hideButton).not.toBeDisabled()
-    })
+  it("disables toggle button while updating", async () => {
+    const { hideButton, resolveUpdate } = setupAsyncToggle()
+    await waitFor(() => expect(hideButton).toBeDisabled())
+    resolveUpdate()
+    await waitFor(() => expect(hideButton).not.toBeDisabled())
   })
 
   it("shows loading indicator while toggling", async () => {
-    let resolveUpdate: () => void
-    const updatePromise = new Promise<void>(resolve => {
-      resolveUpdate = resolve
-    })
-
-    updateGrantMutate = vi.fn<UpdateMutateFn>((_, options) => {
-      void updatePromise.then(() => {
-        options?.onSuccess?.(
-          {} as BaseResponse | Grant,
-          {} as UpdateGrantParams,
-          undefined,
-          {} as MutationFunctionContext,
-        )
-      })
-    })
-
-    mockAllHooks(updateGrantMutate)
-
-    renderComponent()
-
-    const hideButton = screen.getByTitle("Hide grant")
-    fireEvent.click(hideButton)
-
-    // Should show "..." while updating
-    await waitFor(() => {
-      expect(hideButton).toHaveTextContent("...")
-    })
-
-    act(() => {
-      resolveUpdate!()
-    })
+    const { hideButton, resolveUpdate } = setupAsyncToggle()
+    await waitFor(() => expect(hideButton).toHaveTextContent("..."))
+    act(() => resolveUpdate())
   })
 
   it("handles toggle error gracefully", async () => {

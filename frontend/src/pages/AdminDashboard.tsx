@@ -11,8 +11,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
-import { FileText, Search } from "lucide-react"
 import { Application, LoginCredentials } from "../types/index"
+import { StatCard } from "../components/card/StatsCard"
+import { ApplicationStatusFilterBar } from "../components/filter/ApplicationStatusFilterBar"
+import { AdminDashboardApplicationsTable } from "../components/table/AdminDashboardApplicationsTable"
+import { filterApplications } from "../utils/applications"
 
 interface AdminDashboardProps {
   user: LoginCredentials
@@ -74,21 +77,10 @@ export function AdminDashboard({
     }))
   }, [applications])
 
-  // Filter applications
-  const filteredApplications = useMemo(() => {
-    return applications.filter(app => {
-      const matchesSearch =
-        searchTerm === "" ||
-        String(app.id).includes(searchTerm) ||
-        app.applicant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        app.grant.name.toLowerCase().includes(searchTerm.toLowerCase())
-
-      const matchesStatus =
-        statusFilter === "all" || app.status === statusFilter
-
-      return matchesSearch && matchesStatus
-    })
-  }, [applications, searchTerm, statusFilter])
+  const filteredApplications = useMemo(
+    () => filterApplications(applications, searchTerm, statusFilter),
+    [applications, searchTerm, statusFilter],
+  )
 
   return (
     <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}>
@@ -128,92 +120,44 @@ export function AdminDashboard({
       <div className="container-fluid py-5">
         {/* Stats Overview */}
         <div className="row mb-5 g-4">
-          <div className="col-12 col-md-6 col-lg-3">
-            <div
-              className="card h-100"
-              style={{ borderTop: "4px solid #3b82f6", borderRadius: "8px" }}
-            >
-              <div className="card-body">
-                <p className="text-muted mb-2">Total Applications</p>
-                <h2
-                  className="fw-bold"
-                  style={{ color: "#2f6f44", fontSize: "2.5rem" }}
-                >
-                  {stats.total}
-                </h2>
-                <small className="text-muted">submissions received</small>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-3">
-            <div
-              className="card h-100"
-              style={{ borderTop: "4px solid #3b7a57", borderRadius: "8px" }}
-            >
-              <div className="card-body">
-                <p className="text-muted mb-2">Approved</p>
-                <h2
-                  className="fw-bold"
-                  style={{ color: "#2f6f44", fontSize: "2.5rem" }}
-                >
-                  {stats.approved}
-                </h2>
-                <small className="text-muted">
-                  {stats.total > 0
-                    ? ((stats.approved / stats.total) * 100).toFixed(0)
-                    : 0}
-                  % of total
-                </small>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-3">
-            <div
-              className="card h-100"
-              style={{ borderTop: "4px solid #ef4444", borderRadius: "8px" }}
-            >
-              <div className="card-body">
-                <p className="text-muted mb-2">Rejected</p>
-                <h2
-                  className="fw-bold"
-                  style={{ color: "#dc2626", fontSize: "2.5rem" }}
-                >
-                  {stats.rejected}
-                </h2>
-                <small className="text-muted">
-                  {stats.total > 0
-                    ? ((stats.rejected / stats.total) * 100).toFixed(0)
-                    : 0}
-                  % of total
-                </small>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6 col-lg-3">
-            <div
-              className="card h-100"
-              style={{ borderTop: "4px solid #f59e0b", borderRadius: "8px" }}
-            >
-              <div className="card-body">
-                <p className="text-muted mb-2">Under Review</p>
-                <h2
-                  className="fw-bold"
-                  style={{ color: "#d97706", fontSize: "2.5rem" }}
-                >
-                  {stats.pending}
-                </h2>
-                <small className="text-muted">
-                  {stats.total > 0
-                    ? ((stats.pending / stats.total) * 100).toFixed(0)
-                    : 0}
-                  % of total
-                </small>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            label="Total Applications"
+            value={stats.total}
+            subtext="submissions received"
+            accentColor="#3b82f6"
+          />
+          <StatCard
+            label="Approved"
+            value={stats.approved}
+            subtext={
+              stats.total > 0
+                ? `${((stats.approved / stats.total) * 100).toFixed(0)}% of total`
+                : "0% of total"
+            }
+            accentColor="#3b7a57"
+          />
+          <StatCard
+            label="Rejected"
+            value={stats.rejected}
+            subtext={
+              stats.total > 0
+                ? `${((stats.rejected / stats.total) * 100).toFixed(0)}% of total`
+                : "0% of total"
+            }
+            accentColor="#ef4444"
+            valueColor="#dc2626"
+          />
+          <StatCard
+            label="Under Review"
+            value={stats.pending}
+            subtext={
+              stats.total > 0
+                ? `${((stats.pending / stats.total) * 100).toFixed(0)}% of total`
+                : "0% of total"
+            }
+            accentColor="#f59e0b"
+            valueColor="#d97706"
+          />
         </div>
 
         {/* Charts Section */}
@@ -332,98 +276,14 @@ export function AdminDashboard({
             </h5>
           </div>
           <div className="card-body">
-            <div className="row mb-4 g-3">
-              <div className="col-auto">
-                <div className="btn-group" role="group">
-                  <button
-                    type="button"
-                    className={`btn ${statusFilter === "all" ? "btn" : "btn-outline"}`}
-                    style={{
-                      backgroundColor:
-                        statusFilter === "all" ? "#3b7a57" : "transparent",
-                      color: statusFilter === "all" ? "white" : "#3b7a57",
-                      borderColor: "#3b7a57",
-                    }}
-                    onClick={() => setStatusFilter("all")}
-                  >
-                    All Applications
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn ${statusFilter === "pending_review" ? "btn" : "btn-outline"}`}
-                    style={{
-                      backgroundColor:
-                        statusFilter === "pending_review"
-                          ? "#3b7a57"
-                          : "transparent",
-                      color:
-                        statusFilter === "pending_review" ? "white" : "#3b7a57",
-                      borderColor: "#3b7a57",
-                    }}
-                    onClick={() =>
-                      setStatusFilter("pending_review" as Application["status"])
-                    }
-                  >
-                    Pending Review
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn ${statusFilter === "approved" ? "btn" : "btn-outline"}`}
-                    style={{
-                      backgroundColor:
-                        statusFilter === "approved" ? "#3b7a57" : "transparent",
-                      color: statusFilter === "approved" ? "white" : "#3b7a57",
-                      borderColor: "#3b7a57",
-                    }}
-                    onClick={() =>
-                      setStatusFilter("approved" as Application["status"])
-                    }
-                  >
-                    Approved
-                  </button>
-                  <button
-                    type="button"
-                    className={`btn ${statusFilter === "denied" ? "btn" : "btn-outline"}`}
-                    style={{
-                      backgroundColor:
-                        statusFilter === "denied" ? "#3b7a57" : "transparent",
-                      color: statusFilter === "denied" ? "white" : "#3b7a57",
-                      borderColor: "#3b7a57",
-                    }}
-                    onClick={() =>
-                      setStatusFilter("denied" as Application["status"])
-                    }
-                  >
-                    Rejected
-                  </button>
-                </div>
-              </div>
+            <ApplicationStatusFilterBar
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+            />
 
-              {/* Search */}
-              <div className="col">
-                <div className="input-group">
-                  <span
-                    className="input-group-text"
-                    style={{
-                      backgroundColor: "#eef7ee",
-                      borderColor: "#e6f4e8",
-                    }}
-                  >
-                    <Search size={18} style={{ color: "#3b7a57" }} />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search by ID, email or grant..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="form-control"
-                    style={{ borderColor: "#d1fae5" }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <ApplicationsTable
+            <AdminDashboardApplicationsTable
               applications={filteredApplications}
               onViewApplication={onViewApplication}
             />
@@ -431,96 +291,5 @@ export function AdminDashboard({
         </div>
       </div>
     </div>
-  )
-}
-
-// Applications Table Component
-function ApplicationsTable({
-  applications,
-  onViewApplication,
-}: {
-  applications: Application[]
-  onViewApplication: (id: number) => void
-}) {
-  if (applications.length === 0) {
-    return (
-      <div className="text-center py-5">
-        <FileText
-          size={48}
-          style={{ color: "#e6f4e8" }}
-          className="mb-3 mx-auto d-block"
-        />
-        <p className="text-muted">No applications found</p>
-      </div>
-    )
-  }
-
-  return (
-    <table className="table table-hover">
-      <thead style={{ backgroundColor: "#eef7ee" }}>
-        <tr>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>ID</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Applicant</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Grant</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Submitted</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Status</th>
-          <th style={{ color: "#2f6f44", fontWeight: "600" }}>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {applications.map(app => (
-          <tr key={app.id} style={{ borderColor: "#f0fdf4" }}>
-            <td>
-              <code style={{ color: "#3b7a57", fontWeight: "600" }}>
-                {app.id}
-              </code>
-            </td>
-            <td style={{ color: "#047857", fontWeight: "500" }}>
-              {app.applicant.email}
-            </td>
-            <td>{app.grant.name}</td>
-            <td className="text-muted">{app.submitted_date}</td>
-            <td>
-              <span
-                className="badge"
-                style={{
-                  backgroundColor:
-                    app.status === "approved"
-                      ? "#eef7ee"
-                      : app.status === "denied"
-                        ? "#fee2e2"
-                        : "#fff4e6",
-                  color:
-                    app.status === "approved"
-                      ? "#2f6f44"
-                      : app.status === "denied"
-                        ? "#dc2626"
-                        : "#d97706",
-                  padding: "0.5rem 0.75rem",
-                }}
-              >
-                {app.status === "approved" && "Approved"}
-                {app.status === "denied" && "Denied"}
-                {app.status === "pending_review" && "Pending Review"}
-                {app.status === "in_review" && "In Review"}
-              </span>
-            </td>
-            <td>
-              <button
-                onClick={() => onViewApplication(app.id)}
-                className="btn btn-sm"
-                style={{
-                  backgroundColor: "#3b7a57",
-                  color: "white",
-                  fontWeight: "500",
-                }}
-              >
-                Review
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
   )
 }

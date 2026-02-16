@@ -18,6 +18,7 @@ import { DynamicFieldPreview } from "../components/dynamicFields/DynamicFieldPre
 import { DynamicFieldInput } from "../components/dynamicFields/DynamicFieldInput"
 import type { DynamicFieldConfig, UpdateGrantParams } from "../types"
 import type { Grant } from "../services/api/client"
+import { GRANT_FORM_FIELDS } from "../utils/constants"
 
 export function GrantManagementPage(): JSX.Element {
   const { data: grantsData, isLoading } = useGrants()
@@ -265,7 +266,7 @@ export function GrantManagementPage(): JSX.Element {
                     Grant Name
                   </label>
                   <input
-                    {...register("name")}
+                    {...register(GRANT_FORM_FIELDS.NAME)}
                     placeholder="Grant name"
                     className={`form-control ${errors.name ? "is-invalid" : ""}`}
                     style={{ borderColor: "#3b7a57" }}
@@ -285,7 +286,7 @@ export function GrantManagementPage(): JSX.Element {
                     Deadline
                   </label>
                   <input
-                    {...register("deadline")}
+                    {...register(GRANT_FORM_FIELDS.DEADLINE)}
                     placeholder="MM/DD/YY"
                     className={`form-control ${errors.deadline ? "is-invalid" : ""}`}
                     style={{ borderColor: "#3b7a57" }}
@@ -305,7 +306,7 @@ export function GrantManagementPage(): JSX.Element {
                     Description
                   </label>
                   <textarea
-                    {...register("description")}
+                    {...register(GRANT_FORM_FIELDS.DESCRIPTION)}
                     placeholder="Grant description"
                     className={`form-control ${errors.description ? "is-invalid" : ""}`}
                     rows={1}

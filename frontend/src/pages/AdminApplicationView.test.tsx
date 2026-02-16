@@ -2,7 +2,11 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { BrowserRouter } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query"
+import type {
+  UseQueryResult,
+  UseMutationResult,
+  MutationFunctionContext,
+} from "@tanstack/react-query"
 import { AdminApplicationView } from "./AdminApplicationView"
 import type { Application } from "../types"
 
@@ -184,157 +188,88 @@ describe("AdminApplicationView", () => {
     expect(screen.getByText(/Green Initiative Inc/)).toBeInTheDocument()
   })
 
-  it("displays status badge with correct styling for pending_review", () => {
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({ data: mockApplication, isLoading: false }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-    )
-
-    renderComponent()
-
-    const badge = screen.getByText("pending review")
-    expect(badge).toHaveClass("badge", "bg-warning")
-  })
-
-  it("displays status badge with correct styling for approved", () => {
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({
-        data: { ...mockApplication, status: "approved" },
-        isLoading: false,
-      }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-    )
-
-    renderComponent()
-
-    const badge = screen.getByText("approved")
-    expect(badge).toHaveClass("badge", "bg-success")
-  })
-
-  it("displays status badge with correct styling for denied", () => {
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({
-        data: { ...mockApplication, status: "denied" },
-        isLoading: false,
-      }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-    )
-
-    renderComponent()
-
-    const badge = screen.getByText("denied")
-    expect(badge).toHaveClass("badge", "bg-danger")
-  })
-
-  it("calls approve mutation when Approve button is clicked", async () => {
-    const mutateFn = vi.fn(
-      (
-        _params: UpdateApplicationParams,
-        callbacks?: { onSuccess?: () => void; onError?: () => void },
-      ) => {
-        callbacks?.onSuccess?.()
-      },
-    ) as unknown as UpdateMutationResult["mutate"]
-
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({ data: mockApplication, isLoading: false }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: mutateFn }),
-    )
-
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
-    renderComponent()
-
-    const approveButton = screen.getByRole("button", { name: /Approve/i })
-    fireEvent.click(approveButton)
-
-    await waitFor(() => {
-      expect(mutateFn).toHaveBeenCalledWith(
-        { applicationId: "1", status: "approved" },
-        expect.any(Object),
+  it.each([
+    ["pending_review", "pending review", "badge", "bg-warning"],
+    ["approved", "approved", "badge", "bg-success"],
+    ["denied", "denied", "badge", "bg-danger"],
+  ] as const)(
+    "displays status badge for %s",
+    (status, expectedText, ...expectedClasses) => {
+      vi.mocked(useApplication).mockReturnValue(
+        mockUseApplicationReturn({
+          data: { ...mockApplication, status },
+          isLoading: false,
+        }),
       )
-    })
-
-    expect(alertSpy).toHaveBeenCalledWith("Application approved successfully!")
-    alertSpy.mockRestore()
-  })
-
-  it("calls deny mutation when Deny button is clicked", async () => {
-    const mutateFn = vi.fn(
-      (
-        _params: UpdateApplicationParams,
-        callbacks?: { onSuccess?: () => void; onError?: () => void },
-      ) => {
-        callbacks?.onSuccess?.()
-      },
-    ) as unknown as UpdateMutationResult["mutate"]
-
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({ data: mockApplication, isLoading: false }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: mutateFn }),
-    )
-
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
-
-    renderComponent()
-
-    const denyButton = screen.getByRole("button", { name: /Deny/i })
-    fireEvent.click(denyButton)
-
-    await waitFor(() => {
-      expect(mutateFn).toHaveBeenCalledWith(
-        { applicationId: "1", status: "denied" },
-        expect.any(Object),
+      vi.mocked(useUpdateApplication).mockReturnValue(
+        mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
       )
-    })
+      renderComponent()
+      const badge = screen.getByText(expectedText)
+      expect(badge).toHaveClass(...expectedClasses)
+    },
+  )
 
-    expect(alertSpy).toHaveBeenCalledWith("Application denied successfully!")
-    alertSpy.mockRestore()
-  })
+  it.each([
+    ["Approve", "approved", "Application approved successfully!"],
+    ["Deny", "denied", "Application denied successfully!"],
+  ] as const)(
+    "calls %s mutation when button is clicked",
+    async (buttonName, status, alertMessage) => {
+      const mutateFn = vi.fn<UpdateMutationResult["mutate"]>(
+        (_params, callbacks) => {
+          callbacks?.onSuccess?.(
+            {
+              status: "success",
+              message: "Success",
+            } as UpdateApplicationResponse,
+            _params,
+            undefined,
+            {} as MutationFunctionContext,
+          )
+        },
+      ) as unknown as UpdateMutationResult["mutate"]
+      vi.mocked(useApplication).mockReturnValue(
+        mockUseApplicationReturn({ data: mockApplication, isLoading: false }),
+      )
+      vi.mocked(useUpdateApplication).mockReturnValue(
+        mockUseUpdateApplicationReturn({ mutate: mutateFn }),
+      )
+      const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
+      renderComponent()
+      fireEvent.click(
+        screen.getByRole("button", { name: new RegExp(buttonName, "i") }),
+      )
+      await waitFor(() =>
+        expect(mutateFn).toHaveBeenCalledWith(
+          { applicationId: "1", status },
+          expect.any(Object),
+        ),
+      )
+      expect(alertSpy).toHaveBeenCalledWith(alertMessage)
+      alertSpy.mockRestore()
+    },
+  )
 
-  it("disables Approve button when application is already approved", () => {
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({
-        data: { ...mockApplication, status: "approved" },
-        isLoading: false,
-      }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-    )
-
-    renderComponent()
-
-    const approveButton = screen.getByRole("button", { name: /✓ Approved/i })
-    expect(approveButton).toBeDisabled()
-  })
-
-  it("disables Deny button when application is already denied", () => {
-    vi.mocked(useApplication).mockReturnValue(
-      mockUseApplicationReturn({
-        data: { ...mockApplication, status: "denied" },
-        isLoading: false,
-      }),
-    )
-    vi.mocked(useUpdateApplication).mockReturnValue(
-      mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
-    )
-
-    renderComponent()
-
-    const denyButton = screen.getByRole("button", { name: /✗ Denied/i })
-    expect(denyButton).toBeDisabled()
-  })
+  it.each([
+    ["approved", /✓ Approved/i],
+    ["denied", /✗ Denied/i],
+  ] as const)(
+    "disables correct button when application is %s",
+    (status, buttonName) => {
+      vi.mocked(useApplication).mockReturnValue(
+        mockUseApplicationReturn({
+          data: { ...mockApplication, status },
+          isLoading: false,
+        }),
+      )
+      vi.mocked(useUpdateApplication).mockReturnValue(
+        mockUseUpdateApplicationReturn({ mutate: vi.fn() }),
+      )
+      renderComponent()
+      expect(screen.getByRole("button", { name: buttonName })).toBeDisabled()
+    },
+  )
 
   it("displays feedback when present", () => {
     vi.mocked(useApplication).mockReturnValue(
