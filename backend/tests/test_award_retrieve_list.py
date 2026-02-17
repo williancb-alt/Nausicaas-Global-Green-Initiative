@@ -34,9 +34,7 @@ DEADLINES = [
 ]
 
 
-def test_retrieve_paginated_award_list(client, db, admin):
-    login_user(client, email=ADMIN_EMAIL)
-
+def _create_awards(client):
     for i in range(0, len(NAMES)):
         response = create_award(
             client,
@@ -44,6 +42,12 @@ def test_retrieve_paginated_award_list(client, db, admin):
             deadline_str=DEADLINES[i],
         )
         assert response.status_code == HTTPStatus.CREATED
+
+
+def test_retrieve_paginated_award_list(client, db, admin):
+    login_user(client, email=ADMIN_EMAIL)
+
+    _create_awards(client)
 
     response = retrieve_award_list(client, page=1, per_page=5)
     assert response.status_code == HTTPStatus.OK
@@ -63,6 +67,12 @@ def test_retrieve_paginated_award_list(client, db, admin):
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
 
+
+def test_retrieve_paginated_award_list_pagination_page_2(client, db, admin):
+    login_user(client, email=ADMIN_EMAIL)
+
+    _create_awards(client)
+
     response = retrieve_award_list(client, page=2, per_page=5)
     assert response.status_code == HTTPStatus.OK
 
@@ -81,6 +91,12 @@ def test_retrieve_paginated_award_list(client, db, admin):
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
 
+
+def test_retrieve_paginated_award_list_pagination_page_1(client, db, admin):
+    login_user(client, email=ADMIN_EMAIL)
+
+    _create_awards(client)
+
     response = retrieve_award_list(client, page=1, per_page=10)
     assert response.status_code == HTTPStatus.OK
 
@@ -98,6 +114,12 @@ def test_retrieve_paginated_award_list(client, db, admin):
         assert "deadline" in item and DEADLINES[i] in item["deadline"]
         assert "owner" in item and "email" in item["owner"]
         assert item["owner"]["email"] == ADMIN_EMAIL
+
+
+def test_retrieve_paginated_award_list_no_pagination(client, db, admin):
+    login_user(client, email=ADMIN_EMAIL)
+
+    _create_awards(client)
 
     response = retrieve_award_list(client)
     assert response.status_code == HTTPStatus.OK
