@@ -1,8 +1,7 @@
-import React from "react"
-import { JSX } from "react"
+import React, { type JSX } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate, Navigate, Link } from "react-router-dom"
+import { useNavigate, Navigate, Link, useLocation } from "react-router-dom"
 import { Button } from "../components/button/Button"
 import { useLogin } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
@@ -11,10 +10,25 @@ import { FormField } from "../components/form/FormField"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
 
+type AuthUserLike = { admin?: boolean } | null
+
+function getPostLoginRedirectPath(user: AuthUserLike, from?: string): string {
+  if (user?.admin) return "/admin"
+  if (from) return from
+  return "/"
+}
+
 export function Login(): JSX.Element {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useAuthStore()
   const loginMutation = useLogin()
+
+  const from = (location.state as { from?: string } | null)?.from
+
+  const handleFormSubmit: React.ChangeEventHandler<HTMLFormElement> = event => {
+    void handleSubmit(onLogin)(event)
+  }
 
   const {
     register,
@@ -29,18 +43,17 @@ export function Login(): JSX.Element {
     loginMutation.mutate(data, {
       onSuccess: () => {
         reset()
-        void navigate("/")
+        const user = useAuthStore.getState().user
+        const path = getPostLoginRedirectPath(user, from)
+        void navigate(path, { replace: true })
       },
     })
   }
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    void handleSubmit(onLogin)(e)
-  }
-
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    const user = useAuthStore.getState().user
+    const path = getPostLoginRedirectPath(user, from)
+    return <Navigate to={path} replace />
   }
 
   return (

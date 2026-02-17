@@ -1,33 +1,26 @@
 from http import HTTPStatus
-from datetime import datetime
 import json
-from typing import Any, TypedDict
+from typing import Any
 
-from flask import Response, jsonify, url_for
+from flask import Response, jsonify, request, url_for
 from flask_restx import abort, marshal
 from flask_sqlalchemy.pagination import Pagination
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import (
-    token_required,
     admin_token_required,
 )
+from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
 from nausicass_global_green_initiative_api.api.grants.dto import (
     pagination_model,
     grant_name,
+    apply_custom_fields_change,
+    apply_standard_field_changes,
+    is_admin_check,
 )
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
-
-
-class GrantDictionary(TypedDict, total=False):
-    """Type definition for API requests regarding grants"""
-
-    name: str
-    deadline: datetime
-    description: str
-    custom_fields: str | None
 
 
 @admin_token_required
@@ -56,6 +49,8 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
     grant.custom_fields = parsed_custom_fields
 
     owner = User.find_by_public_id(create_grant.public_id)  # type: ignore[attr-defined]
+    if not owner:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     grant.owner_id = owner.id
     db.session.add(grant)
     db.session.commit()
@@ -76,9 +71,18 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
     return response
 
 
-@token_required
 def retrieve_grant_list(page: int, per_page: int) -> Response:
-    pagination = Grant.query.paginate(page=page, per_page=per_page, error_out=False)
+    """
+    Public endpoint - no authentication required.
+    Hides grants marked as hidden from non-admin users.
+    """
+    # Check if the user is an admin (check both cookie and Authorization header)
+    is_admin = is_admin_check(request)
+
+    # Filter out hidden grants unless user is admin
+    query = Grant.query if is_admin else Grant.query.filter_by(hidden=False)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     response_data = marshal(pagination, pagination_model)
     response_data["links"] = _pagination_nav_links(pagination)
     response = jsonify(response_data)
@@ -87,8 +91,8 @@ def retrieve_grant_list(page: int, per_page: int) -> Response:
     return response
 
 
-@token_required
 def retrieve_grant(name: str) -> Grant:
+    """Public endpoint - no authentication required."""
     return Grant.query.filter_by(name=name).first_or_404(
         description=f"{name} not found in database."
     )
@@ -101,36 +105,10 @@ def update_grant(
     grant = Grant.find_by_name(name)
     if grant:
         # Capture what changed before updating
-        changes = {}
+        changes: dict[str, Any] = {}
 
-        # Check custom_fields change
-        custom_fields_str = grant_dict.get("custom_fields")
-        if custom_fields_str:
-            try:
-                parsed_custom_fields = json.loads(custom_fields_str)
-                if grant.custom_fields != parsed_custom_fields:
-                    changes["custom_fields"] = {
-                        "old": grant.custom_fields,
-                        "new": parsed_custom_fields,
-                    }
-                grant.custom_fields = parsed_custom_fields
-            except json.JSONDecodeError:
-                abort(
-                    HTTPStatus.BAD_REQUEST,
-                    "custom_fields must be valid JSON",
-                    status="fail",
-                )
-
-        # Check other field changes
-        for k, v in grant_dict.items():
-            if k != "custom_fields":
-                old_value = getattr(grant, k)
-                if old_value != v:
-                    changes[k] = {
-                        "old": str(old_value) if old_value is not None else None,
-                        "new": str(v) if v is not None else None,
-                    }
-                setattr(grant, k, v)
+        apply_custom_fields_change(grant, grant_dict, changes)
+        apply_standard_field_changes(grant, grant_dict, changes)
 
         db.session.commit()
 
@@ -139,6 +117,8 @@ def update_grant(
             user = User.find_by_public_id(
                 update_grant.public_id  # type: ignore[attr-defined]
             )
+            if not user:
+                abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
             AuditService.log_grant_edited(
                 grant_id=grant.id,
                 user_id=user.id,
@@ -166,6 +146,8 @@ def delete_grant(name: str) -> tuple[str, HTTPStatus]:
 
     # Log deletion before it happens
     user = User.find_by_public_id(delete_grant.public_id)  # type: ignore[attr-defined]
+    if not user:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     AuditService.log_grant_deleted(
         grant_id=grant.id,
         user_id=user.id,

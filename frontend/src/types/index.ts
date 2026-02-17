@@ -46,7 +46,38 @@ export type CreateGrantParams = {
 
 export type UpdateGrantParams = {
   name: string
-  deadline: string
-  description: string
+  deadline?: string
+  description?: string
   custom_fields?: string // JSON string
+  hidden?: boolean
+}
+
+export type ApplicationStatus =
+  | "pending_review"
+  | "in_review"
+  | "approved"
+  | "denied"
+
+export interface ApplicationApplicant {
+  email: string
+  public_id: string
+}
+
+export interface ApplicationGrant {
+  name: string
+  description?: string
+  custom_fields?: {
+    configs: DynamicFieldConfig[]
+  }
+}
+
+export interface Application {
+  id: number
+  submitted_at: string
+  submitted_date: string
+  status: ApplicationStatus
+  field_values?: Record<string, string>
+  feedback?: string
+  applicant: ApplicationApplicant
+  grant: ApplicationGrant
 }
