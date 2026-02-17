@@ -44,6 +44,26 @@ def _create_awards(client):
         assert response.status_code == HTTPStatus.CREATED
 
 
+def _assert_paginated_response(
+    response,
+    has_prev,
+    has_next,
+    page,
+    total_pages,
+    per_page,
+    total_items,
+    items_len,
+):
+    data = response.json
+    assert "has_prev" in data and data["has_prev"] == has_prev
+    assert "has_next" in data and data["has_next"] == has_next
+    assert "page" in data and data["page"] == page
+    assert "total_pages" in data and data["total_pages"] == total_pages
+    assert "items_per_page" in data and data["items_per_page"] == per_page
+    assert "total_items" in data and data["total_items"] == total_items
+    assert "items" in data and len(data["items"]) == items_len
+
+
 def test_retrieve_paginated_award_list(client, db, admin):
     login_user(client, email=ADMIN_EMAIL)
 
@@ -52,13 +72,16 @@ def test_retrieve_paginated_award_list(client, db, admin):
     response = retrieve_award_list(client, page=1, per_page=5)
     assert response.status_code == HTTPStatus.OK
 
-    assert "has_prev" in response.json and not response.json["has_prev"]
-    assert "has_next" in response.json and response.json["has_next"]
-    assert "page" in response.json and response.json["page"] == 1
-    assert "total_pages" in response.json and response.json["total_pages"] == 2
-    assert "items_per_page" in response.json and response.json["items_per_page"] == 5
-    assert "total_items" in response.json and response.json["total_items"] == 7
-    assert "items" in response.json and len(response.json["items"]) == 5
+    _assert_paginated_response(
+        response,
+        has_prev=False,
+        has_next=True,
+        page=1,
+        total_pages=2,
+        per_page=5,
+        total_items=7,
+        items_len=5,
+    )
 
     for i in range(0, len(response.json["items"])):
         item = response.json["items"][i]
@@ -76,13 +99,16 @@ def test_retrieve_paginated_award_list_pagination_page_2(client, db, admin):
     response = retrieve_award_list(client, page=2, per_page=5)
     assert response.status_code == HTTPStatus.OK
 
-    assert "has_prev" in response.json and response.json["has_prev"]
-    assert "has_next" in response.json and not response.json["has_next"]
-    assert "page" in response.json and response.json["page"] == 2
-    assert "total_pages" in response.json and response.json["total_pages"] == 2
-    assert "items_per_page" in response.json and response.json["items_per_page"] == 5
-    assert "total_items" in response.json and response.json["total_items"] == 7
-    assert "items" in response.json and len(response.json["items"]) == 2
+    _assert_paginated_response(
+        response,
+        has_prev=True,
+        has_next=False,
+        page=2,
+        total_pages=2,
+        per_page=5,
+        total_items=7,
+        items_len=2,
+    )
 
     for i in range(5, response.json["total_items"]):
         item = response.json["items"][i - 5]
@@ -100,13 +126,16 @@ def test_retrieve_paginated_award_list_pagination_page_1(client, db, admin):
     response = retrieve_award_list(client, page=1, per_page=10)
     assert response.status_code == HTTPStatus.OK
 
-    assert "has_prev" in response.json and not response.json["has_prev"]
-    assert "has_next" in response.json and not response.json["has_next"]
-    assert "page" in response.json and response.json["page"] == 1
-    assert "total_pages" in response.json and response.json["total_pages"] == 1
-    assert "items_per_page" in response.json and response.json["items_per_page"] == 10
-    assert "total_items" in response.json and response.json["total_items"] == 7
-    assert "items" in response.json and len(response.json["items"]) == 7
+    _assert_paginated_response(
+        response,
+        has_prev=False,
+        has_next=False,
+        page=1,
+        total_pages=1,
+        per_page=10,
+        total_items=7,
+        items_len=7,
+    )
 
     for i in range(0, len(response.json["items"])):
         item = response.json["items"][i]
@@ -124,13 +153,16 @@ def test_retrieve_paginated_award_list_no_pagination(client, db, admin):
     response = retrieve_award_list(client)
     assert response.status_code == HTTPStatus.OK
 
-    assert "has_prev" in response.json and not response.json["has_prev"]
-    assert "has_next" in response.json and not response.json["has_next"]
-    assert "page" in response.json and response.json["page"] == 1
-    assert "total_pages" in response.json and response.json["total_pages"] == 1
-    assert "items_per_page" in response.json and response.json["items_per_page"] == 10
-    assert "total_items" in response.json and response.json["total_items"] == 7
-    assert "items" in response.json and len(response.json["items"]) == 7
+    _assert_paginated_response(
+        response,
+        has_prev=False,
+        has_next=False,
+        page=1,
+        total_pages=1,
+        per_page=10,
+        total_items=7,
+        items_len=7,
+    )
 
     for i in range(0, len(response.json["items"])):
         item = response.json["items"][i]
