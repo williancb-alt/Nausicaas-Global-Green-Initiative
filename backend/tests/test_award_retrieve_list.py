@@ -46,22 +46,18 @@ def _create_awards(client):
 
 def _assert_paginated_response(
     response,
-    has_prev,
-    has_next,
-    page,
-    total_pages,
-    per_page,
-    total_items,
-    items_len,
+    expected,
 ):
     data = response.json
-    assert "has_prev" in data and data["has_prev"] == has_prev
-    assert "has_next" in data and data["has_next"] == has_next
-    assert "page" in data and data["page"] == page
-    assert "total_pages" in data and data["total_pages"] == total_pages
-    assert "items_per_page" in data and data["items_per_page"] == per_page
-    assert "total_items" in data and data["total_items"] == total_items
-    assert "items" in data and len(data["items"]) == items_len
+    assert "has_prev" in data and data["has_prev"] == expected["has_prev"]
+    assert "has_next" in data and data["has_next"] == expected["has_next"]
+    assert "page" in data and data["page"] == expected["page"]
+    assert "total_pages" in data and data["total_pages"] == expected["total_pages"]
+    assert (
+        "items_per_page" in data and data["items_per_page"] == expected["items_per_page"]
+    )
+    assert "total_items" in data and data["total_items"] == expected["total_items"]
+    assert "items" in data and len(data["items"]) == expected["items_len"]
 
 
 def test_retrieve_paginated_award_list(client, db, admin):
@@ -74,13 +70,15 @@ def test_retrieve_paginated_award_list(client, db, admin):
 
     _assert_paginated_response(
         response,
-        has_prev=False,
-        has_next=True,
-        page=1,
-        total_pages=2,
-        per_page=5,
-        total_items=7,
-        items_len=5,
+        expected={
+            "has_prev": False,
+            "has_next": True,
+            "page": 1,
+            "total_pages": 2,
+            "items_per_page": 5,
+            "total_items": 7,
+            "items_len": 5,
+        },
     )
 
     for i in range(0, len(response.json["items"])):
@@ -101,13 +99,15 @@ def test_retrieve_paginated_award_list_pagination_page_2(client, db, admin):
 
     _assert_paginated_response(
         response,
-        has_prev=True,
-        has_next=False,
-        page=2,
-        total_pages=2,
-        per_page=5,
-        total_items=7,
-        items_len=2,
+        expected={
+            "has_prev": True,
+            "has_next": False,
+            "page": 2,
+            "total_pages": 2,
+            "items_per_page": 5,
+            "total_items": 7,
+            "items_len": 2,
+        },
     )
 
     for i in range(5, response.json["total_items"]):
@@ -128,13 +128,15 @@ def test_retrieve_paginated_award_list_pagination_page_1(client, db, admin):
 
     _assert_paginated_response(
         response,
-        has_prev=False,
-        has_next=False,
-        page=1,
-        total_pages=1,
-        per_page=10,
-        total_items=7,
-        items_len=7,
+        expected={
+            "has_prev": False,
+            "has_next": False,
+            "page": 1,
+            "total_pages": 1,
+            "items_per_page": 10,
+            "total_items": 7,
+            "items_len": 7,
+        },
     )
 
     for i in range(0, len(response.json["items"])):
@@ -155,13 +157,15 @@ def test_retrieve_paginated_award_list_no_pagination(client, db, admin):
 
     _assert_paginated_response(
         response,
-        has_prev=False,
-        has_next=False,
-        page=1,
-        total_pages=1,
-        per_page=10,
-        total_items=7,
-        items_len=7,
+        expected={
+            "has_prev": False,
+            "has_next": False,
+            "page": 1,
+            "total_pages": 1,
+            "items_per_page": 10,
+            "total_items": 7,
+            "items_len": 7,
+        },
     )
 
     for i in range(0, len(response.json["items"])):
