@@ -10,7 +10,9 @@ from nausicass_global_green_initiative_api.util.datetime_util import (
     remaining_fromtimestamp,
     format_timespan_digits,
 )
-from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.token_blacklist import (
+    BlacklistedToken,
+)
 
 
 def process_registration_request(email: str, password: str) -> Response:

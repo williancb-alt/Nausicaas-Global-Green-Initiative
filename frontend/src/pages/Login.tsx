@@ -110,6 +110,30 @@ export function Login(): JSX.Element {
               </Link>
             </div>
           </form>
+
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-3 p-2 w-100 rounded"
+            onClick={() => {
+              const base = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
+              window.location.href = `${base}/api/v1/auth/oauth/google`
+            }}
+          >
+            Continue with Google
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-2 p-2 w-100 rounded"
+            onClick={() => {
+              const base = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
+              window.location.href = `${base}/api/v1/auth/oauth/github`
+            }}
+          >
+            Continue with GitHub
+          </Button>
         </div>
       </div>
       <Link
