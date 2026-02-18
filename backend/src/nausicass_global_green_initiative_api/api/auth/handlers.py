@@ -1,16 +1,33 @@
+import threading
 from http import HTTPStatus
 
-from flask import Response, current_app, jsonify
+from flask import Response, current_app, jsonify, render_template
 from flask_restx import abort
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import token_required
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import (
     remaining_fromtimestamp,
     format_timespan_digits,
 )
 from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+
+
+def _send_welcome_email_async(app, email: str) -> None:
+    with app.app_context():
+        try:
+            html_body = render_template("email/welcome.html", email=email)
+            plain_body = f"Your account {email} has been created."
+            EmailService.send_email(
+                to=[email],
+                subject="Welcome to Nausicaas Global Green Initiative",
+                html_body=html_body,
+                plain_body=plain_body,
+            )
+        except Exception:
+            app.logger.exception("Failed to send welcome email")
 
 
 def process_registration_request(email: str, password: str) -> Response:
@@ -19,6 +36,12 @@ def process_registration_request(email: str, password: str) -> Response:
     new_user = User(email=email, password=password)
     db.session.add(new_user)
     db.session.commit()
+    app = current_app._get_current_object()
+    threading.Thread(
+        target=_send_welcome_email_async,
+        args=(app, email),
+        daemon=True,
+    ).start()
     access_token = new_user.encode_access_token()
     return _create_auth_successful_response(
         token=access_token,
