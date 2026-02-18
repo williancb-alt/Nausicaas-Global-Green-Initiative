@@ -229,6 +229,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODE_COV_TOKEN }}
+          slug: ${{ github.repository_owner }}/${{ github.event.repository.name }}
           files: backend/coverage.xml
           flags: backend
           name: backend-coverage

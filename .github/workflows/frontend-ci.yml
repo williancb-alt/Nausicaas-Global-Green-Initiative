@@ -58,7 +58,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
   security_snyk:
     runs-on: ubuntu-latest
@@ -110,6 +110,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODE_COV_TOKEN }}
+          slug: ${{ github.repository_owner }}/${{ github.event.repository.name }}
           files: frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
