@@ -58,7 +58,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
 
   security_snyk:
     runs-on: ubuntu-latest

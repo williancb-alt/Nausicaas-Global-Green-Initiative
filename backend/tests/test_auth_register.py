@@ -1,5 +1,7 @@
 from http import HTTPStatus
+from unittest.mock import MagicMock
 
+from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.models.user import User
 from tests.util import (
     EMAIL,
@@ -57,3 +59,33 @@ def test_auth_register_invalid_email(client):
     assert "password" not in response.json["errors"]
     assert "email" in response.json["errors"]
     assert response.json["errors"]["email"] == f"{invalid_email} is not a valid email"
+
+
+def test_register_triggers_welcome_email_once_on_success(client, db, monkeypatch):
+    sent = {"args": None}
+
+    def fake_send_email(*args, **kwargs):
+        sent["args"] = (args, kwargs)
+
+    monkeypatch.setattr(EmailService, "send_email", fake_send_email)
+
+    response = register_user(client, email=EMAIL, password=PASSWORD)
+    assert response.status_code == HTTPStatus.CREATED
+
+    assert sent["args"] is not None
+    _, kwargs = sent["args"]
+    assert kwargs["to"] == [EMAIL]
+    assert "Welcome to Nausicaas Global Green Initiative" in kwargs["subject"]
+
+
+def test_register_does_not_trigger_welcome_email_on_conflict(client, db, monkeypatch):
+    user = User(email=EMAIL, password=PASSWORD)
+    db.session.add(user)
+    db.session.commit()
+
+    fake = MagicMock()
+    monkeypatch.setattr(EmailService, "send_email", fake)
+
+    response = register_user(client, email=EMAIL, password=PASSWORD)
+    assert response.status_code == HTTPStatus.CONFLICT
+    fake.assert_not_called()

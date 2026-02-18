@@ -12,6 +12,9 @@ def test_config_development():
     )
     assert app.config["TOKEN_EXPIRE_HOURS"] == 0
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 15
+    assert "EMAIL_ENABLED" in app.config
+    assert "ACS_EMAIL_SENDER" in app.config
+    assert "ACS_EMAIL_CONNECTION_STRING" in app.config
 
 
 def test_config_testing():
@@ -24,6 +27,9 @@ def test_config_testing():
     )
     assert app.config["TOKEN_EXPIRE_HOURS"] == 0
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 0
+    assert "EMAIL_ENABLED" in app.config
+    assert "ACS_EMAIL_SENDER" in app.config
+    assert "ACS_EMAIL_CONNECTION_STRING" in app.config
 
 
 def test_config_production():
@@ -35,3 +41,6 @@ def test_config_production():
     )
     assert app.config["TOKEN_EXPIRE_HOURS"] == 1
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 0
+    assert "EMAIL_ENABLED" in app.config
+    assert "ACS_EMAIL_SENDER" in app.config
+    assert "ACS_EMAIL_CONNECTION_STRING" in app.config

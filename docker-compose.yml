@@ -26,6 +26,9 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/nausicaa_dev
       TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/nausicaa_test
       SECRET_KEY: update-this
+      ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
+      ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
     depends_on:
       - db
     ports:
@@ -103,6 +106,9 @@ services:
       FLASK_ENV: testing
       TEST_DATABASE_URL: postgresql://postgres:postgres@db-test:5432/nausicaa_test
       SECRET_KEY: ${SECRET_KEY:-test-secret-key}
+      ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
+      ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
     depends_on:
       db-test:
         condition: service_healthy
