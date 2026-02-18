@@ -37,7 +37,7 @@ export const routes = [
   {
     path: "/admin",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={true}>
         <AdminDashboardPage />
       </ProtectedRoute>
     ),
@@ -45,7 +45,7 @@ export const routes = [
   {
     path: "/admin/applications",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={true}>
         <Applications />
       </ProtectedRoute>
     ),
@@ -53,7 +53,7 @@ export const routes = [
   {
     path: "/admin/applications/:id",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={true}>
         <AdminApplicationView />
       </ProtectedRoute>
     ),
@@ -61,7 +61,7 @@ export const routes = [
   {
     path: "/admin/grants",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={true}>
         <GrantManagementPage />
       </ProtectedRoute>
     ),
@@ -81,7 +81,7 @@ export const routes = [
   {
     path: "/admin/audit",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute adminOnly={true}>
         <AuditLogs />
       </ProtectedRoute>
     ),

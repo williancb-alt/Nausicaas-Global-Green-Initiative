@@ -8,10 +8,13 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
-  if (adminOnly && !useAuthStore.getState().user?.admin) return <Navigate to="/dashboard" />;
-    
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  if (adminOnly && !user?.admin) {
+    return <Navigate to="/applications" replace />;
+  }
+
   return <>{children}</>;
 }
