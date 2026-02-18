@@ -2,7 +2,7 @@ import React from "react"
 import { JSX } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useNavigate, /*Navigate*/ Link, /*useLocation*/ } from "react-router-dom"
+import { useNavigate, Navigate, Link, /*useLocation*/ } from "react-router-dom"
 import { Button } from "../components/button/Button"
 import { useLogin } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
@@ -13,12 +13,12 @@ import { BUTTON_TEXT } from "../utils/constants"
 
 export function Login(): JSX.Element {
   const navigate = useNavigate()
-//  const location = useLocation()
-//  const { isAuthenticated } = useAuthStore()
+  //  const location = useLocation()
+  const { isAuthenticated } = useAuthStore()
   const loginMutation = useLogin()
 
   // Get redirect destination from location state (set when redirecting from Apply button)
- // const from = (location.state as { from?: string })?.from
+  // const from = (location.state as { from?: string })?.from
 
   const {
     register,
@@ -40,7 +40,7 @@ export function Login(): JSX.Element {
         if (user?.admin) {
           navigate("/admin", { replace: true })
         } else {
-          navigate("/dashboard", { replace: true })
+          navigate("/applications", { replace: true })
         }
       },
     })
@@ -51,13 +51,13 @@ export function Login(): JSX.Element {
     void handleSubmit(onLogin)(e)
   }
 
-  //if (isAuthenticated) {
-  //  const user = useAuthStore.getState().user
-  //  if (user?.admin) {
-  //    return <Navigate to="/admin" replace />
-  //  }
-  //  return <Navigate to="/dashboard" replace />
- // }
+  if (isAuthenticated) {
+    const user = useAuthStore.getState().user
+    if (user?.admin) {
+      return <Navigate to="/admin" replace />
+    }
+    return <Navigate to="/applications" replace />
+  }
 
   return (
     <div

@@ -16,6 +16,8 @@ RUN npm ci
 
 COPY . .
 
+RUN npm install
+
 RUN npm run build
 
 FROM nginx:stable-alpine

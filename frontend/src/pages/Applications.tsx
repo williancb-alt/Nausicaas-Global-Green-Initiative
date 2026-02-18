@@ -42,9 +42,11 @@ export function Applications(): JSX.Element {
     <div style={{ backgroundColor: "#f0fdf4", minHeight: "100vh" }} className="py-4">
       <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1 className="h3 mb-0" style={{ color: "#2f6f44", fontWeight: "700" }}>
-            All Applications
-          </h1>
+          <div className="d-flex align-items-center gap-3">
+            <h1 className="h3 mb-0" style={{ color: "#2f6f44", fontWeight: "700" }}>
+              All Applications
+            </h1>
+          </div>
           <span
             className="badge"
             style={{ backgroundColor: "#3b7a57", color: "white", fontSize: "0.95rem" }}

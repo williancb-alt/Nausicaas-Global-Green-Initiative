@@ -31,7 +31,7 @@ export function Signup(): JSX.Element {
       {
         onSuccess: () => {
           reset()
-          void navigate("/")
+          void navigate("/applications")
         },
       },
     )
@@ -43,7 +43,7 @@ export function Signup(): JSX.Element {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/applications" replace />
   }
 
   return (

@@ -3,7 +3,6 @@ import { ForgotPassword } from "./pages/ForgotPassword"
 import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
 import { Applications } from "./pages/Applications"
-import { MyApplications } from "./pages/MyApplications"
 import { AdminDashboardPage } from "./pages/AdminDashboardPage"
 import { AdminApplicationView } from "./pages/AdminApplicationView"
 import { GrantManagementPage } from "./pages/GrantManagementPage"
@@ -11,28 +10,12 @@ import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 import { AuditLogs } from "./pages/AuditLogs"
 import { UserDashboard } from "./pages/UserDashboard"
-import { useAuthStore } from "./store/authStore"
 
 
 export const routes = [
   {
     path: "/",
     element: <LandingPage />,
-  },
-  {
-    path: "/userdashboard",
-    element: (
-      <ProtectedRoute>
-        <UserDashboard 
-          onLogout={() => {
-            useAuthStore.getState().clearAuth();
-            window.location.href = '/login';  // Simple redirect
-          }}
-          onNewApplication={() => window.location.href = '/grants/demo/apply'}
-          onViewApplication={(id: number) => window.location.href = `/applications/${id}`}
-        />
-      </ProtectedRoute>
-    ),
   },
 
   {
@@ -47,7 +30,7 @@ export const routes = [
     path: "/applications",
     element: (
       <ProtectedRoute>
-        <MyApplications />
+        <UserDashboard />
       </ProtectedRoute>
     ),
   },

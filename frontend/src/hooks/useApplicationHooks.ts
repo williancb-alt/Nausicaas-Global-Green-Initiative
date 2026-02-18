@@ -44,3 +44,36 @@ export function useSubmitApplication() {
     },
   })
 }
+
+// Update an application
+export function useUpdateApplication() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number
+      data: { status?: string; feedback?: string; field_values?: Record<string, string> }
+    }) => api.applications.updateApplication(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["myApplications"] })
+      queryClient.invalidateQueries({ queryKey: ["applications"] })
+      queryClient.invalidateQueries({ queryKey: ["application", String(variables.id)] })
+    },
+  })
+}
+
+// Delete an application
+export function useDeleteApplication() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => api.applications.deleteApplication(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myApplications"] })
+      queryClient.invalidateQueries({ queryKey: ["applications"] })
+    },
+  })
+}

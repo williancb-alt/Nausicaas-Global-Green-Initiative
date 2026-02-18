@@ -55,4 +55,18 @@ export const applications = {
     )
     return response.data
   },
+
+  // Update an application (admin only for status/feedback, or user for content)
+  updateApplication: async (
+    id: number,
+    data: { status?: string; feedback?: string; field_values?: Record<string, string> }
+  ): Promise<Application> => {
+    const response = await apiClient.put<Application>(`/api/v1/applications/${id}`, data)
+    return response.data
+  },
+
+  // Delete an application
+  deleteApplication: async (id: number): Promise<void> => {
+    await apiClient.delete(`/api/v1/applications/${id}`)
+  },
 }
