@@ -68,9 +68,9 @@ export async function userSeesGrantBadge(
   badgeText: string,
 ) {
   await userPage.waitForTimeout(1000)
-  await userPage.getByRole("link", { name: "My Applications" }).click()
+  await userPage.getByRole("link", { name: "Dashboard" }).click()
   await expect(
-    userPage.getByRole("heading", { name: "My Applications" }),
+    userPage.getByText(/Recent Activity/i),
   ).toBeVisible({ timeout: 10000 })
   await userPage.getByRole("link", { name: "Home", exact: true }).click()
   await expect(
