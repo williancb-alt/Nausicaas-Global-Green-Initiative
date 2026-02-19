@@ -9,6 +9,7 @@ import { loginSchema, type LoginFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
+import { OAuthButtons } from "../features/oauth/OAuthButtons"
 
 type AuthUserLike = { admin?: boolean } | null
 
@@ -110,6 +111,7 @@ export function Login(): JSX.Element {
               </Link>
             </div>
           </form>
+          <OAuthButtons variant="signin" />
         </div>
       </div>
       <Link

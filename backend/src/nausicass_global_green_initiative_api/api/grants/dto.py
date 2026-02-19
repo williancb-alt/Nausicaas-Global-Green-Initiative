@@ -12,7 +12,16 @@ from nausicass_global_green_initiative_api.api.grants.types import GrantDictiona
 
 from dateutil import parser
 from flask_restx import Model
-from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
+from flask_restx.fields import (
+    Boolean,
+    DateTime,
+    Integer,
+    List,
+    Nested,
+    Raw,
+    String,
+    Url,
+)
 from flask_restx.inputs import positive, boolean
 from flask_restx.reqparse import RequestParser
 
