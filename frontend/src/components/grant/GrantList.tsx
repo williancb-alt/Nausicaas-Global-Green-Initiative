@@ -50,9 +50,9 @@ export function GrantsList({
 
   return (
     <>
-      <div className="row">
+      <div className="row justify-content-center">
         {grants.map(grant => (
-          <div key={grant.name} className="col-lg-6 mb-4">
+          <div key={grant.name} className="col-12 mb-4">
             <PublicGrantCard
               grant={grant}
               applicationStatus={applicationStatusMap.get(grant.name)}

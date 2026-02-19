@@ -11,11 +11,20 @@ import { GrantManagementPage } from "./pages/GrantManagementPage"
 import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 import { AuditLogs } from "./pages/AuditLogs"
+import { UserDashboard } from "./pages/UserDashboard"
 
 export const routes = [
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <UserDashboard />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/grants/:grantName/apply",
