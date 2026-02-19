@@ -30,6 +30,7 @@ class ApplicationUpdateDict(TypedDict, total=False):
 
     status: str | None
     feedback: str | None
+    field_values: dict | None
 
 
 @token_required
@@ -172,6 +173,8 @@ def update_application(
         application.status = application_dict["status"]
     if application_dict.get("feedback") is not None:
         application.feedback = application_dict["feedback"]
+    if application_dict.get("field_values"):
+        application.field_values = application_dict["field_values"]
 
     db.session.commit()
 

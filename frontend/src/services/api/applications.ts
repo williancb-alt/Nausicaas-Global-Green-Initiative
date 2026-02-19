@@ -58,10 +58,14 @@ export const applications = {
     return response.data
   },
 
-  // Update application status/feedback (admin only)
+  // Update application (admin can update status/feedback/fields; user can update fields if pending)
   updateApplication: async (
     applicationId: string,
-    data: { status?: string; feedback?: string },
+    data: {
+      status?: string
+      feedback?: string
+      field_values?: Record<string, string>
+    },
   ): Promise<{ status: string; message: string }> => {
     const response = await apiClient.put<{ status: string; message: string }>(
       `/api/v1/applications/${applicationId}`,
@@ -69,5 +73,10 @@ export const applications = {
       { headers: { "Content-Type": "application/json" } },
     )
     return response.data
+  },
+
+  // Delete an application
+  deleteApplication: async (applicationId: string): Promise<void> => {
+    await apiClient.delete(`/api/v1/applications/${applicationId}`)
   },
 }

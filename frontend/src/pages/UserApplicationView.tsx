@@ -11,7 +11,7 @@ export function UserApplicationView(): JSX.Element {
   const { data: application, isLoading } = useApplication(id)
 
   const handleBackToApplications = () => {
-    void navigate("/applications")
+    void navigate("/dashboard")
   }
 
   if (isLoading) {

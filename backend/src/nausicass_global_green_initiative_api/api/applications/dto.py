@@ -51,6 +51,14 @@ update_application_reqparser.add_argument(
     nullable=True,
     help="Admin feedback on the application",
 )
+update_application_reqparser.add_argument(
+    "field_values",
+    type=dict,
+    location="json",
+    required=False,
+    nullable=True,
+    help="Updated JSON object containing field values",
+)
 
 pagination_reqparser = RequestParser(bundle_errors=True)
 pagination_reqparser.add_argument("page", type=positive, required=False, default=1)

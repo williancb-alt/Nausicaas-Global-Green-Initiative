@@ -16,8 +16,21 @@ export async function createTestAdminUser(
     `admin-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`
 
   try {
-    const cmd = `docker compose --profile test run --rm --no-deps -e FLASK_ENV=testing backend-test /app/.venv/bin/python -m flask --app run.py add-user ${testEmail} --admin --password ${password}`
+    let cmd
+    if (API_BASE_URL.includes("8080")) {
+      // Dev environment - use exec on running container
+      // Note: We use 'flask --app run.py' assuming the container is running that.
+      // But we need to use the full path or ensure it's in PATH.
+      // The dev container command is: python -m flask ...
+      // We can use 'python -m flask ...' inside exec.
+      cmd = `docker compose exec backend python -m flask --app run.py add-user ${testEmail} --admin --password "${password}"`
+    } else {
+      // Test environment - use run --rm
+      cmd = `docker compose --profile test run --rm --no-deps -e FLASK_ENV=testing backend-test python -m flask --app run.py add-user ${testEmail} --admin --password "${password}"`
+    }
 
+    // We need to pass input to exec if it's interactive? No, add-user is likely non-interactive.
+    // However, docker compose exec might require TTY? Usually fine in execSync.
     execSync(cmd, { stdio: "pipe" })
 
     return { email: testEmail, password }
