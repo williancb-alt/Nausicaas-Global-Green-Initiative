@@ -29,6 +29,9 @@ class Config:
             "client_kwargs": {"scope": "read:user user:email"},
         },
     ]
+    ACS_EMAIL_CONNECTION_STRING = os.getenv("ACS_EMAIL_CONNECTION_STRING")
+    ACS_EMAIL_SENDER = os.getenv("ACS_EMAIL_SENDER")
+    EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true")
     BCRYPT_LOG_ROUNDS = 4
     TOKEN_EXPIRE_HOURS = 0
     TOKEN_EXPIRE_MINUTES = 0
@@ -43,6 +46,7 @@ class TestingConfig(Config):
     """Testing configuration."""
 
     TESTING = True
+    EMAIL_ENABLED = False
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "TEST_DATABASE_URL",
         "postgresql://postgres:postgres@localhost:5432/nausicaa_test",

@@ -21,6 +21,7 @@ PROJECT_URLS = {
 }
 INSTALL_REQUIRES = [
     "authlib",
+    "azure-communication-email",
     "Flask>=3.1.0",
     "Flask-Bcrypt",
     "Flask-Cors",

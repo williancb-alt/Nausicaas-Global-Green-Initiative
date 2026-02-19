@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 
 def create_app(config_name: str) -> Flask:
-    app = Flask("nausicass-global-green-initiative-api")
+    app = Flask("nausicass_global_green_initiative_api")
     app.config.from_object(get_config(config_name))
 
     # Deliberate import placement to avoid a circular import

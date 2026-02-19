@@ -45,6 +45,56 @@ def logout_user(test_client: FlaskClient) -> Response:
     return test_client.post(url_for("api.auth_logout"))
 
 
+def create_award(
+    test_client: FlaskClient,
+    award_name: str = DEFAULT_NAME,
+    deadline_str: str = DEFAULT_DEADLINE,
+    description: str = DEFAULT_DESCRIPTION,
+) -> Response:
+    data = f"name={award_name}&deadline={deadline_str}&description={description}"
+    return test_client.post(
+        url_for("api.award_list"),
+        data=data,
+        content_type="application/x-www-form-urlencoded",
+    )
+
+
+def retrieve_award_list(
+    test_client: FlaskClient,
+    page: Optional[int] = None,
+    per_page: Optional[int] = None,
+) -> Response:
+    return test_client.get(
+        url_for("api.award_list", page=page, per_page=per_page),
+    )
+
+
+def retrieve_award(test_client: FlaskClient, award_name: str) -> Response:
+    return test_client.get(
+        url_for("api.award", name=award_name),
+    )
+
+
+def update_award(
+    test_client: FlaskClient,
+    award_name: str,
+    deadline_str: str,
+    description: str = DEFAULT_DESCRIPTION,
+) -> Response:
+    data = f"deadline={deadline_str}&description={description}"
+    return test_client.put(
+        url_for("api.award", name=award_name),
+        data=data,
+        content_type="application/x-www-form-urlencoded",
+    )
+
+
+def delete_award(test_client: FlaskClient, award_name: str) -> Response:
+    return test_client.delete(
+        url_for("api.award", name=award_name),
+    )
+
+
 def create_grant(
     test_client: FlaskClient,
     grant_name: str = DEFAULT_NAME,
