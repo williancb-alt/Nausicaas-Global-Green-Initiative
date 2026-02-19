@@ -61,7 +61,7 @@ export const applications = {
   // Update application (admin can update status/feedback/fields; user can update fields if pending)
   updateApplication: async (
     applicationId: string,
-    data: { status?: string; feedback?: string; field_values?: Record<string, any> },
+    data: { status?: string; feedback?: string; field_values?: Record<string, string> },
   ): Promise<{ status: string; message: string }> => {
     const response = await apiClient.put<{ status: string; message: string }>(
       `/api/v1/applications/${applicationId}`,

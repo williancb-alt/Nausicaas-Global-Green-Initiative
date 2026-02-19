@@ -15,11 +15,11 @@ export function UserDashboard(): JSX.Element {
     const { stats } = useAdminStats(applications)
 
     const handleApply = () => {
-        navigate("/") // Navigate to landing page to see available grants
+        void navigate("/") // Navigate to landing page to see available grants
     }
 
     const handleViewDetails = (id: number) => {
-        navigate(`/applications/${id}`)
+        void navigate(`/applications/${id}`)
     }
 
     const getStatusColor = (status: string) => {

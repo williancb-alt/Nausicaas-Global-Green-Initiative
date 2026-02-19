@@ -59,9 +59,9 @@ export function useUpdateApplication() {
       applicationId: string
       status?: string
       feedback?: string
-      fieldValues?: Record<string, any>
+      fieldValues?: Record<string, string>
     }) => {
-      const data: { status?: string; feedback?: string; field_values?: Record<string, any> } = {}
+      const data: { status?: string; feedback?: string; field_values?: Record<string, string> } = {}
       if (status !== undefined) data.status = status
       if (feedback !== undefined) data.feedback = feedback
       if (fieldValues !== undefined) data.field_values = fieldValues
