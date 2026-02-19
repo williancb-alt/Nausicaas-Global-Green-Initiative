@@ -10,6 +10,7 @@ import { signupSchema, type SignupFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
+import { OAuthButtons } from "../features/oauth/OAuthButtons"
 
 export function Signup(): JSX.Element {
   const navigate = useNavigate()
@@ -113,6 +114,7 @@ export function Signup(): JSX.Element {
               </Link>
             </div>
           </form>
+          <OAuthButtons variant="signup" />
         </div>
       </div>
     </div>

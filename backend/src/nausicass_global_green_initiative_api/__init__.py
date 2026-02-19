@@ -20,6 +20,7 @@ def create_app(config_name: str) -> Flask:
 
     # Deliberate import placement to avoid a circular import
     from nausicass_global_green_initiative_api.api import api_bp
+    from nausicass_global_green_initiative_api.services.oauth import init_oauth
 
     app.register_blueprint(api_bp)
 
@@ -27,4 +28,5 @@ def create_app(config_name: str) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
     bcrypt.init_app(app)
+    init_oauth(app)
     return app

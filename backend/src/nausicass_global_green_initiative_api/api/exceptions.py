@@ -29,7 +29,10 @@ class ApiUnauthorized(Unauthorized):
         environ: Optional[Mapping[str, Any]] = None,
         scope: Optional[Mapping[str, Any]] = None,
     ) -> List[Tuple[str, str]]:
-        return [("Content-Type", "text/html"), ("WWW-Authenticate", self.www_auth_value)]
+        return [
+            ("Content-Type", "text/html"),
+            ("WWW-Authenticate", self.www_auth_value),
+        ]
 
     def __get_www_auth_value(
         self, admin_only: bool, error: Optional[str], error_description: Optional[str]

@@ -41,7 +41,7 @@ COPY . /app
 
 COPY --from=builder /app/.venv/lib/python3.11/site-packages /tmp/site-packages
 
-RUN uv venv && \
+RUN uv venv --clear && \
     . .venv/bin/activate && \
     cp -r /tmp/site-packages/. .venv/lib/python3.11/site-packages/ && \
     uv pip install --upgrade pip && \
