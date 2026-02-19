@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { routes } from "./routes"
 import { Header } from "./components/header/Header"
 import { useUser } from "./hooks/useAuthHooks"
-import { OAuthErrorHandler } from "./components/error/OAuthErrorHandler"
+import { OAuthErrorHandler } from "./features/oauth/OAuthErrorHandler"
 
 function App(): JSX.Element {
   useUser()

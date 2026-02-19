@@ -9,6 +9,7 @@ import { loginSchema, type LoginFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
+import { OAuthButtons } from "../features/oauth/OAuthButtons"
 
 type AuthUserLike = { admin?: boolean } | null
 
@@ -110,30 +111,7 @@ export function Login(): JSX.Element {
               </Link>
             </div>
           </form>
-
-          <Button
-            type="button"
-            variant="secondary"
-            className="mt-3 p-2 w-100 rounded"
-            onClick={() => {
-              const base = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
-              window.location.href = `${base}/api/v1/auth/oauth/google`
-            }}
-          >
-            Continue with Google
-          </Button>
-
-          <Button
-            type="button"
-            variant="secondary"
-            className="mt-2 p-2 w-100 rounded"
-            onClick={() => {
-              const base = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")
-              window.location.href = `${base}/api/v1/auth/oauth/github`
-            }}
-          >
-            Continue with GitHub
-          </Button>
+          <OAuthButtons variant="signin" />
         </div>
       </div>
       <Link
