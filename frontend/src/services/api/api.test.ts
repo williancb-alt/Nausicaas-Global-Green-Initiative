@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import type { Mock } from "vitest"
 import type { AuthSuccess, Grant, GrantPage } from "./client"
 import { api } from "./index"
 
