@@ -61,7 +61,11 @@ export const applications = {
   // Update application (admin can update status/feedback/fields; user can update fields if pending)
   updateApplication: async (
     applicationId: string,
-    data: { status?: string; feedback?: string; field_values?: Record<string, string> },
+    data: {
+      status?: string
+      feedback?: string
+      field_values?: Record<string, string>
+    },
   ): Promise<{ status: string; message: string }> => {
     const response = await apiClient.put<{ status: string; message: string }>(
       `/api/v1/applications/${applicationId}`,
@@ -72,9 +76,7 @@ export const applications = {
   },
 
   // Delete an application
-  deleteApplication: async (
-    applicationId: string,
-  ): Promise<void> => {
+  deleteApplication: async (applicationId: string): Promise<void> => {
     await apiClient.delete(`/api/v1/applications/${applicationId}`)
   },
 }
