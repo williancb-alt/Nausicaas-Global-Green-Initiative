@@ -8,7 +8,7 @@ test.describe("Authentication Flow", () => {
 
     await expect(page.getByPlaceholder(/enter your email/i)).toBeVisible()
     await expect(page.getByPlaceholder(/enter your password/i)).toBeVisible()
-    await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Sign In", exact: true })).toBeVisible()
 
     await takeScreenshot(
       page,
@@ -90,7 +90,7 @@ test.describe("Authentication Flow", () => {
       sequentialScreenshotNames("filled-confirm-password"),
     )
 
-    await page.getByRole("button", { name: /sign up/i }).click()
+    await page.getByRole("button", { name: "Sign Up", exact: true }).click()
     await takeScreenshot(
       page,
       testInfo,
@@ -135,7 +135,7 @@ test.describe("Authentication Flow", () => {
       sequentialScreenshotNames("filled-password"),
     )
 
-    await page.getByRole("button", { name: /sign in/i }).click()
+    await page.getByRole("button", { name: "Sign In", exact: true }).click()
     await takeScreenshot(
       page,
       testInfo,
