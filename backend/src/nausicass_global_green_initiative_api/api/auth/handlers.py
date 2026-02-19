@@ -15,6 +15,33 @@ from nausicass_global_green_initiative_api.models.token_blacklist import (
 )
 
 
+def _oauth_only_login_message(provider_names: list[str]) -> str:
+    """Inform users that try to sign in with password when OAuth account."""
+    if not provider_names:
+        return (
+            "This account uses sign-in with a provider. "
+            "Use the buttons below to sign in."
+        )
+    provider_display_names = {
+        "google": "Google",
+        "github": "GitHub",
+    }
+
+    names = [
+        provider_display_names.get(p, p.capitalize()) for p in sorted(provider_names)
+    ]
+
+    if len(names) == 1:
+        return (
+            f"This account uses sign-in with {names[0]}. "
+            "Use the button below to sign in."
+        )
+    return (
+        f"This account uses sign-in with {' or '.join(names)}. "
+        "Use the buttons below to sign in."
+    )
+
+
 def process_registration_request(email: str, password: str) -> Response:
     if User.find_by_email(email):
         abort(HTTPStatus.CONFLICT, f"{email} is already registered", status="fail")
@@ -31,7 +58,19 @@ def process_registration_request(email: str, password: str) -> Response:
 
 def process_login_request(email: str, password: str) -> Response:
     user = User.find_by_email(email)
-    if not user or not user.check_password(password):
+    if not user:
+        abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
+    if not user.check_password(password):
+        if user.password_hash is None:
+            provider_names = sorted([a.provider for a in user.oauth_accounts])
+            message = _oauth_only_login_message(provider_names)
+            response = jsonify(
+                status="fail",
+                message=message,
+                oauth_providers=provider_names,
+            )
+            response.status_code = HTTPStatus.UNAUTHORIZED
+            return response
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
     access_token = user.encode_access_token()
     return _create_auth_successful_response(
