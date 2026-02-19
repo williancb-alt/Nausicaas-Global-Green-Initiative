@@ -62,7 +62,7 @@ def process_login_request(email: str, password: str) -> Response:
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
     if not user.check_password(password):
         if user.password_hash is None:
-            provider_names = sorted([a.provider for a in user.oauth_accounts])
+            provider_names = sorted([a.provider for a in user.oauth_accounts.all()])
             message = _oauth_only_login_message(provider_names)
             response = jsonify(
                 status="fail",
