@@ -24,6 +24,7 @@ class Grant(db.Model):
     deadline = db.Column(db.DateTime)
     description = db.Column(db.String(1000), nullable=True)
     custom_fields = db.Column(db.JSON, nullable=True)
+    hidden = db.Column(db.Boolean, default=False, nullable=False)
 
     owner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     owner = db.relationship("User", backref=db.backref("grants"))

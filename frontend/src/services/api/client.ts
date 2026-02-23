@@ -84,6 +84,7 @@ export interface Grant {
     >
     values: Record<string, string>
   }
+  hidden?: boolean
   owner?: { email: string; public_id: string }
   link?: string
 }

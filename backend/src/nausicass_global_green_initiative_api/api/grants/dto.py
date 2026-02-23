@@ -1,16 +1,90 @@
+from __future__ import annotations
 import re
 from datetime import date, datetime, time, timezone
 
+import json
+from http import HTTPStatus
+from flask_restx import abort
+from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.models.grant import Grant
+from flask import Request
+from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
+
 from dateutil import parser
 from flask_restx import Model
-from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
-from flask_restx.inputs import positive
+from flask_restx.fields import (
+    Boolean,
+    DateTime,
+    Integer,
+    List,
+    Nested,
+    Raw,
+    String,
+    Url,
+)
+from flask_restx.inputs import positive, boolean
 from flask_restx.reqparse import RequestParser
 
 from nausicass_global_green_initiative_api.util.datetime_util import (
     make_tzaware,
     DATE_MONTH_NAME,
 )
+
+
+def apply_custom_fields_change(
+    grant: Grant, grant_dict: GrantDictionary, changes: dict
+) -> None:
+    custom_fields_str = grant_dict.get("custom_fields")
+    if not custom_fields_str:
+        return
+
+    try:
+        parsed = json.loads(custom_fields_str)
+    except json.JSONDecodeError:
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            "custom_fields must be valid JSON",
+            status="fail",
+        )
+
+    if grant.custom_fields != parsed:
+        changes["custom_fields"] = {
+            "old": grant.custom_fields,
+            "new": parsed,
+        }
+    grant.custom_fields = parsed
+
+
+def apply_standard_field_changes(
+    grant: Grant, grant_dict: GrantDictionary, changes: dict
+) -> None:
+    for k, v in grant_dict.items():
+        if k == "custom_fields" or v is None:
+            continue
+        old_value = getattr(grant, k)
+        if old_value != v:
+            changes[k] = {
+                "old": str(old_value) if old_value is not None else None,
+                "new": str(v) if v is not None else None,
+            }
+        setattr(grant, k, v)
+
+
+def is_admin_check(req: Request) -> bool:
+    token = req.cookies.get("access_token")
+    if not token:
+        auth_header = req.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+
+    if not token:
+        return False
+
+    result = User.decode_access_token(token)
+    if result.failure:
+        return False
+
+    return bool(result.value.get("admin", False))
 
 
 def grant_name(name: str) -> str:
@@ -23,28 +97,42 @@ def grant_name(name: str) -> str:
     return name
 
 
-def future_date_from_string(date_str: str) -> datetime:
-    """Validation method for a date in the future, formatted as a string."""
+def _parse_date_str(date_str: str) -> datetime:
     try:
-        parsed_date = parser.parse(date_str)
+        return parser.parse(date_str)
     except ValueError:
         raise ValueError(
-            f"Failed to parse '{date_str}' as a valid date. You can use any format "
-            "recognized by dateutil.parser. For example, all of the strings below "
-            "are valid ways to represent the same date: '2018-5-13' -or- '05/13/2018' "
-            "-or- 'May 13 2018'."
+            (
+                f"Failed to parse '{date_str}' as a valid date. You can use any format "
+                "recognized by dateutil.parser. For example, all of the strings below "
+                "are valid ways to represent the same date: '2018-5-13' -or- "
+                "'05/13/2018' -or- 'May 13 2018'."
+            )
         )
 
+
+def _ensure_future_date(parsed_date: datetime) -> None:
     if parsed_date.date() < date.today():
         raise ValueError(
-            f"Successfully parsed {date_str} as "
-            f"{parsed_date.strftime(DATE_MONTH_NAME)}. However, this value must be a "
-            f"date in the future and {parsed_date.strftime(DATE_MONTH_NAME)} is BEFORE "
-            f"{datetime.now().strftime(DATE_MONTH_NAME)}"
+            (
+                f"Successfully parsed {parsed_date.strftime(DATE_MONTH_NAME)}. However, "
+                "this value must be a date in the future and "
+                f"{parsed_date.strftime(DATE_MONTH_NAME)} is BEFORE "
+                f"{datetime.now().strftime(DATE_MONTH_NAME)}"
+            )
         )
-    deadline = datetime.combine(parsed_date.date(), time.max)
-    deadline_utc = make_tzaware(deadline, use_tz=timezone.utc)
-    return deadline_utc
+
+
+def _deadline_utc_from_date(d: date) -> datetime:
+    deadline = datetime.combine(d, time.max)
+    return make_tzaware(deadline, use_tz=timezone.utc)
+
+
+def future_date_from_string(date_str: str) -> datetime:
+    """Validation method for a date in the future, formatted as a string."""
+    parsed_date = _parse_date_str(date_str)
+    _ensure_future_date(parsed_date)
+    return _deadline_utc_from_date(parsed_date.date())
 
 
 def valid_phone(phone: str) -> str:
@@ -99,6 +187,13 @@ create_grant_reqparser.add_argument(
     required=False,
     nullable=True,
 )
+create_grant_reqparser.add_argument(
+    "hidden",
+    type=boolean,
+    location="form",
+    required=False,
+    default=False,
+)
 
 pagination_reqparser = RequestParser(bundle_errors=True)
 pagination_reqparser.add_argument("page", type=positive, required=False, default=1)
@@ -119,6 +214,7 @@ grant_model = Model(
         "time_remaining": String(attribute="time_remaining_str"),
         "description": String,
         "custom_fields": Raw,
+        "hidden": Boolean,
         "owner": Nested(grant_owner_model),
         "link": Url("api.grant"),
     },
@@ -145,3 +241,17 @@ pagination_model = Model(
 
 update_grant_reqparser = create_grant_reqparser.copy()
 update_grant_reqparser.remove_argument("name")
+update_grant_reqparser.replace_argument(
+    "deadline",
+    type=future_date_from_string,
+    location="form",
+    required=False,
+    nullable=True,
+)
+update_grant_reqparser.replace_argument(
+    "description",
+    type=str,
+    location="form",
+    required=False,
+    nullable=True,
+)

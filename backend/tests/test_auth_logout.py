@@ -1,6 +1,8 @@
 from http import HTTPStatus
 
-from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.token_blacklist import (
+    BlacklistedToken,
+)
 from tests.util import (
     register_user,
     login_user,

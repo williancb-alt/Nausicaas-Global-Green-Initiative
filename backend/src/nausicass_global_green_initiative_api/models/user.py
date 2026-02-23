@@ -13,7 +13,9 @@ from nausicass_global_green_initiative_api.util import (
     make_tzaware,
     localized_dt_string,
 )
-from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.token_blacklist import (
+    BlacklistedToken,
+)
 from nausicass_global_green_initiative_api.util.result import Result
 
 if TYPE_CHECKING:
@@ -27,7 +29,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column(db.String(100), nullable=True)
     registered_on = db.Column(db.DateTime, default=utc_now)
     admin = db.Column(db.Boolean, default=False)
     public_id = db.Column(db.String(36), unique=True, default=lambda: str(uuid4()))
@@ -55,6 +57,8 @@ class User(db.Model):
         self.password_hash = hash_bytes.decode("utf-8")
 
     def check_password(self, password: str) -> bool:
+        if not self.password_hash:
+            return False
         return bcrypt.check_password_hash(self.password_hash, password)
 
     @classmethod

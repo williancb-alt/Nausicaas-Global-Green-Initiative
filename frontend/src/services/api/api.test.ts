@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import type { Mock } from "vitest"
 import type { AuthSuccess, Grant, GrantPage } from "./client"
 import { api } from "./index"
 
@@ -46,7 +45,7 @@ describe("api (auth + grants)", () => {
         expires_in: 900,
       }
 
-      ;(mockPost as Mock).mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
       const result = await api.auth.register("test@example.com", "password123")
 
@@ -67,7 +66,7 @@ describe("api (auth + grants)", () => {
         expires_in: 900,
       }
 
-      ;(mockPost as Mock).mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
       const result = await api.auth.login("test@example.com", "password123")
 
@@ -87,7 +86,7 @@ describe("api (auth + grants)", () => {
         public_id: "123",
       }
 
-      ;(mockGet as Mock).mockResolvedValue({ data: mockResponse })
+      mockGet.mockResolvedValue({ data: mockResponse })
 
       const result = await api.auth.getUser()
 
@@ -103,7 +102,7 @@ describe("api (auth + grants)", () => {
         message: "successfully logged out",
       }
 
-      ;(mockPost as Mock).mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
       const result = await api.auth.logout()
 
@@ -119,7 +118,7 @@ describe("api (auth + grants)", () => {
         message: "New grant added: test-grant.",
       }
 
-      ;(mockPost as Mock).mockResolvedValue({ data: mockResponse })
+      mockPost.mockResolvedValue({ data: mockResponse })
 
       const result = await api.grants.createGrant({
         name: "test-grant",
@@ -159,7 +158,7 @@ describe("api (auth + grants)", () => {
         ],
       }
 
-      ;(mockGet as Mock).mockResolvedValue({ data: mockResponse })
+      mockGet.mockResolvedValue({ data: mockResponse })
 
       const result = await api.grants.listGrants(1, 10)
 
@@ -179,7 +178,7 @@ describe("api (auth + grants)", () => {
         time_remaining: "30 days",
       }
 
-      ;(mockGet as Mock).mockResolvedValue({ data: mockResponse })
+      mockGet.mockResolvedValue({ data: mockResponse })
 
       const result = await api.grants.getGrant("test-grant")
 
@@ -197,7 +196,7 @@ describe("api (auth + grants)", () => {
         time_remaining: "60 days",
       }
 
-      ;(mockPut as Mock).mockResolvedValue({ data: mockResponse })
+      mockPut.mockResolvedValue({ data: mockResponse })
 
       const result = await api.grants.updateGrant("test-grant", {
         deadline: "01/31/2025",
@@ -213,7 +212,7 @@ describe("api (auth + grants)", () => {
 
   describe("grants.deleteGrant", () => {
     it("should delete a grant", async () => {
-      ;(mockDelete as Mock).mockResolvedValue({ status: 204 })
+      mockDelete.mockResolvedValue({ status: 204 })
 
       await api.grants.deleteGrant("test-grant")
 

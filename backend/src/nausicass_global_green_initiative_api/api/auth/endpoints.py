@@ -14,9 +14,25 @@ from nausicass_global_green_initiative_api.api.auth.handlers import (
     process_logout_request,
 )
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.oauth import (
+    start_oauth_login,
+    handle_oauth_callback,
+)
 
 auth_ns = Namespace(name="auth", validate=True)
 auth_ns.models[user_model.name] = user_model
+
+
+@auth_ns.route("/oauth/<string:provider>", endpoint="auth_oauth_login")
+class OAuthLogin(Resource):
+    def get(self, provider: str) -> Response:
+        return start_oauth_login(provider)
+
+
+@auth_ns.route("/oauth/<string:provider>/callback", endpoint="auth_oauth_callback")
+class OAuthCallback(Resource):
+    def get(self, provider: str) -> Response:
+        return handle_oauth_callback(provider)
 
 
 @auth_ns.route("/register", endpoint="auth_register")

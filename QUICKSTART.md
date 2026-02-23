@@ -22,6 +22,19 @@ If you aren't working on main (which is advised) checkout the relavent branch:
 git checkout branch-name
 ````
 
+Then add local .env file at root of repo with credentials (contact team members for values)
+
+```
+ACS_EMAIL_CONNECTION_STRING="REPLACE WITH CONNECTION STRING"
+ACS_EMAIL_SENDER="REPLACE WITH SENDER ADDRESS"
+EMAIL_ENABLED=true
+GOOGLE_CLIENT_ID="REPLACE"
+GOOGLE_CLIENT_SECRET="REPLACE"
+GITHUB_CLIENT_ID = "REPLACE"
+GITHUB_CLIENT_SECRET = "REPLACE"
+FRONTEND_URL="http://localhost:5173"
+```
+
 ### 2. Build and Start the Application
 
 ```bash

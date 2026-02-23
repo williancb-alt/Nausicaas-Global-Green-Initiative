@@ -14,13 +14,18 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@tanstack/react-query": "^5.90.16",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.69.0",
     "react-router-dom": "^7.8.2",
+    "recharts": "^3.7.0",
+    "tailwind-merge": "^3.4.0",
     "zod": "^4.3.4",
     "zustand": "^5.0.9"
   },
@@ -31,18 +36,21 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "eslint": "^9.0.0",
-    "eslint-plugin-react": "^7.34.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "jiti": "^2.5.1",
-    "jsdom": "^25.0.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "jiti": "^2.5.8",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3",
     "vite": "^6.1.0",
-    "vitest": "^4.0.0"
+    "vitest": "^3.0.5"
+  },
+  "overrides": {
+    "minimatch": "^10.2.1"
   }
 }

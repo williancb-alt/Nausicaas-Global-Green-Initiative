@@ -6,7 +6,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from nausicass_global_green_initiative_api import create_app, db
 from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.token_blacklist import (
+    BlacklistedToken,
+)
+from nausicass_global_green_initiative_api.models.user_oauth_account import (
+    UserOAuthAccount,
+)
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 from nausicass_global_green_initiative_api.models.award import Award
@@ -24,11 +29,13 @@ def shell() -> Dict[
         Type[Grant],
         Type[AuditLog],
         Type[Award],
+        Type[UserOAuthAccount],
     ],
 ]:
     return {
         "db": db,
         "User": User,
+        "UserOAuthAccount": UserOAuthAccount,
         "BlacklistedToken": BlacklistedToken,
         "Grant": Grant,
         "AuditLog": AuditLog,
