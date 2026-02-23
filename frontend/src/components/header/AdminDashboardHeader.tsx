@@ -1,12 +1,14 @@
 interface AdminDashboardHeaderProps {
   userEmail: string
   onManageGrants: () => void
+  onViewAuditLogs: () => void
   onLogout: () => void
 }
 
 export function AdminDashboardHeader({
   userEmail,
   onManageGrants,
+  onViewAuditLogs,
   onLogout,
 }: AdminDashboardHeaderProps) {
   return (
@@ -33,6 +35,17 @@ export function AdminDashboardHeader({
               }}
             >
               Manage Grants
+            </button>
+            <button
+              onClick={onViewAuditLogs}
+              className="btn"
+              style={{
+                backgroundColor: "white",
+                color: "#3b7a57",
+                fontWeight: "500",
+              }}
+            >
+              Audit Logs
             </button>
             <button onClick={onLogout} className="btn btn-outline-light">
               Logout
