@@ -9,11 +9,9 @@ export function AdminDashboardPage(): JSX.Element {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const logoutMutation = useLogout()
-
   const { data: applicationsData } = useApplications()
 
   const userProp = {
-    // AdminDashboard expects a LoginCredentials-like object but only uses email.
     email: user?.email ?? "",
     password: "",
   }
@@ -23,26 +21,27 @@ export function AdminDashboardPage(): JSX.Element {
     void navigate("/login")
   }
 
-  const handleViewApplication = (applicationId: number) => {
-    void navigate(`/admin/applications/${applicationId}`)
-  }
-
   const handleManageGrants = () => {
     void navigate("/admin/grants")
   }
 
-  const applications = applicationsData?.items ?? []
+  const handleViewAuditLogs = () => {
+    void navigate("/admin/audit")
+  }
+
+  const handleViewApplication = (applicationId: number) => {
+    void navigate(`/admin/applications/${applicationId}`)
+  }
 
   return (
     <AdminDashboard
       user={userProp}
-      applications={applications}
+      applications={applicationsData?.items ?? []}
       grants={[]}
       onLogout={handleLogout}
       onViewApplication={handleViewApplication}
       onManageGrants={handleManageGrants}
+      onViewAuditLogs={handleViewAuditLogs}
     />
   )
 }
-
-export default AdminDashboardPage

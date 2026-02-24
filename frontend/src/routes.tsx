@@ -95,7 +95,7 @@ export const routes = [
     element: <ForgotPassword />,
   },
   {
-    path: "/admin/audit",
+    path: "admin/audit",
     element: (
       <ProtectedRoute>
         <AuditLogs />
