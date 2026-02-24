@@ -12,6 +12,7 @@ interface TextFieldConfiguratorProps {
 interface FormData {
   label: string
   maxLength: number
+  required: boolean
 }
 
 export function TextFieldConfigurator({
@@ -26,6 +27,7 @@ export function TextFieldConfigurator({
     defaultValues: {
       label: "",
       maxLength: 500,
+      required: false,
     },
   })
 
@@ -34,6 +36,7 @@ export function TextFieldConfigurator({
       type: "text",
       label: data.label,
       maxLength: data.maxLength,
+      required: data.required,
     })
   }
 
@@ -61,6 +64,18 @@ export function TextFieldConfigurator({
           max={10000}
         />
       </FormField>
+
+      <div className="form-check mb-3">
+        <input
+          type="checkbox"
+          {...register("required")}
+          className="form-check-input"
+          id="textFieldRequired"
+        />
+        <label className="form-check-label" htmlFor="textFieldRequired">
+          Required field
+        </label>
+      </div>
 
       <div className="d-flex gap-2 justify-content-end mt-4">
         <Button type="button" variant="secondary" onClick={onCancel}>

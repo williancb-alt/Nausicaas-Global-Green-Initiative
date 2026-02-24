@@ -26,9 +26,16 @@ export function DynamicFieldPreview({
           <div key={index} className="list-group-item list-group-item-light">
             <div className="d-flex justify-content-between">
               <span className="fw-semibold">{field.label}</span>
-              <span className="badge bg-secondary">
-                {typeLabels[field.type] || field.type}
-              </span>
+              <div className="d-flex gap-1">
+                {field.required ? (
+                  <span className="badge bg-danger">Required</span>
+                ) : (
+                  <span className="badge bg-light text-muted">Optional</span>
+                )}
+                <span className="badge bg-secondary">
+                  {typeLabels[field.type] || field.type}
+                </span>
+              </div>
             </div>
             {field.type === "text" && (
               <small className="text-muted">

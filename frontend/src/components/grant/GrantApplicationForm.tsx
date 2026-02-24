@@ -1,4 +1,4 @@
-import type { FormEvent, JSX } from "react"
+import { type FormEvent, type JSX, useState, useCallback } from "react"
 import { DynamicFieldInput } from "../dynamicFields/DynamicFieldInput"
 import { Button } from "../button/Button"
 import { Grant } from "../../services/api"
@@ -24,6 +24,34 @@ export function GrantApplicationForm({
 }: GrantApplicationFormProps): JSX.Element {
   const customFields = grant.custom_fields?.configs ?? []
   const hasFields = customFields.length > 0
+  const [requiredError, setRequiredError] = useState<string | null>(null)
+
+  const handleSubmit = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+
+      const missingFields: string[] = []
+      customFields.forEach((field, index) => {
+        if (field.required) {
+          const val = fieldValues[`field_${index}`] ?? ""
+          if (!val.trim()) {
+            missingFields.push(field.label)
+          }
+        }
+      })
+
+      if (missingFields.length > 0) {
+        setRequiredError(
+          `Please fill in the following required fields: ${missingFields.join(", ")}`,
+        )
+        return
+      }
+
+      setRequiredError(null)
+      onSubmit(e)
+    },
+    [customFields, fieldValues, onSubmit],
+  )
 
   return (
     <div style={{ backgroundColor: "#eef7ee", minHeight: "100vh" }}>
@@ -67,7 +95,7 @@ export function GrantApplicationForm({
                   )}
                 </div>
 
-                <form onSubmit={onSubmit}>
+                <form onSubmit={handleSubmit}>
                   {hasFields && (
                     <>
                       <h5
@@ -89,6 +117,12 @@ export function GrantApplicationForm({
                         />
                       ))}
                     </>
+                  )}
+
+                  {requiredError && (
+                    <div className="alert alert-danger" role="alert">
+                      {requiredError}
+                    </div>
                   )}
 
                   {submitError && (

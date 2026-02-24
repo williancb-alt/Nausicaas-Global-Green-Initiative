@@ -12,6 +12,7 @@ interface RadioFieldConfiguratorProps {
 interface FormData {
   label: string
   options: { value: string }[]
+  required: boolean
 }
 
 export function RadioFieldConfigurator({
@@ -27,6 +28,7 @@ export function RadioFieldConfigurator({
     defaultValues: {
       label: "",
       options: [{ value: "" }, { value: "" }],
+      required: false,
     },
   })
 
@@ -49,6 +51,7 @@ export function RadioFieldConfigurator({
       type: "radio",
       label: data.label,
       options: filteredOptions,
+      required: data.required,
     })
   }
 
@@ -100,6 +103,18 @@ export function RadioFieldConfigurator({
             + Add Option
           </Button>
         )}
+      </div>
+
+      <div className="form-check mb-3">
+        <input
+          type="checkbox"
+          {...register("required")}
+          className="form-check-input"
+          id="radioFieldRequired"
+        />
+        <label className="form-check-label" htmlFor="radioFieldRequired">
+          Required field
+        </label>
       </div>
 
       <div className="d-flex gap-2 justify-content-end mt-4">

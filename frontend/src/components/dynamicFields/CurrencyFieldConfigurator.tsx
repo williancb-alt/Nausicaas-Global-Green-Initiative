@@ -13,6 +13,7 @@ interface FormData {
   label: string
   min: number
   max: number
+  required: boolean
 }
 
 export function CurrencyFieldConfigurator({
@@ -28,6 +29,7 @@ export function CurrencyFieldConfigurator({
       label: "Funding Amount (€)",
       min: 0,
       max: 100000,
+      required: false,
     },
   })
 
@@ -37,6 +39,7 @@ export function CurrencyFieldConfigurator({
       label: data.label,
       min: data.min,
       max: data.max,
+      required: data.required,
     })
   }
 
@@ -83,6 +86,18 @@ export function CurrencyFieldConfigurator({
           step="0.01"
         />
       </FormField>
+
+      <div className="form-check mb-3">
+        <input
+          type="checkbox"
+          {...register("required")}
+          className="form-check-input"
+          id="currencyFieldRequired"
+        />
+        <label className="form-check-label" htmlFor="currencyFieldRequired">
+          Required field
+        </label>
+      </div>
 
       <div className="d-flex gap-2 justify-content-end mt-4">
         <Button type="button" variant="secondary" onClick={onCancel}>
