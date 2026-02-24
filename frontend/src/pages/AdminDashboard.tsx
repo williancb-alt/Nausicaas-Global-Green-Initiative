@@ -28,7 +28,9 @@ export function AdminDashboard({
   onViewAuditLogs,
 }: AdminDashboardProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"all" | Application["status"]>("all")
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | Application["status"]
+  >("all")
 
   const { stats, statusChartData, grantWiseData } = useAdminStats(applications)
 
