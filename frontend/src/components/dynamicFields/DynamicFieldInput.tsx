@@ -94,6 +94,49 @@ export function DynamicFieldInput({
     )
   }
 
+  if (field.type === "currency") {
+    const handleCurrencyChange = (newValue: string) => {
+      onChange(newValue)
+      if (newValue) {
+        const num = parseFloat(newValue)
+        if (isNaN(num)) {
+          setError("Please enter a valid number")
+        } else if (num < field.min) {
+          setError(`Amount must be at least €${field.min}`)
+        } else if (num > field.max) {
+          setError(`Amount must be at most €${field.max}`)
+        } else {
+          setError(null)
+        }
+      } else {
+        setError(null)
+      }
+    }
+
+    return (
+      <div className="mb-3">
+        <label className="form-label">{field.label}</label>
+        <div className="input-group">
+          <span className="input-group-text">€</span>
+          <input
+            type="number"
+            className={`form-control ${error ? "is-invalid" : ""}`}
+            value={value}
+            onChange={e => handleCurrencyChange(e.target.value)}
+            min={field.min}
+            max={field.max}
+            step="0.01"
+            placeholder="0.00"
+          />
+          {error && <div className="invalid-feedback">{error}</div>}
+        </div>
+        <small className="text-muted">
+          Range: €{field.min} – €{field.max}
+        </small>
+      </div>
+    )
+  }
+
   // email type
   return (
     <div className="mb-3">

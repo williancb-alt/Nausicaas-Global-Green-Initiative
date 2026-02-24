@@ -41,5 +41,16 @@ export const radioFieldConfigSchema = z.object({
     .max(10, "Radio fields can have at most 10 options"),
 })
 
+// Schema for currency field configuration
+export const currencyFieldConfigSchema = z.object({
+  type: z.literal("currency"),
+  label: z.string().min(1, "Field label is required").max(50),
+  min: z.number().min(0, "Minimum must be 0 or greater"),
+  max: z.number().min(1, "Maximum must be at least 1"),
+})
+
 export type TextFieldConfigFormData = z.infer<typeof textFieldConfigSchema>
 export type RadioFieldConfigFormData = z.infer<typeof radioFieldConfigSchema>
+export type CurrencyFieldConfigFormData = z.infer<
+  typeof currencyFieldConfigSchema
+>

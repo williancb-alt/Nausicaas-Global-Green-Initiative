@@ -81,6 +81,7 @@ export interface Grant {
       | { type: "radio"; label: string; options: string[] }
       | { type: "phone"; label: string }
       | { type: "email"; label: string }
+      | { type: "currency"; label: string; min: number; max: number }
     >
     values: Record<string, string>
   }

@@ -26,11 +26,19 @@ export interface EmailFieldConfig {
   label: string
 }
 
+export interface CurrencyFieldConfig {
+  type: "currency"
+  label: string
+  min: number
+  max: number
+}
+
 export type DynamicFieldConfig =
   | TextFieldConfig
   | RadioFieldConfig
   | PhoneFieldConfig
   | EmailFieldConfig
+  | CurrencyFieldConfig
 
 export interface CustomFields {
   configs: DynamicFieldConfig[]

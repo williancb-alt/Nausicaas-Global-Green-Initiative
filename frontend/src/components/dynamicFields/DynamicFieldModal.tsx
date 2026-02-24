@@ -4,6 +4,7 @@ import { FieldTypeSelector } from "./FieldTypeSelector"
 import { TextFieldConfigurator } from "./TextFieldConfigurator"
 import { RadioFieldConfigurator } from "./RadioFieldConfigurator"
 import { SimpleFieldConfigurator } from "./SimpleFieldConfigurator"
+import { CurrencyFieldConfigurator } from "./CurrencyFieldConfigurator"
 import type { DynamicFieldConfig } from "../../types"
 
 interface DynamicFieldModalProps {
@@ -18,7 +19,7 @@ export function DynamicFieldModal({
   onFieldAdd,
 }: DynamicFieldModalProps): JSX.Element {
   const [selectedType, setSelectedType] = useState<
-    "text" | "radio" | "phone" | "email" | null
+    "text" | "radio" | "phone" | "email" | "currency" | null
   >(null)
 
   const handleClose = () => {
@@ -36,6 +37,7 @@ export function DynamicFieldModal({
     if (selectedType === "text") return "Configure Text Field"
     if (selectedType === "radio") return "Configure Radio Button Field"
     if (selectedType === "phone") return "Configure Phone Field"
+    if (selectedType === "currency") return "Configure Funding Amount Field"
     return "Configure Email Field"
   }
 
@@ -54,6 +56,13 @@ export function DynamicFieldModal({
 
       {selectedType === "radio" && (
         <RadioFieldConfigurator
+          onSubmit={handleFieldAdd}
+          onCancel={() => setSelectedType(null)}
+        />
+      )}
+
+      {selectedType === "currency" && (
+        <CurrencyFieldConfigurator
           onSubmit={handleFieldAdd}
           onCancel={() => setSelectedType(null)}
         />

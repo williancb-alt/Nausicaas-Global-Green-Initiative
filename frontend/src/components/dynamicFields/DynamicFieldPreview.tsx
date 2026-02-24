@@ -10,6 +10,7 @@ const typeLabels: Record<string, string> = {
   radio: "Radio",
   phone: "Phone",
   email: "Email",
+  currency: "Funding Amount",
 }
 
 export function DynamicFieldPreview({
@@ -44,6 +45,11 @@ export function DynamicFieldPreview({
             )}
             {field.type === "email" && (
               <small className="text-muted">Validated email address</small>
+            )}
+            {field.type === "currency" && (
+              <small className="text-muted">
+                Range: €{field.min} – €{field.max}
+              </small>
             )}
           </div>
         ))}
