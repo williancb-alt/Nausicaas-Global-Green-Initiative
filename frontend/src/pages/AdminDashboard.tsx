@@ -16,6 +16,7 @@ interface AdminDashboardProps {
   onLogout: () => void
   onViewApplication: (applicationId: number) => void
   onManageGrants: () => void
+  onViewAuditLogs: () => void
 }
 
 export function AdminDashboard({
@@ -24,6 +25,7 @@ export function AdminDashboard({
   onLogout,
   onViewApplication,
   onManageGrants,
+  onViewAuditLogs,
 }: AdminDashboardProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<
@@ -43,6 +45,7 @@ export function AdminDashboard({
       <AdminDashboardHeader
         userEmail={user.email}
         onManageGrants={onManageGrants}
+        onViewAuditLogs={onViewAuditLogs}
         onLogout={onLogout}
       />
 
