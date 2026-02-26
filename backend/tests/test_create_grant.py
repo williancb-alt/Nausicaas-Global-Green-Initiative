@@ -119,3 +119,78 @@ def test_create_grant_with_custom_fields(client, db, admin):
     assert response.status_code == HTTPStatus.OK
     assert response.json["custom_fields"] is not None
     assert len(response.json["custom_fields"]["configs"]) == 2
+
+
+def test_create_grant_with_required_currency_field(client, db, admin):
+    import json
+
+    login_user(client, email=ADMIN_EMAIL)
+    custom_fields = json.dumps(
+        {
+            "configs": [
+                {
+                    "type": "currency",
+                    "label": "Funding Amount",
+                    "min": 100,
+                    "max": 50000,
+                    "required": True,
+                }
+            ],
+            "values": {},
+        }
+    )
+    response = create_grant(
+        client,
+        grant_name="currency-grant",
+        custom_fields=custom_fields,
+    )
+    assert response.status_code == HTTPStatus.CREATED
+
+    response = retrieve_grant(client, "currency-grant")
+    assert response.status_code == HTTPStatus.OK
+    configs = response.json["custom_fields"]["configs"]
+    assert len(configs) == 1
+    assert configs[0]["type"] == "currency"
+    assert configs[0]["label"] == "Funding Amount"
+    assert configs[0]["min"] == 100
+    assert configs[0]["max"] == 50000
+    assert configs[0]["required"] is True
+
+
+def test_create_grant_with_optional_and_required_fields(client, db, admin):
+    import json
+
+    login_user(client, email=ADMIN_EMAIL)
+    custom_fields = json.dumps(
+        {
+            "configs": [
+                {
+                    "type": "text",
+                    "label": "Project Summary",
+                    "maxLength": 500,
+                    "required": True,
+                },
+                {
+                    "type": "currency",
+                    "label": "Budget",
+                    "min": 0,
+                    "max": 100000,
+                    "required": False,
+                },
+            ],
+            "values": {},
+        }
+    )
+    response = create_grant(
+        client,
+        grant_name="mixed-fields-grant",
+        custom_fields=custom_fields,
+    )
+    assert response.status_code == HTTPStatus.CREATED
+
+    response = retrieve_grant(client, "mixed-fields-grant")
+    assert response.status_code == HTTPStatus.OK
+    configs = response.json["custom_fields"]["configs"]
+    assert len(configs) == 2
+    assert configs[0]["required"] is True
+    assert configs[1]["required"] is False
