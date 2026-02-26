@@ -2,6 +2,65 @@ import { type FormEvent, type JSX, useState, useCallback, useMemo } from "react"
 import { DynamicFieldInput } from "../dynamicFields/DynamicFieldInput"
 import { Button } from "../button/Button"
 import { Grant } from "../../services/api"
+import type { DynamicFieldConfig } from "../../types"
+
+function GrantInfoHeader({ grant }: { grant: Grant }): JSX.Element {
+  return (
+    <div className="mb-4">
+      <h5 style={{ color: "#2f6f44" }}>{grant.name}</h5>
+
+      <div className="d-flex gap-3 mb-3">
+        <span className="badge bg-success fs-6">
+          Deadline: {grant.deadline}
+        </span>
+        {grant.time_remaining && (
+          <span className="badge bg-warning text-dark fs-6">
+            {grant.time_remaining} remaining
+          </span>
+        )}
+      </div>
+
+      {grant.description && (
+        <div
+          className="p-3 rounded mb-3"
+          style={{ backgroundColor: "#f0f7f0" }}
+        >
+          <strong>Description:</strong>
+          <p className="mb-0 mt-2">{grant.description}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ApplicationFields({
+  fields,
+  fieldValues,
+  onFieldChange,
+}: {
+  fields: DynamicFieldConfig[]
+  fieldValues: Record<string, string>
+  onFieldChange: (fieldKey: string, value: string) => void
+}): JSX.Element | null {
+  if (fields.length === 0) return null
+  return (
+    <>
+      <h5 className="mb-3 pb-2 border-bottom" style={{ color: "#2f6f44" }}>
+        Application Form
+      </h5>
+
+      {fields.map((field, index) => (
+        <DynamicFieldInput
+          key={index}
+          field={field}
+          index={index}
+          value={fieldValues[`field_${index}`] ?? ""}
+          onChange={value => onFieldChange(`field_${index}`, value)}
+        />
+      ))}
+    </>
+  )
+}
 
 interface GrantApplicationFormProps {
   grant: Grant
@@ -26,22 +85,18 @@ export function GrantApplicationForm({
     () => grant.custom_fields?.configs ?? [],
     [grant.custom_fields?.configs],
   )
-  const hasFields = customFields.length > 0
   const [requiredError, setRequiredError] = useState<string | null>(null)
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault()
 
-      const missingFields: string[] = []
-      customFields.forEach((field, index) => {
-        if (field.required) {
-          const val = fieldValues[`field_${index}`] ?? ""
-          if (!val.trim()) {
-            missingFields.push(field.label)
-          }
-        }
-      })
+      const missingFields = customFields
+        .filter(
+          (field, index) =>
+            field.required && !(fieldValues[`field_${index}`] ?? "").trim(),
+        )
+        .map(field => field.label)
 
       if (missingFields.length > 0) {
         setRequiredError(
@@ -73,54 +128,14 @@ export function GrantApplicationForm({
               </div>
 
               <div className="card-body p-4">
-                <div className="mb-4">
-                  <h5 style={{ color: "#2f6f44" }}>{grant.name}</h5>
-
-                  <div className="d-flex gap-3 mb-3">
-                    <span className="badge bg-success fs-6">
-                      Deadline: {grant.deadline}
-                    </span>
-                    {grant.time_remaining && (
-                      <span className="badge bg-warning text-dark fs-6">
-                        {grant.time_remaining} remaining
-                      </span>
-                    )}
-                  </div>
-
-                  {grant.description && (
-                    <div
-                      className="p-3 rounded mb-3"
-                      style={{ backgroundColor: "#f0f7f0" }}
-                    >
-                      <strong>Description:</strong>
-                      <p className="mb-0 mt-2">{grant.description}</p>
-                    </div>
-                  )}
-                </div>
+                <GrantInfoHeader grant={grant} />
 
                 <form onSubmit={handleSubmit}>
-                  {hasFields && (
-                    <>
-                      <h5
-                        className="mb-3 pb-2 border-bottom"
-                        style={{ color: "#2f6f44" }}
-                      >
-                        Application Form
-                      </h5>
-
-                      {customFields.map((field, index) => (
-                        <DynamicFieldInput
-                          key={index}
-                          field={field}
-                          index={index}
-                          value={fieldValues[`field_${index}`] ?? ""}
-                          onChange={value =>
-                            onFieldChange(`field_${index}`, value)
-                          }
-                        />
-                      ))}
-                    </>
-                  )}
+                  <ApplicationFields
+                    fields={customFields}
+                    fieldValues={fieldValues}
+                    onFieldChange={onFieldChange}
+                  />
 
                   {requiredError && (
                     <div className="alert alert-danger" role="alert">

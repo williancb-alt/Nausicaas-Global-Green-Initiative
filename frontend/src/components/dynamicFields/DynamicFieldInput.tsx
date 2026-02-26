@@ -48,43 +48,46 @@ export function DynamicFieldInput({
     onValidationChange(index, !hasRequiredError && !hasFormatError)
   }, [value, error, touched, isRequired, index, onValidationChange])
 
+  const requiredError = "This field is required"
+
+  const checkRequired = (val: string) => isRequired && !val.trim()
+
   const validateRequired = (newValue: string) => {
-    if (isRequired && touched && !newValue.trim()) {
-      return "This field is required"
+    if (touched && checkRequired(newValue)) {
+      return requiredError
     }
     return null
   }
 
   const handleBlur = () => {
     setTouched(true)
-    if (isRequired && !value.trim()) {
-      setError("This field is required")
+    if (checkRequired(value)) {
+      setError(requiredError)
     }
   }
 
-  const handlePhoneChange = (newValue: string) => {
-    onChange(newValue)
-    const reqError = validateRequired(newValue)
-    if (reqError) {
-      setError(reqError)
-    } else if (newValue && !phoneRegex.test(newValue)) {
-      setError("Please enter a valid phone number")
-    } else {
-      setError(null)
+  const createPatternHandler =
+    (pattern: RegExp, errorMessage: string) => (newValue: string) => {
+      onChange(newValue)
+      const reqError = validateRequired(newValue)
+      if (reqError) {
+        setError(reqError)
+      } else if (newValue && !pattern.test(newValue)) {
+        setError(errorMessage)
+      } else {
+        setError(null)
+      }
     }
-  }
 
-  const handleEmailChange = (newValue: string) => {
-    onChange(newValue)
-    const reqError = validateRequired(newValue)
-    if (reqError) {
-      setError(reqError)
-    } else if (newValue && !emailRegex.test(newValue)) {
-      setError("Please enter a valid email address")
-    } else {
-      setError(null)
-    }
-  }
+  const handlePhoneChange = createPatternHandler(
+    phoneRegex,
+    "Please enter a valid phone number",
+  )
+
+  const handleEmailChange = createPatternHandler(
+    emailRegex,
+    "Please enter a valid email address",
+  )
 
   if (field.type === "text") {
     const handleTextChange = (newValue: string) => {
