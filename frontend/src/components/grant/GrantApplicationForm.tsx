@@ -1,4 +1,4 @@
-import { type FormEvent, type JSX, useState, useCallback } from "react"
+import { type FormEvent, type JSX, useState, useCallback, useMemo } from "react"
 import { DynamicFieldInput } from "../dynamicFields/DynamicFieldInput"
 import { Button } from "../button/Button"
 import { Grant } from "../../services/api"
@@ -22,7 +22,10 @@ export function GrantApplicationForm({
   isSubmitting,
   onCancel,
 }: GrantApplicationFormProps): JSX.Element {
-  const customFields = grant.custom_fields?.configs ?? []
+  const customFields = useMemo(
+    () => grant.custom_fields?.configs ?? [],
+    [grant.custom_fields?.configs],
+  )
   const hasFields = customFields.length > 0
   const [requiredError, setRequiredError] = useState<string | null>(null)
 

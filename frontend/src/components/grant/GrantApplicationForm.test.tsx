@@ -1,3 +1,4 @@
+import { type FormEvent } from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { GrantApplicationForm } from "./GrantApplicationForm"
@@ -62,7 +63,9 @@ describe("GrantApplicationForm", () => {
       },
     ])
 
-    const onSubmit = vi.fn(e => e.preventDefault())
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    )
 
     render(
       <GrantApplicationForm
@@ -92,7 +95,9 @@ describe("GrantApplicationForm", () => {
       { type: "text", label: "Extra Notes", maxLength: 200, required: false },
     ])
 
-    const onSubmit = vi.fn(e => e.preventDefault())
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    )
 
     render(
       <GrantApplicationForm
