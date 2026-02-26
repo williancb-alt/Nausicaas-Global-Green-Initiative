@@ -33,6 +33,12 @@ const optionalTextField: TextFieldConfig = {
   required: false,
 }
 
+function renderField(field: DynamicFieldConfig) {
+  return render(
+    <DynamicFieldInput field={field} index={0} value="" onChange={vi.fn()} />,
+  )
+}
+
 function Wrapper({ field }: { field: DynamicFieldConfig }) {
   const [value, setValue] = useState("")
   return (
@@ -48,28 +54,14 @@ function Wrapper({ field }: { field: DynamicFieldConfig }) {
 describe("DynamicFieldInput", () => {
   describe("FieldLabel rendering", () => {
     it("shows red * when required is true", () => {
-      render(
-        <DynamicFieldInput
-          field={currencyField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
+      renderField(currencyField)
       const asterisk = screen.getByText("*")
       expect(asterisk).toBeInTheDocument()
       expect(asterisk).toHaveClass("text-danger")
     })
 
     it("shows (Optional) when required is false", () => {
-      render(
-        <DynamicFieldInput
-          field={optionalCurrencyField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
+      renderField(optionalCurrencyField)
       expect(screen.getByText("(Optional)")).toBeInTheDocument()
       expect(screen.queryByText("*")).not.toBeInTheDocument()
     })
@@ -77,41 +69,20 @@ describe("DynamicFieldInput", () => {
 
   describe("Currency field", () => {
     it("renders € prefix, range text, and placeholder", () => {
-      render(
-        <DynamicFieldInput
-          field={currencyField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
+      renderField(currencyField)
       expect(screen.getByText("€")).toBeInTheDocument()
       expect(screen.getByPlaceholderText("0.00")).toBeInTheDocument()
       expect(screen.getByText(/Range: €100 – €50000/)).toBeInTheDocument()
     })
 
     it("shows required error on blur when empty and required", () => {
-      render(
-        <DynamicFieldInput
-          field={currencyField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
+      renderField(currencyField)
       fireEvent.blur(screen.getByPlaceholderText("0.00"))
       expect(screen.getByText("This field is required")).toBeInTheDocument()
     })
 
     it("does not show error on blur when empty and optional", () => {
-      render(
-        <DynamicFieldInput
-          field={optionalCurrencyField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
+      renderField(optionalCurrencyField)
       fireEvent.blur(screen.getByPlaceholderText("0.00"))
       expect(
         screen.queryByText("This field is required"),
@@ -152,30 +123,14 @@ describe("DynamicFieldInput", () => {
 
   describe("Text field", () => {
     it("shows required error on blur when empty and required", () => {
-      render(
-        <DynamicFieldInput
-          field={requiredTextField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
-      const textarea = screen.getByRole("textbox")
-      fireEvent.blur(textarea)
+      renderField(requiredTextField)
+      fireEvent.blur(screen.getByRole("textbox"))
       expect(screen.getByText("This field is required")).toBeInTheDocument()
     })
 
     it("does not show error on blur when empty and optional", () => {
-      render(
-        <DynamicFieldInput
-          field={optionalTextField}
-          index={0}
-          value=""
-          onChange={vi.fn()}
-        />,
-      )
-      const textarea = screen.getByRole("textbox")
-      fireEvent.blur(textarea)
+      renderField(optionalTextField)
+      fireEvent.blur(screen.getByRole("textbox"))
       expect(
         screen.queryByText("This field is required"),
       ).not.toBeInTheDocument()
