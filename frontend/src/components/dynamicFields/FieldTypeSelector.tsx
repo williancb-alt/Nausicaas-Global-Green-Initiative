@@ -2,7 +2,7 @@ import { JSX } from "react"
 import { Button } from "../button/Button"
 
 interface FieldTypeSelectorProps {
-  onSelect: (type: "text" | "radio" | "phone" | "email") => void
+  onSelect: (type: "text" | "radio" | "phone" | "email" | "currency") => void
   onCancel: () => void
 }
 
@@ -52,6 +52,15 @@ export function FieldTypeSelector({
       >
         <div className="fw-semibold">Email Field</div>
         <small className="text-muted">Validated email address input</small>
+      </button>
+
+      <button
+        type="button"
+        className="btn btn-outline-primary text-start p-3"
+        onClick={() => onSelect("currency")}
+      >
+        <div className="fw-semibold">Funding Amount Field</div>
+        <small className="text-muted">Euro amount with min/max range</small>
       </button>
 
       <hr />
