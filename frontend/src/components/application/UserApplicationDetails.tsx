@@ -1,10 +1,12 @@
-import type { JSX } from "react"
+import { JSX, useState } from "react"
 import type { Application } from "../../types"
 import { UserApplicationResponses } from "./UserApplicationResponses"
+import { SubmissionLockedModal } from "./SubmissionLockedModal"
 import {
   Calendar,
   FileText,
   Info,
+  Lock,
   MessageSquare,
   ArrowLeft,
   CheckCircle2,
@@ -60,7 +62,7 @@ function ApplicationHeroHeader({
         background: "linear-gradient(135deg, #3b7a57 0%, #2d5a41 100%)",
         padding: "3rem 0",
         color: "white",
-        marginBottom: "2rem",
+        marginBottom: "0",
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
       }}
     >
@@ -106,6 +108,44 @@ function ApplicationHeroHeader({
             <div className="text-white opacity-75 small mb-1">Submitted On</div>
             <div className="h5 mb-0 fw-bold">{application.submitted_date}</div>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SubmissionLockedStrip({
+  onReopenModal,
+}: {
+  onReopenModal: () => void
+}) {
+  return (
+    <div
+      style={{
+        backgroundColor: "#f0fdf4",
+        borderBottom: "1px solid #bbf7d0",
+      }}
+    >
+      <div className="container py-2">
+        <div className="d-flex align-items-center justify-content-between">
+          <div
+            className="d-flex align-items-center gap-2"
+            style={{ color: "#2d5a41" }}
+          >
+            <Lock size={15} />
+            <small>
+              <strong>Read-only</strong> — submitted applications cannot be
+              edited.
+            </small>
+          </div>
+          <button
+            type="button"
+            className="btn btn-link btn-sm p-0"
+            onClick={onReopenModal}
+            style={{ color: "#3b7a57", fontSize: "0.8rem" }}
+          >
+            Why?
+          </button>
         </div>
       </div>
     </div>
@@ -225,6 +265,7 @@ export function UserApplicationDetails({
   application,
   onBack,
 }: UserApplicationDetailsProps): JSX.Element {
+  const [isLockedModalOpen, setIsLockedModalOpen] = useState(true)
   const customFieldConfigs = application.grant.custom_fields?.configs ?? null
   const status =
     STATUS_CONFIG[application.status] || STATUS_CONFIG.pending_review
@@ -234,13 +275,24 @@ export function UserApplicationDetails({
       style={{ backgroundColor: "#f0fdf4", minHeight: "100vh" }}
       className="pb-5"
     >
+      <SubmissionLockedModal
+        isOpen={isLockedModalOpen}
+        onClose={() => setIsLockedModalOpen(false)}
+        status={application.status}
+        submittedDate={application.submitted_date}
+      />
+
       <ApplicationHeroHeader
         application={application}
         onBack={onBack}
         status={status}
       />
 
-      <div className="container">
+      <SubmissionLockedStrip
+        onReopenModal={() => setIsLockedModalOpen(true)}
+      />
+
+      <div className="container mt-4">
         <div className="row g-4">
           <div className="col-lg-8">
             <div
