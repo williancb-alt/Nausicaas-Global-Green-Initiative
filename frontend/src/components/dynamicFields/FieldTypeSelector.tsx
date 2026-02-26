@@ -60,9 +60,7 @@ export function FieldTypeSelector({
         onClick={() => onSelect("currency")}
       >
         <div className="fw-semibold">Funding Amount Field</div>
-        <small className="text-muted">
-          Euro amount with min/max range
-        </small>
+        <small className="text-muted">Euro amount with min/max range</small>
       </button>
 
       <hr />

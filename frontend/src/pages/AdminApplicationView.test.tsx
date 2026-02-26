@@ -114,7 +114,14 @@ const mockApplication: Application = {
   grant: {
     name: "Environmental Research Grant",
     custom_fields: {
-      configs: [{ type: "text", label: "Organization Name", maxLength: 255, required: false }],
+      configs: [
+        {
+          type: "text",
+          label: "Organization Name",
+          maxLength: 255,
+          required: false,
+        },
+      ],
     },
   },
   applicant: {

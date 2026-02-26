@@ -78,8 +78,7 @@ export function CurrencyFieldConfigurator({
             valueAsNumber: true,
             min: { value: 1, message: "Maximum must be at least 1" },
             validate: (value, formValues) =>
-              value > formValues.min ||
-              "Maximum must be greater than minimum",
+              value > formValues.min || "Maximum must be greater than minimum",
           })}
           className="form-control"
           min={1}
