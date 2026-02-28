@@ -6,10 +6,11 @@ import type { Grant } from "../../services/api/client"
 import { ApplicationStatusBadge } from "../application/ApplicationStatusBadge"
 import { ApplicationStatusButton } from "../application/ApplicationStatusButton"
 import { ApplicationStatus } from "../../types"
+import type { ApplicationEntry } from "../../pages/LandingPage"
 
 export interface PublicGrantCardProps {
   grant: Grant
-  applicationStatus?: ApplicationStatus | undefined
+  applicationStatus?: ApplicationEntry | undefined
 }
 
 export function PublicGrantCard({
@@ -54,7 +55,7 @@ export function PublicGrantCard({
       >
         <h5 className="mb-0 fw-bold">{grant.name}</h5>
         <div className="d-flex gap-2">
-          <ApplicationStatusBadge status={applicationStatus} />
+          <ApplicationStatusBadge status={applicationStatus?.status} />
           {grant.deadline_passed ? (
             <span className="badge bg-danger">Deadline Passed</span>
           ) : (
@@ -70,14 +71,36 @@ export function PublicGrantCard({
           <p className="card-text mb-3">{grant.description}</p>
         )}
 
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div className="text-muted small">
             <strong>Deadline:</strong> {grant.deadline}
           </div>
 
           {!grant.deadline_passed &&
             (hasApplied ? (
-              <ApplicationStatusButton status={applicationStatus} />
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <ApplicationStatusButton status={applicationStatus?.status} />
+                <button
+                  className="btn btn-sm btn-outline-primary"
+                  style={{ borderRadius: "8px" }}
+                  onClick={() =>
+                    void navigate(`/applications/${applicationStatus!.id}`)
+                  }
+                >
+                  View Application
+                </button>
+                <button
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: "#3b7a57",
+                    color: "white",
+                    borderRadius: "8px",
+                  }}
+                  onClick={() => void navigate("/dashboard")}
+                >
+                  Manage in Dashboard
+                </button>
+              </div>
             ) : (
               <Button variant="success" onClick={handleApply}>
                 Apply Now

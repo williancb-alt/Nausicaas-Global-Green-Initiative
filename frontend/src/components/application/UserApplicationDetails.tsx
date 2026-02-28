@@ -153,7 +153,7 @@ function SubmissionLockedStrip({
           <button
             type="button"
             className="btn btn-sm"
-            onClick={() => void navigate("/dashboard")}
+            onClick={() => void navigate("/")}
             style={{
               backgroundColor: "#3b7a57",
               color: "white",
