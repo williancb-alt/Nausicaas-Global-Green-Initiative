@@ -7,6 +7,37 @@ import { ApplicationStatusBadge } from "../application/ApplicationStatusBadge"
 import { ApplicationStatusButton } from "../application/ApplicationStatusButton"
 import type { ApplicationEntry } from "../../pages/LandingPage"
 
+function AppliedActions({
+  applicationStatus,
+}: {
+  applicationStatus: ApplicationEntry
+}): JSX.Element {
+  const navigate = useNavigate()
+  return (
+    <div className="d-flex align-items-center gap-2 flex-wrap">
+      <ApplicationStatusButton status={applicationStatus.status} />
+      <button
+        className="btn btn-sm btn-outline-primary"
+        style={{ borderRadius: "8px" }}
+        onClick={() => void navigate(`/applications/${applicationStatus.id}`)}
+      >
+        View Application
+      </button>
+      <button
+        className="btn btn-sm"
+        style={{
+          backgroundColor: "#3b7a57",
+          color: "white",
+          borderRadius: "8px",
+        }}
+        onClick={() => void navigate("/dashboard")}
+      >
+        Manage in Dashboard
+      </button>
+    </div>
+  )
+}
+
 export interface PublicGrantCardProps {
   grant: Grant
   applicationStatus?: ApplicationEntry | undefined
@@ -77,29 +108,7 @@ export function PublicGrantCard({
 
           {!grant.deadline_passed &&
             (hasApplied ? (
-              <div className="d-flex align-items-center gap-2 flex-wrap">
-                <ApplicationStatusButton status={applicationStatus?.status} />
-                <button
-                  className="btn btn-sm btn-outline-primary"
-                  style={{ borderRadius: "8px" }}
-                  onClick={() =>
-                    void navigate(`/applications/${applicationStatus.id}`)
-                  }
-                >
-                  View Application
-                </button>
-                <button
-                  className="btn btn-sm"
-                  style={{
-                    backgroundColor: "#3b7a57",
-                    color: "white",
-                    borderRadius: "8px",
-                  }}
-                  onClick={() => void navigate("/dashboard")}
-                >
-                  Manage in Dashboard
-                </button>
-              </div>
+              <AppliedActions applicationStatus={applicationStatus} />
             ) : (
               <Button variant="success" onClick={handleApply}>
                 Apply Now
