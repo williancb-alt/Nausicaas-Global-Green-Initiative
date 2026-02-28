@@ -1,5 +1,5 @@
-import { PublicGrantCardProps } from "../components/grant/PublicGrantCard"
 import { clsx, type ClassValue } from "clsx"
+import type { ApplicationStatus } from "../types"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -49,7 +49,7 @@ export const GRANT_MESSAGES = {
 }
 
 export const STATUS_CONFIG: Record<
-  NonNullable<PublicGrantCardProps["applicationStatus"]>,
+  ApplicationStatus,
   {
     headerBadgeClass: string
     headerLabel: string
