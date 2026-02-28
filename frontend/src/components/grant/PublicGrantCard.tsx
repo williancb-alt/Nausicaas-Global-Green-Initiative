@@ -83,7 +83,7 @@ export function PublicGrantCard({
                   className="btn btn-sm btn-outline-primary"
                   style={{ borderRadius: "8px" }}
                   onClick={() =>
-                    void navigate(`/applications/${applicationStatus!.id}`)
+                    void navigate(`/applications/${applicationStatus.id}`)
                   }
                 >
                   View Application
