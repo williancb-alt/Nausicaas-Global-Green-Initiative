@@ -12,7 +12,7 @@ function GrantCardHeader({
   applicationStatus,
 }: {
   grant: Grant
-  applicationStatus?: ApplicationEntry
+  applicationStatus?: ApplicationEntry | undefined
 }): JSX.Element {
   return (
     <div
