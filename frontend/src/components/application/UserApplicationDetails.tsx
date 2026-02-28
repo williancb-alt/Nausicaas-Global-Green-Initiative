@@ -144,7 +144,11 @@ function SubmissionLockedStrip({
                 type="button"
                 className="btn btn-link p-0"
                 onClick={onReopenModal}
-                style={{ color: "#3b7a57", fontSize: "1.05rem", verticalAlign: "baseline" }}
+                style={{
+                  color: "#3b7a57",
+                  fontSize: "1.05rem",
+                  verticalAlign: "baseline",
+                }}
               >
                 Why?
               </button>
@@ -308,9 +312,7 @@ export function UserApplicationDetails({
         status={status}
       />
 
-      <SubmissionLockedStrip
-        onReopenModal={() => setIsLockedModalOpen(true)}
-      />
+      <SubmissionLockedStrip onReopenModal={() => setIsLockedModalOpen(true)} />
 
       <div className="container mt-4">
         <div className="row g-4">
@@ -323,11 +325,17 @@ export function UserApplicationDetails({
                 <div className="mb-4">
                   <div className="d-flex align-items-center gap-2 mb-1">
                     <FileText className="text-success" size={24} />
-                    <h2 className="h4 mb-0 fw-bold" style={{ color: "#2d5a41" }}>
+                    <h2
+                      className="h4 mb-0 fw-bold"
+                      style={{ color: "#2d5a41" }}
+                    >
                       Review your application responses
                     </h2>
                   </div>
-                  <p className="text-muted mb-0 ms-1" style={{ fontSize: "0.9rem" }}>
+                  <p
+                    className="text-muted mb-0 ms-1"
+                    style={{ fontSize: "0.9rem" }}
+                  >
                     Your submitted application has been sent and is now
                     read-only. To request making a change, please reach out to
                     Customer Support.
