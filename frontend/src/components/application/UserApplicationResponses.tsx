@@ -35,7 +35,11 @@ export function UserApplicationResponses({
         <Lock size={14} color="#6b7280" />
         <span
           className="text-uppercase fw-bold"
-          style={{ color: "#6b7280", fontSize: "0.72rem", letterSpacing: "0.06em" }}
+          style={{
+            color: "#6b7280",
+            fontSize: "0.72rem",
+            letterSpacing: "0.06em",
+          }}
         >
           Read-only responses
         </span>
