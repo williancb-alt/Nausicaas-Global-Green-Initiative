@@ -5,7 +5,6 @@ import { useAuthStore } from "../../store/authStore"
 import type { Grant } from "../../services/api/client"
 import { ApplicationStatusBadge } from "../application/ApplicationStatusBadge"
 import { ApplicationStatusButton } from "../application/ApplicationStatusButton"
-import { ApplicationStatus } from "../../types"
 import type { ApplicationEntry } from "../../pages/LandingPage"
 
 export interface PublicGrantCardProps {

@@ -1,13 +1,12 @@
 import { JSX } from "react"
-import { PublicGrantCardProps } from "../grant/PublicGrantCard"
-
 import { Button } from "../button/Button"
 import { STATUS_CONFIG } from "./statusConfig"
+import type { ApplicationStatus } from "../../types"
 
 export function ApplicationStatusBadge({
   status,
 }: {
-  status: PublicGrantCardProps["applicationStatus"]
+  status: ApplicationStatus | undefined
 }): JSX.Element | null {
   if (!status) return null
   const { headerBadgeClass, headerLabel } = STATUS_CONFIG[status]
@@ -17,7 +16,7 @@ export function ApplicationStatusBadge({
 export function ApplicationStatusButton({
   status,
 }: {
-  status: PublicGrantCardProps["applicationStatus"]
+  status: ApplicationStatus | undefined
 }): JSX.Element | null {
   if (!status) return null
   const { buttonVariant, buttonLabel } = STATUS_CONFIG[status]
