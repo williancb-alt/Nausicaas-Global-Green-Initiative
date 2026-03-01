@@ -29,8 +29,12 @@ class Config:
             "client_kwargs": {"scope": "read:user user:email"},
         },
     ]
-    ACS_EMAIL_CONNECTION_STRING = os.getenv("ACS_EMAIL_CONNECTION_STRING")
-    ACS_EMAIL_SENDER = os.getenv("ACS_EMAIL_SENDER")
+    SMTP_SERVER = os.getenv("SMTP_SERVER")
+    SMTP_PORT = os.getenv("SMTP_PORT", "587")
+    SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+    SMTP_SENDER = os.getenv("SMTP_SENDER")
+    SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "true").lower() in ("1", "true", "yes", "y", "on")
     EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true")
     BCRYPT_LOG_ROUNDS = 4
     TOKEN_EXPIRE_HOURS = 0

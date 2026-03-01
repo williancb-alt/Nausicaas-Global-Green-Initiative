@@ -16,8 +16,8 @@ def test_config_development(monkeypatch):
     assert app.config["TOKEN_EXPIRE_HOURS"] == 0
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 15
     assert "EMAIL_ENABLED" in app.config
-    assert "ACS_EMAIL_SENDER" in app.config
-    assert "ACS_EMAIL_CONNECTION_STRING" in app.config
+    assert "SMTP_SENDER" in app.config
+    assert "SMTP_SERVER" in app.config
 
 
 def test_config_testing(monkeypatch):
@@ -32,8 +32,8 @@ def test_config_testing(monkeypatch):
     assert app.config["TOKEN_EXPIRE_HOURS"] == 0
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 0
     assert "EMAIL_ENABLED" in app.config
-    assert "ACS_EMAIL_SENDER" in app.config
-    assert "ACS_EMAIL_CONNECTION_STRING" in app.config
+    assert "SMTP_SENDER" in app.config
+    assert "SMTP_SERVER" in app.config
 
 
 def test_config_production(monkeypatch):
@@ -47,5 +47,5 @@ def test_config_production(monkeypatch):
     assert app.config["TOKEN_EXPIRE_HOURS"] == 1
     assert app.config["TOKEN_EXPIRE_MINUTES"] == 0
     assert "EMAIL_ENABLED" in app.config
-    assert "ACS_EMAIL_SENDER" in app.config
-    assert "ACS_EMAIL_CONNECTION_STRING" in app.config
+    assert "SMTP_SENDER" in app.config
+    assert "SMTP_SERVER" in app.config
