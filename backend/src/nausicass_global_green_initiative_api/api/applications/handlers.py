@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import TypedDict
 
-from flask import Response, jsonify, url_for, current_app
+from flask import Response, jsonify, url_for
 from flask_restx import abort, marshal
 from flask_sqlalchemy.pagination import Pagination
 
@@ -16,7 +16,6 @@ from nausicass_global_green_initiative_api.api.applications.dto import (
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.application import Application
-from nausicass_global_green_initiative_api.services.email_service import EmailService
 
 
 class ApplicationCreateDict(TypedDict, total=False):
@@ -170,43 +169,14 @@ def update_application(
         description=f"Application {application_id} not found."
     )
 
-    status_changed = False
-    old_status = application.status
-
     if application_dict.get("status"):
         application.status = application_dict["status"]
-        if old_status != application.status:
-            status_changed = True
     if application_dict.get("feedback") is not None:
         application.feedback = application_dict["feedback"]
     if application_dict.get("field_values"):
         application.field_values = application_dict["field_values"]
 
     db.session.commit()
-
-    try:
-        user = application.user
-        grant_name = application.grant.name
-        new_status = application.status
-        feedback = application.feedback
-
-        subject = f"Update on your application for {grant_name}"
-        html_body = f"""
-        <p>Dear Applicant,</p>
-        <p>There has been an update to your application for <strong>{grant_name}</strong>.</p>
-        <p>Current Status: <strong>{new_status}</strong></p>
-        """
-        if feedback:
-            html_body += f"<p>Feedback: {feedback}</p>"
-        html_body += "<p>Thank you,</p><p>Nausicaa's Global Green Initiative</p>"
-
-        EmailService.send_email(
-            to=[user.email],
-            subject=subject,
-            html_body=html_body,
-        )
-    except Exception as e:
-        current_app.logger.warning(f"Failed to send update email for application {application_id}: {e}")
 
     response = jsonify(
         status="success",
