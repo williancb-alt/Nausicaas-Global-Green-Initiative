@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import type { AuthSuccess, Grant, GrantPage } from "./client"
+import type { AuthSuccess, Award, AwardPage, Grant, GrantPage } from "./client"
 import { api } from "./index"
 
 const { mockPost, mockGet, mockPut, mockDelete } = vi.hoisted(() => {
@@ -31,7 +31,7 @@ vi.mock("axios", () => {
   }
 })
 
-describe("api (auth + grants)", () => {
+describe("api (auth)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -110,7 +110,129 @@ describe("api (auth + grants)", () => {
       expect(mockPost).toHaveBeenCalledWith("/api/v1/auth/logout")
     })
   })
+})
 
+describe("api (awards)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe("awards.createAward", () => {
+    it("should create an award", async () => {
+      const mockResponse = {
+        status: "success",
+        message: "New award added: test-award.",
+      }
+
+      mockPost.mockResolvedValue({ data: mockResponse })
+
+      const result = await api.awards.createAward({
+        name: "test-award",
+        deadline: "12/31/2024",
+        description: "Test award description",
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockPost).toHaveBeenCalledWith(
+        "/api/v1/awards",
+        expect.any(URLSearchParams),
+      )
+    })
+  })
+
+  describe("awards.listAwards", () => {
+    it("should list awards", async () => {
+      const mockResponse: AwardPage = {
+        links: {
+          self: "/api/v1/awards?page=1&per_page=10",
+          first: "/api/v1/awards?page=1&per_page=10",
+          last: "/api/v1/awards?page=1&per_page=10",
+        },
+        has_prev: false,
+        has_next: false,
+        page: 1,
+        total_pages: 1,
+        items_per_page: 10,
+        total_items: 1,
+        items: [
+          {
+            name: "test-award",
+            deadline: "2024-12-31",
+            deadline_passed: false,
+            time_remaining: "30 days",
+          },
+        ],
+      }
+
+      mockGet.mockResolvedValue({ data: mockResponse })
+
+      const result = await api.awards.listAwards(1, 10)
+
+      expect(result).toEqual(mockResponse)
+      expect(mockGet).toHaveBeenCalledWith("/api/v1/awards", {
+        params: { page: 1, per_page: 10 },
+      })
+    })
+  })
+
+  describe("awards.getAward", () => {
+    it("should get a single award", async () => {
+      const mockResponse: Award = {
+        name: "test-award",
+        deadline: "2024-12-31",
+        deadline_passed: false,
+        time_remaining: "30 days",
+      }
+
+      mockGet.mockResolvedValue({ data: mockResponse })
+
+      const result = await api.awards.getAward("test-award")
+
+      expect(result).toEqual(mockResponse)
+      expect(mockGet).toHaveBeenCalledWith("/api/v1/awards/test-award")
+    })
+  })
+
+  describe("awards.updateAward", () => {
+    it("should update an award", async () => {
+      const mockResponse: Award = {
+        name: "test-award",
+        deadline: "2025-01-31",
+        deadline_passed: false,
+        time_remaining: "60 days",
+      }
+
+      mockPut.mockResolvedValue({ data: mockResponse })
+
+      const result = await api.awards.updateAward("test-award", {
+        deadline: "01/31/2025",
+      })
+
+      expect(result).toEqual(mockResponse)
+      expect(mockPut).toHaveBeenCalledWith(
+        "/api/v1/awards/test-award",
+        expect.any(URLSearchParams),
+      )
+    })
+  })
+
+  describe("awards.deleteAward", () => {
+    it("should delete an award", async () => {
+      mockDelete.mockResolvedValue({ status: 204 })
+
+      await api.awards.deleteAward("test-award")
+
+      expect(mockDelete).toHaveBeenCalledWith("/api/v1/awards/test-award")
+    })
+  })
+})
+
+
+describe("api (grants)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+  
   describe("grants.createGrant", () => {
     it("should create a grant", async () => {
       const mockResponse = {

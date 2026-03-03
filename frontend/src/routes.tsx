@@ -7,6 +7,7 @@ import { MyApplications } from "./pages/MyApplications"
 import { UserApplicationView } from "./pages/UserApplicationView"
 import { AdminDashboardPage } from "./pages/AdminDashboardPage"
 import { AdminApplicationView } from "./pages/AdminApplicationView"
+import { AwardManagementPage } from "./pages/AwardManagementPage"
 import { GrantManagementPage } from "./pages/GrantManagementPage"
 import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
@@ -71,6 +72,14 @@ export const routes = [
     element: (
       <ProtectedRoute>
         <AdminApplicationView />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/awards",
+    element: (
+      <ProtectedRoute>
+        <AwardManagementPage />
       </ProtectedRoute>
     ),
   },

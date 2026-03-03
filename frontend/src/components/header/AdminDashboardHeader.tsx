@@ -1,6 +1,7 @@
 interface AdminDashboardHeaderProps {
   userEmail: string
   onManageGrants: () => void
+  onManageAwards: () => void
   onViewAuditLogs: () => void
   onLogout: () => void
 }
@@ -8,6 +9,7 @@ interface AdminDashboardHeaderProps {
 export function AdminDashboardHeader({
   userEmail,
   onManageGrants,
+  onManageAwards,
   onViewAuditLogs,
   onLogout,
 }: AdminDashboardHeaderProps) {
@@ -35,6 +37,17 @@ export function AdminDashboardHeader({
               }}
             >
               Manage Grants
+            </button>
+            <button
+              onClick={onManageAwards}
+              className="btn"
+              style={{
+                backgroundColor: "white",
+                color: "#3b7a57",
+                fontWeight: "500",
+              }}
+            >
+              Manage Awards
             </button>
             <button
               onClick={onViewAuditLogs}

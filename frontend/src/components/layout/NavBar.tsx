@@ -58,6 +58,11 @@ const Navbar: React.FC = () => {
                   </NavLink>
                 </li>
                 <li className="nav-item">
+                  <NavLink className={navLinkClass} to="/admin/awards">
+                    Awards
+                  </NavLink>
+                </li>
+                <li className="nav-item">
                   <LogoutButton />
                 </li>
               </>
