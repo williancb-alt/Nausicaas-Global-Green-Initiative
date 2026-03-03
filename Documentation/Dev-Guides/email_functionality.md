@@ -1,7 +1,7 @@
 # Email functionality
 
 ## Overview
-Azure Communications Service is used to send emails within the backend on key events (currenly only on signup but this should be extended to others).
+Azure Communications Service is used to send emails within the backend on key events (currently only on signup but this should be extended to others).
 
 On Azure communications service, a custom domain has been configured and validated for DKIM and SPF (to enable emails to avoid being put into spam folders).
 
