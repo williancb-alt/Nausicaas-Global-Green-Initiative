@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./components/protectedRoute/ProtectedRoute"
 import { ForgotPassword } from "./pages/ForgotPassword"
 import { Login } from "./pages/Login"
@@ -53,7 +54,7 @@ export const routes = [
   {
     path: "/admin",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin>
         <AdminDashboardPage />
       </ProtectedRoute>
     ),
@@ -61,7 +62,7 @@ export const routes = [
   {
     path: "/admin/applications",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin>
         <Applications />
       </ProtectedRoute>
     ),
@@ -69,7 +70,7 @@ export const routes = [
   {
     path: "/admin/applications/:id",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin>
         <AdminApplicationView />
       </ProtectedRoute>
     ),
@@ -77,8 +78,16 @@ export const routes = [
   {
     path: "/admin/grants",
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute requireAdmin>
         <GrantManagementPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/audit",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AuditLogs />
       </ProtectedRoute>
     ),
   },
@@ -95,11 +104,7 @@ export const routes = [
     element: <ForgotPassword />,
   },
   {
-    path: "admin/audit",
-    element: (
-      <ProtectedRoute>
-        <AuditLogs />
-      </ProtectedRoute>
-    ),
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]
