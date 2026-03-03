@@ -5,11 +5,69 @@ import { useAuthStore } from "../../store/authStore"
 import type { Grant } from "../../services/api/client"
 import { ApplicationStatusBadge } from "../application/ApplicationStatusBadge"
 import { ApplicationStatusButton } from "../application/ApplicationStatusButton"
-import { ApplicationStatus } from "../../types"
+import type { ApplicationEntry } from "../../pages/LandingPage"
+
+function GrantCardHeader({
+  grant,
+  applicationStatus,
+}: {
+  grant: Grant
+  applicationStatus?: ApplicationEntry | undefined
+}): JSX.Element {
+  return (
+    <div
+      className="card-header d-flex justify-content-between align-items-center"
+      style={{ backgroundColor: "#3b7a57", color: "white" }}
+    >
+      <h5 className="mb-0 fw-bold">{grant.name}</h5>
+      <div className="d-flex gap-2">
+        <ApplicationStatusBadge status={applicationStatus?.status} />
+        {grant.deadline_passed ? (
+          <span className="badge bg-danger">Deadline Passed</span>
+        ) : (
+          <span className="badge bg-light text-dark">
+            {grant.time_remaining} remaining
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function AppliedActions({
+  applicationStatus,
+}: {
+  applicationStatus: ApplicationEntry
+}): JSX.Element {
+  const navigate = useNavigate()
+  return (
+    <div className="d-flex align-items-center gap-2 flex-wrap">
+      <ApplicationStatusButton status={applicationStatus.status} />
+      <button
+        className="btn btn-sm btn-outline-primary"
+        style={{ borderRadius: "8px" }}
+        onClick={() => void navigate(`/applications/${applicationStatus.id}`)}
+      >
+        View Application
+      </button>
+      <button
+        className="btn btn-sm"
+        style={{
+          backgroundColor: "#3b7a57",
+          color: "white",
+          borderRadius: "8px",
+        }}
+        onClick={() => void navigate("/dashboard")}
+      >
+        Manage in Dashboard
+      </button>
+    </div>
+  )
+}
 
 export interface PublicGrantCardProps {
   grant: Grant
-  applicationStatus?: ApplicationStatus | undefined
+  applicationStatus?: ApplicationEntry | undefined
 }
 
 export function PublicGrantCard({
@@ -45,39 +103,21 @@ export function PublicGrantCard({
         borderRadius: "8px",
       }}
     >
-      <div
-        className="card-header d-flex justify-content-between align-items-center"
-        style={{
-          backgroundColor: "#3b7a57",
-          color: "white",
-        }}
-      >
-        <h5 className="mb-0 fw-bold">{grant.name}</h5>
-        <div className="d-flex gap-2">
-          <ApplicationStatusBadge status={applicationStatus} />
-          {grant.deadline_passed ? (
-            <span className="badge bg-danger">Deadline Passed</span>
-          ) : (
-            <span className="badge bg-light text-dark">
-              {grant.time_remaining} remaining
-            </span>
-          )}
-        </div>
-      </div>
+      <GrantCardHeader grant={grant} applicationStatus={applicationStatus} />
 
       <div className="card-body" style={{ backgroundColor: "#f8fdf8" }}>
         {grant.description && (
           <p className="card-text mb-3">{grant.description}</p>
         )}
 
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <div className="text-muted small">
             <strong>Deadline:</strong> {grant.deadline}
           </div>
 
           {!grant.deadline_passed &&
             (hasApplied ? (
-              <ApplicationStatusButton status={applicationStatus} />
+              <AppliedActions applicationStatus={applicationStatus} />
             ) : (
               <Button variant="success" onClick={handleApply}>
                 Apply Now

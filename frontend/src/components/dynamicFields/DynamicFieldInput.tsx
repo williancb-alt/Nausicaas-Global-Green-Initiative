@@ -8,6 +8,7 @@ interface DynamicFieldInputProps {
   value: string
   onChange: (value: string) => void
   onValidationChange?: (fieldIndex: number, isValid: boolean) => void
+  disabled?: boolean
 }
 
 function FieldLabel({
@@ -35,6 +36,7 @@ export function DynamicFieldInput({
   value,
   onChange,
   onValidationChange,
+  disabled = false,
 }: DynamicFieldInputProps): JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [touched, setTouched] = useState(false)
@@ -110,9 +112,12 @@ export function DynamicFieldInput({
           value={value}
           onChange={e => handleTextChange(e.target.value)}
           onBlur={handleBlur}
+          disabled={disabled}
         />
         {error && touched && <div className="invalid-feedback">{error}</div>}
-        <small className="text-muted">Max {field.maxLength} characters</small>
+        {!disabled && (
+          <small className="text-muted">Max {field.maxLength} characters</small>
+        )}
       </div>
     )
   }
@@ -137,6 +142,7 @@ export function DynamicFieldInput({
               onChange={e => handleRadioChange(e.target.value)}
               className="form-check-input"
               id={`field_${index}_option_${optIndex}`}
+              disabled={disabled}
             />
             <label
               className="form-check-label"
@@ -164,6 +170,7 @@ export function DynamicFieldInput({
           onChange={e => handlePhoneChange(e.target.value)}
           onBlur={handleBlur}
           placeholder="+1 (555) 123-4567"
+          disabled={disabled}
         />
         {error && touched && <div className="invalid-feedback">{error}</div>}
       </div>
@@ -227,6 +234,7 @@ export function DynamicFieldInput({
         onChange={e => handleEmailChange(e.target.value)}
         onBlur={handleBlur}
         placeholder="email@example.com"
+        disabled={disabled}
       />
       {error && touched && <div className="invalid-feedback">{error}</div>}
     </div>

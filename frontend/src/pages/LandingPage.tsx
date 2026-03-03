@@ -6,7 +6,8 @@ import { useAuthStore } from "../store/authStore"
 import { GrantsList } from "../components/grant/GrantList"
 import { ApplicationStatus } from "../types"
 
-export type ApplicationStatusMap = Map<string, ApplicationStatus>
+export type ApplicationEntry = { status: ApplicationStatus; id: number }
+export type ApplicationStatusMap = Map<string, ApplicationEntry>
 
 export function LandingPage(): JSX.Element {
   const { data: grantsData, isLoading, isError } = useGrants()
@@ -19,7 +20,10 @@ export function LandingPage(): JSX.Element {
   })
 
   const applicationStatusMap: ApplicationStatusMap = new Map(
-    myApplicationsData?.items.map(app => [app.grant.name, app.status]) || [],
+    myApplicationsData?.items.map(app => [
+      app.grant.name,
+      { status: app.status, id: app.id },
+    ]) || [],
   )
 
   const grants = grantsData?.items ?? []

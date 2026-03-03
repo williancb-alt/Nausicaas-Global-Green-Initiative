@@ -1,4 +1,5 @@
-import type { JSX } from "react"
+import { JSX } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "../button/Button"
 
 interface GrantApplicationSuccessViewProps {
@@ -12,6 +13,8 @@ export function GrantApplicationSuccessView({
   userEmail,
   onReturnHome,
 }: GrantApplicationSuccessViewProps): JSX.Element {
+  const navigate = useNavigate()
+
   return (
     <div
       className="container py-5"
@@ -42,9 +45,17 @@ export function GrantApplicationSuccessView({
                 submitted successfully. We will review your application and
                 contact you at {userEmail || "your email"}.
               </p>
-              <Button variant="success" onClick={onReturnHome}>
-                Return to Home
-              </Button>
+              <div className="d-flex justify-content-center gap-3 flex-wrap">
+                <Button variant="success" onClick={onReturnHome}>
+                  Return to Home
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => void navigate("/dashboard")}
+                >
+                  Go to Dashboard
+                </Button>
+              </div>
             </div>
           </div>
         </div>
