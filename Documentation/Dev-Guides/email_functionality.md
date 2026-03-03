@@ -134,6 +134,7 @@ To add a new type of email (for example, a password reset email), follow these s
        args=(app, user_email, reset_link),
        daemon=True,
    ).start()
+   ```
 
 4. **Update your API or business logic**  
    Trigger this email from the appropriate place in your codebase (e.g., when a user requests a password reset).
