@@ -206,7 +206,8 @@ def _send_status_update_email(application: Application) -> None:
         subject = f"Update on your application for {grant_name}"
         html_body = f"""
         <p>Dear Applicant,</p>
-        <p>There has been an update to your application for <strong>{grant_name}</strong>.</p>
+        <p>There has been an update to your application for
+        <strong>{grant_name}</strong>.</p>
         <p>Current Status: <strong>{new_status}</strong></p>
         """
         if feedback:
