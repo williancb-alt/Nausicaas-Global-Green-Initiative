@@ -171,12 +171,12 @@ def update_application(
     )
 
     status_changed = False
-    old_status = application.status
+    new_status = application_dict.get("status")
 
-    if application_dict.get("status"):
-        application.status = application_dict["status"]
-        if old_status != application.status:
-            status_changed = True
+    if new_status:
+        status_changed = application.status != new_status
+        application.status = new_status
+
     if application_dict.get("feedback") is not None:
         application.feedback = application_dict["feedback"]
     if application_dict.get("field_values"):
@@ -185,29 +185,7 @@ def update_application(
     db.session.commit()
 
     if status_changed:
-        try:
-            user = application.user
-            grant_name = application.grant.name
-            new_status = application.status
-            feedback = application.feedback
-
-            subject = f"Update on your application for {grant_name}"
-            html_body = f"""
-            <p>Dear Applicant,</p>
-            <p>There has been an update to your application for <strong>{grant_name}</strong>.</p>
-            <p>Current Status: <strong>{new_status}</strong></p>
-            """
-            if feedback:
-                html_body += f"<p>Feedback: {feedback}</p>"
-            html_body += "<p>Thank you,</p><p>Nausicaa's Global Green Initiative</p>"
-
-            EmailService.send_email(
-                to=[user.email],
-                subject=subject,
-                html_body=html_body,
-            )
-        except Exception as e:
-            current_app.logger.warning(f"Failed to send update email for application {application_id}: {e}")
+        _send_status_update_email(application)
 
     response = jsonify(
         status="success",
@@ -215,6 +193,35 @@ def update_application(
     )
     response.status_code = HTTPStatus.OK
     return response
+
+
+def _send_status_update_email(application: Application) -> None:
+    """Send an email notification when an application status changes."""
+    try:
+        user = application.user
+        grant_name = application.grant.name
+        new_status = application.status
+        feedback = application.feedback
+
+        subject = f"Update on your application for {grant_name}"
+        html_body = f"""
+        <p>Dear Applicant,</p>
+        <p>There has been an update to your application for <strong>{grant_name}</strong>.</p>
+        <p>Current Status: <strong>{new_status}</strong></p>
+        """
+        if feedback:
+            html_body += f"<p>Feedback: {feedback}</p>"
+        html_body += "<p>Thank you,</p><p>Nausicaa's Global Green Initiative</p>"
+
+        EmailService.send_email(
+            to=[user.email],
+            subject=subject,
+            html_body=html_body,
+        )
+    except Exception as e:
+        current_app.logger.warning(
+            f"Failed to send update email for application {application.id}: {e}"
+        )
 
 
 @admin_token_required
