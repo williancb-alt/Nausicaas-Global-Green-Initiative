@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import TypedDict
 
-from flask import Response, jsonify, url_for
+from flask import Response, jsonify, url_for, current_app, render_template
 from flask_restx import abort, marshal
 from flask_sqlalchemy.pagination import Pagination
 
@@ -16,6 +16,7 @@ from nausicass_global_green_initiative_api.api.applications.dto import (
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.application import Application
+from nausicass_global_green_initiative_api.services.email_service import EmailService
 
 
 class ApplicationCreateDict(TypedDict, total=False):
@@ -169,8 +170,13 @@ def update_application(
         description=f"Application {application_id} not found."
     )
 
-    if application_dict.get("status"):
-        application.status = application_dict["status"]
+    status_changed = False
+    new_status = application_dict.get("status")
+
+    if new_status:
+        status_changed = application.status != new_status
+        application.status = new_status
+
     if application_dict.get("feedback") is not None:
         application.feedback = application_dict["feedback"]
     if application_dict.get("field_values"):
@@ -178,12 +184,42 @@ def update_application(
 
     db.session.commit()
 
+    if status_changed:
+        _send_status_update_email(application)
+
     response = jsonify(
         status="success",
         message=f"Application {application_id} updated.",
     )
     response.status_code = HTTPStatus.OK
     return response
+
+
+def _send_status_update_email(application: Application) -> None:
+    """Send an email notification when an application status changes."""
+    try:
+        user = application.user
+        grant_name = application.grant.name
+        new_status = application.status
+        feedback = application.feedback
+
+        subject = f"Update on your application for {grant_name}"
+        html_body = render_template(
+            "email/application_status_update.html",
+            grant_name=grant_name,
+            new_status=new_status,
+            feedback=feedback,
+        )
+
+        EmailService.send_email(
+            to=[user.email],
+            subject=subject,
+            html_body=html_body,
+        )
+    except Exception as e:
+        current_app.logger.warning(
+            f"Failed to send update email for application {application.id}: {e}"
+        )
 
 
 @admin_token_required
