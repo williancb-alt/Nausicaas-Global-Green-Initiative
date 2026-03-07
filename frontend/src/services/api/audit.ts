@@ -3,6 +3,7 @@ import { apiClient } from "./client"
 export interface AuditLog {
   id: number
   timestamp: string
+  user_id?: number | null
   user_email: string | null
   is_admin: boolean
   action: string
@@ -16,8 +17,15 @@ export interface AuditLog {
 }
 
 export interface AuditLogsResponse {
-  logs: AuditLog[]
+  status: string
   count: number
+  logs: AuditLog[] // We'll map 'items' to 'logs' for consistency in frontend
+}
+
+interface BackendAuditResponse {
+  status: string
+  count: number
+  items: AuditLog[]
 }
 
 export const auditApi = {
@@ -25,23 +33,34 @@ export const auditApi = {
    * Get recent audit logs (admin only)
    */
   getRecentLogs: async (limit = 100): Promise<AuditLogsResponse> => {
-    const { data } = await apiClient.get<AuditLogsResponse>("/api/v1/audit", {
-      params: { limit },
-    })
-    return data
+    const { data } = await apiClient.get<BackendAuditResponse>(
+      "/api/v1/audit",
+      {
+        params: { limit },
+      },
+    )
+    return {
+      status: data.status,
+      count: data.count,
+      logs: data.items, // Map 'items' to 'logs'
+    }
   },
 
   /**
    * Get failed audit attempts (admin only)
    */
   getFailedLogs: async (limit = 100): Promise<AuditLogsResponse> => {
-    const { data } = await apiClient.get<AuditLogsResponse>(
+    const { data } = await apiClient.get<BackendAuditResponse>(
       "/api/v1/audit/failed",
       {
         params: { limit },
       },
     )
-    return data
+    return {
+      status: data.status,
+      count: data.count,
+      logs: data.items, // Map 'items' to 'logs'
+    }
   },
 
   /**
@@ -52,12 +71,16 @@ export const auditApi = {
     entityId: number,
     limit = 100,
   ): Promise<AuditLogsResponse> => {
-    const { data } = await apiClient.get<AuditLogsResponse>(
+    const { data } = await apiClient.get<BackendAuditResponse>(
       `/api/v1/audit/entity/${entityType}/${entityId}`,
       {
         params: { limit },
       },
     )
-    return data
+    return {
+      status: data.status,
+      count: data.count,
+      logs: data.items, // Map 'items' to 'logs'
+    }
   },
 }

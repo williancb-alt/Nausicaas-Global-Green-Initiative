@@ -1,14 +1,18 @@
-import type { JSX } from "react"
+import { JSX, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import type { Application } from "../../types"
 import { UserApplicationResponses } from "./UserApplicationResponses"
+import { SubmissionLockedModal } from "./SubmissionLockedModal"
 import {
   Calendar,
   FileText,
   Info,
+  Lock,
   MessageSquare,
   ArrowLeft,
   CheckCircle2,
   Clock,
+  LayoutDashboard,
   XCircle,
 } from "lucide-react"
 
@@ -60,7 +64,7 @@ function ApplicationHeroHeader({
         background: "linear-gradient(135deg, #3b7a57 0%, #2d5a41 100%)",
         padding: "3rem 0",
         color: "white",
-        marginBottom: "2rem",
+        marginBottom: "0",
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
       }}
     >
@@ -106,6 +110,64 @@ function ApplicationHeroHeader({
             <div className="text-white opacity-75 small mb-1">Submitted On</div>
             <div className="h5 mb-0 fw-bold">{application.submitted_date}</div>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SubmissionLockedStrip({
+  onReopenModal,
+}: {
+  onReopenModal: () => void
+}) {
+  const navigate = useNavigate()
+
+  return (
+    <div
+      style={{
+        backgroundColor: "#eef7ee",
+        borderBottom: "2px solid #bbf7d0",
+      }}
+    >
+      <div className="container py-3">
+        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div
+            className="d-flex align-items-center gap-2"
+            style={{ color: "#2d5a41" }}
+          >
+            <Lock size={20} />
+            <span style={{ fontSize: "1.05rem" }}>
+              <strong>Read-only</strong> — submitted applications cannot be
+              edited.{" "}
+              <button
+                type="button"
+                className="btn btn-link p-0"
+                onClick={onReopenModal}
+                style={{
+                  color: "#3b7a57",
+                  fontSize: "1.05rem",
+                  verticalAlign: "baseline",
+                }}
+              >
+                Why?
+              </button>
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => void navigate("/")}
+            style={{
+              backgroundColor: "#3b7a57",
+              color: "white",
+              borderRadius: "8px",
+              padding: "0.35rem 0.9rem",
+            }}
+          >
+            <LayoutDashboard size={15} className="me-1" />
+            View Available Grants
+          </button>
         </div>
       </div>
     </div>
@@ -205,7 +267,9 @@ function ApplicationNeedHelpCard() {
       }}
     >
       <div className="card-body p-4">
-        <h3 className="h6 fw-bold mb-3">Need Assistance?</h3>
+        <h3 className="h6 fw-bold mb-3">
+          Need assistance or want to make changes to your application?
+        </h3>
         <p className="small text-muted mb-4">
           If you have questions about your application or the review process,
           please reach out to our environmental program office.
@@ -225,6 +289,7 @@ export function UserApplicationDetails({
   application,
   onBack,
 }: UserApplicationDetailsProps): JSX.Element {
+  const [isLockedModalOpen, setIsLockedModalOpen] = useState(true)
   const customFieldConfigs = application.grant.custom_fields?.configs ?? null
   const status =
     STATUS_CONFIG[application.status] || STATUS_CONFIG.pending_review
@@ -234,13 +299,22 @@ export function UserApplicationDetails({
       style={{ backgroundColor: "#f0fdf4", minHeight: "100vh" }}
       className="pb-5"
     >
+      <SubmissionLockedModal
+        isOpen={isLockedModalOpen}
+        onClose={() => setIsLockedModalOpen(false)}
+        status={application.status}
+        submittedDate={application.submitted_date}
+      />
+
       <ApplicationHeroHeader
         application={application}
         onBack={onBack}
         status={status}
       />
 
-      <div className="container">
+      <SubmissionLockedStrip onReopenModal={() => setIsLockedModalOpen(true)} />
+
+      <div className="container mt-4">
         <div className="row g-4">
           <div className="col-lg-8">
             <div
@@ -248,11 +322,24 @@ export function UserApplicationDetails({
               style={{ borderRadius: "16px" }}
             >
               <div className="card-body p-4">
-                <div className="d-flex align-items-center gap-2 mb-4">
-                  <FileText className="text-success" size={24} />
-                  <h2 className="h4 mb-0 fw-bold" style={{ color: "#2d5a41" }}>
-                    Application Responses
-                  </h2>
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-1">
+                    <FileText className="text-success" size={24} />
+                    <h2
+                      className="h4 mb-0 fw-bold"
+                      style={{ color: "#2d5a41" }}
+                    >
+                      Review your application responses
+                    </h2>
+                  </div>
+                  <p
+                    className="text-muted mb-0 ms-1"
+                    style={{ fontSize: "0.9rem" }}
+                  >
+                    Your submitted application has been sent and is now
+                    read-only. To request making a change, please reach out to
+                    Customer Support.
+                  </p>
                 </div>
 
                 <UserApplicationResponses

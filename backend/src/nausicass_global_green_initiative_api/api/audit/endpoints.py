@@ -30,6 +30,8 @@ def _serialize_audit_log(log: AuditLog) -> dict:
         "entity_type": log.entity_type,
         "entity_id": log.entity_id,
         "details": log.details,
+        "ip_address": log.ip_address,
+        "user_agent": log.user_agent,
         "success": log.success,
         "failure_reason": log.failure_reason,
     }

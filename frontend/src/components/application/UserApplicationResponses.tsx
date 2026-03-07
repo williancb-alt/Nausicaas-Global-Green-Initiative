@@ -1,8 +1,11 @@
 import { JSX } from "react"
+import { Lock } from "lucide-react"
+import type { DynamicFieldConfig } from "../../types"
+import { DynamicFieldInput } from "../dynamicFields/DynamicFieldInput"
 
 interface UserApplicationResponsesProps {
   fieldValues: Record<string, string> | null | undefined
-  customFieldConfigs?: { label: string }[] | null
+  customFieldConfigs?: DynamicFieldConfig[] | null
 }
 
 export function UserApplicationResponses({
@@ -21,46 +24,58 @@ export function UserApplicationResponses({
   }
 
   return (
-    <div className="row g-3">
-      {Object.entries(fieldValues).map(([key, value]) => {
-        const indexMatch = key.match(/^field_(\d+)$/)
-        let label = key
+    <>
+      <div
+        className="d-flex align-items-center gap-2 mb-3"
+        style={{
+          borderBottom: "1px solid #e2e8f0",
+          paddingBottom: "0.75rem",
+        }}
+      >
+        <Lock size={14} color="#6b7280" />
+        <span
+          className="text-uppercase fw-bold"
+          style={{
+            color: "#6b7280",
+            fontSize: "0.72rem",
+            letterSpacing: "0.06em",
+          }}
+        >
+          Read-only responses
+        </span>
+      </div>
 
-        if (indexMatch && customFieldConfigs) {
-          const fieldIndex = parseInt(indexMatch[1], 10)
-          const fieldConfig = customFieldConfigs[fieldIndex]
-          if (fieldConfig) {
-            label = fieldConfig.label
-          }
-        }
-
-        return (
-          <div key={key} className="col-12">
-            <div
-              className="p-3 rounded-3"
-              style={{
-                backgroundColor: "#f8fafc",
-                border: "1px solid #e2e8f0",
-              }}
-            >
+      {customFieldConfigs
+        ? customFieldConfigs.map((config, i) => {
+            const key = `field_${i}`
+            return (
+              <DynamicFieldInput
+                key={key}
+                field={config}
+                index={i}
+                value={fieldValues[key] ?? ""}
+                onChange={() => {}}
+                disabled={true}
+              />
+            )
+          })
+        : Object.entries(fieldValues).map(([key, value]) => (
+            <div key={key} className="mb-3">
               <label
-                className="text-muted small text-uppercase fw-bold mb-1 d-block"
+                className="form-label text-muted small text-uppercase fw-bold"
                 style={{ letterSpacing: "0.05em" }}
               >
-                {label}
+                {key}
               </label>
-              <div
-                className="fw-medium text-dark"
-                style={{ fontSize: "1.1rem" }}
-              >
-                {value || (
-                  <span className="text-muted italic">Not provided</span>
-                )}
-              </div>
+              <input
+                type="text"
+                className="form-control"
+                value={value}
+                onChange={() => {}}
+                disabled
+              />
             </div>
-          </div>
-        )
-      })}
-    </div>
+          ))}
+    </>
   )
 }

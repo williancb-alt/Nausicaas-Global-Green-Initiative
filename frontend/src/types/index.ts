@@ -8,22 +8,34 @@ export interface TextFieldConfig {
   type: "text"
   label: string
   maxLength: number
+  required: boolean
 }
 
 export interface RadioFieldConfig {
   type: "radio"
   label: string
   options: string[]
+  required: boolean
 }
 
 export interface PhoneFieldConfig {
   type: "phone"
   label: string
+  required: boolean
 }
 
 export interface EmailFieldConfig {
   type: "email"
   label: string
+  required: boolean
+}
+
+export interface CurrencyFieldConfig {
+  type: "currency"
+  label: string
+  min: number
+  max: number
+  required: boolean
 }
 
 export type DynamicFieldConfig =
@@ -31,6 +43,7 @@ export type DynamicFieldConfig =
   | RadioFieldConfig
   | PhoneFieldConfig
   | EmailFieldConfig
+  | CurrencyFieldConfig
 
 export interface CustomFields {
   configs: DynamicFieldConfig[]

@@ -4,6 +4,7 @@ import { FieldTypeSelector } from "./FieldTypeSelector"
 import { TextFieldConfigurator } from "./TextFieldConfigurator"
 import { RadioFieldConfigurator } from "./RadioFieldConfigurator"
 import { SimpleFieldConfigurator } from "./SimpleFieldConfigurator"
+import { CurrencyFieldConfigurator } from "./CurrencyFieldConfigurator"
 import type { DynamicFieldConfig } from "../../types"
 
 interface DynamicFieldModalProps {
@@ -18,7 +19,7 @@ export function DynamicFieldModal({
   onFieldAdd,
 }: DynamicFieldModalProps): JSX.Element {
   const [selectedType, setSelectedType] = useState<
-    "text" | "radio" | "phone" | "email" | null
+    "text" | "radio" | "phone" | "email" | "currency" | null
   >(null)
 
   const handleClose = () => {
@@ -31,41 +32,56 @@ export function DynamicFieldModal({
     handleClose()
   }
 
-  const getTitle = () => {
-    if (!selectedType) return "Add Custom Field"
-    if (selectedType === "text") return "Configure Text Field"
-    if (selectedType === "radio") return "Configure Radio Button Field"
-    if (selectedType === "phone") return "Configure Phone Field"
-    return "Configure Email Field"
+  const titles: Record<string, string> = {
+    text: "Configure Text Field",
+    radio: "Configure Radio Button Field",
+    phone: "Configure Phone Field",
+    email: "Configure Email Field",
+    currency: "Configure Funding Amount Field",
+  }
+
+  const title = selectedType ? titles[selectedType] : "Add Custom Field"
+  const goBack = () => setSelectedType(null)
+
+  const configuratorContent = () => {
+    switch (selectedType) {
+      case "text":
+        return (
+          <TextFieldConfigurator onSubmit={handleFieldAdd} onCancel={goBack} />
+        )
+      case "radio":
+        return (
+          <RadioFieldConfigurator onSubmit={handleFieldAdd} onCancel={goBack} />
+        )
+      case "currency":
+        return (
+          <CurrencyFieldConfigurator
+            onSubmit={handleFieldAdd}
+            onCancel={goBack}
+          />
+        )
+      case "phone":
+      case "email":
+        return (
+          <SimpleFieldConfigurator
+            fieldType={selectedType}
+            onSubmit={handleFieldAdd}
+            onCancel={goBack}
+          />
+        )
+      default:
+        return (
+          <FieldTypeSelector
+            onSelect={setSelectedType}
+            onCancel={handleClose}
+          />
+        )
+    }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={getTitle()}>
-      {!selectedType && (
-        <FieldTypeSelector onSelect={setSelectedType} onCancel={handleClose} />
-      )}
-
-      {selectedType === "text" && (
-        <TextFieldConfigurator
-          onSubmit={handleFieldAdd}
-          onCancel={() => setSelectedType(null)}
-        />
-      )}
-
-      {selectedType === "radio" && (
-        <RadioFieldConfigurator
-          onSubmit={handleFieldAdd}
-          onCancel={() => setSelectedType(null)}
-        />
-      )}
-
-      {(selectedType === "phone" || selectedType === "email") && (
-        <SimpleFieldConfigurator
-          fieldType={selectedType}
-          onSubmit={handleFieldAdd}
-          onCancel={() => setSelectedType(null)}
-        />
-      )}
+    <Modal isOpen={isOpen} onClose={handleClose} title={title}>
+      {configuratorContent()}
     </Modal>
   )
 }

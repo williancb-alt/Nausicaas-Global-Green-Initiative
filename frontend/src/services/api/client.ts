@@ -77,10 +77,17 @@ export interface Grant {
   description?: string
   custom_fields?: {
     configs: Array<
-      | { type: "text"; label: string; maxLength: number }
-      | { type: "radio"; label: string; options: string[] }
-      | { type: "phone"; label: string }
-      | { type: "email"; label: string }
+      | { type: "text"; label: string; maxLength: number; required: boolean }
+      | { type: "radio"; label: string; options: string[]; required: boolean }
+      | { type: "phone"; label: string; required: boolean }
+      | { type: "email"; label: string; required: boolean }
+      | {
+          type: "currency"
+          label: string
+          min: number
+          max: number
+          required: boolean
+        }
     >
     values: Record<string, string>
   }

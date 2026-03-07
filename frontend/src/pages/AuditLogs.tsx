@@ -1,225 +1,224 @@
 import { JSX, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "../services/api"
-import { Button } from "../components/button/Button"
-import { AlertError } from "../components/alert/AlertError"
+import { AuditStats } from "../components/audit/AuditStats"
+import { AuditFilters } from "../components/audit/AuditFilters"
+import { AuditTable } from "../components/audit/AuditTable"
+import { AuditDetailModal } from "../components/audit/AuditDetailModal"
+import type { AuditLog } from "../services/api/audit"
 
-type FilterType = "all" | "failed" | "entity"
+type AuditTabType = "all" | "grants" | "applications" | "security" | "admins"
 
 export function AuditLogs(): JSX.Element {
-  const [filterType, setFilterType] = useState<FilterType>("all")
-  const [entityType, setEntityType] = useState("grant")
-  const [entityId, setEntityId] = useState("")
-  const [limit, setLimit] = useState(100)
+  const [activeTab, setActiveTab] = useState<AuditTabType>("grants")
+  const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
+  const [_filters, _setFilters] = useState({
+    action: "all",
+    dateRange: "7days",
+    userEmail: "all",
+  })
 
+  // Fetch audit logs
   const {
     data: auditData,
     isLoading,
-    isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["audit", filterType, entityType, entityId, limit],
-    queryFn: async () => {
-      if (filterType === "failed") {
-        return api.audit.getFailedLogs(limit)
-      }
-      if (filterType === "entity" && entityId) {
-        return api.audit.getEntityLogs(entityType, parseInt(entityId), limit)
-      }
-      return api.audit.getRecentLogs(limit)
-    },
-    enabled: filterType !== "entity" || !!entityId,
+    queryKey: ["auditLogs"],
+    queryFn: () => api.audit.getRecentLogs(100),
+    refetchInterval: 30000, // Refresh every 30 seconds
   })
 
-  const formatTimestamp = (timestamp: string): string => {
-    return new Date(timestamp).toLocaleString()
-  }
+  // Filter logs based on active tab
+  const getFilteredLogs = (): AuditLog[] => {
+    if (!auditData?.logs) return []
 
-  const formatDetails = (details: string | null): string => {
-    if (!details) return "N/A"
-    try {
-      const parsed: unknown = JSON.parse(details)
-      return JSON.stringify(parsed, null, 2)
-    } catch {
-      return details
+    let filtered = [...auditData.logs]
+
+    // Filter by tab
+    switch (activeTab) {
+      case "grants":
+        filtered = filtered.filter(log => log.entity_type === "grant")
+        break
+      case "applications":
+        filtered = filtered.filter(log => log.entity_type === "application")
+        break
+      case "security":
+        filtered = filtered.filter(
+          log =>
+            log.action === "application_edit_blocked" ||
+            log.action === "unauthorized_access" ||
+            log.action === "login_failed" ||
+            !log.success,
+        )
+        break
+      case "admins":
+        filtered = filtered.filter(log => log.is_admin)
+        break
+      case "all":
+      default:
+        // Show all
+        break
     }
+
+    // Additional filters can be applied here based on filters state
+
+    return filtered
   }
 
-  const getActionBadgeColor = (action: string): string => {
-    if (action.includes("created")) return "bg-success"
-    if (action.includes("edited")) return "bg-warning"
-    if (action.includes("deleted")) return "bg-danger"
-    if (action.includes("blocked")) return "bg-danger"
-    return "bg-secondary"
+  const filteredLogs = getFilteredLogs()
+
+  // Get unique admin emails for filter dropdown
+  const adminEmails = Array.from(
+    new Set(
+      auditData?.logs
+        .filter(log => log.is_admin)
+        .filter(log => log.user_email !== null)
+        .map(log => log.user_email as string) ?? [],
+    ),
+  )
+
+  const getTabLabel = (tab: AuditTabType): string => {
+    const labels: Record<AuditTabType, string> = {
+      all: "All Activity",
+      grants: "Grants",
+      applications: "Applications",
+      security: "Security Events",
+      admins: "By Admin",
+    }
+    return labels[tab]
+  }
+
+  const isTabDisabled = (tab: AuditTabType): boolean => {
+    // Disable tabs that don't have data yet
+    if (tab === "applications" || tab === "security") {
+      const hasData = auditData?.logs.some(log => {
+        if (tab === "applications") return log.entity_type === "application"
+        if (tab === "security")
+          return (
+            log.action === "application_edit_blocked" ||
+            log.action === "unauthorized_access" ||
+            !log.success
+          )
+        return false
+      })
+      return !hasData
+    }
+    return false
   }
 
   return (
     <div className="container py-4">
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3">Audit Logs</h1>
-        <Button onClick={() => void refetch()} disabled={isLoading}>
+        <h2>🔒 Audit Log Dashboard</h2>
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => void refetch()}
+          disabled={isLoading}
+        >
           {isLoading ? "Loading..." : "Refresh"}
-        </Button>
+        </button>
       </div>
 
-      {/* Filter Controls */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <h5 className="card-title">Filters</h5>
-          <div className="row g-3">
-            <div className="col-md-3">
-              <label className="form-label">Filter Type</label>
-              <select
-                className="form-select"
-                value={filterType}
-                onChange={e => setFilterType(e.target.value as FilterType)}
-              >
-                <option value="all">All Logs</option>
-                <option value="failed">Failed Attempts Only</option>
-                <option value="entity">Specific Entity</option>
-              </select>
-            </div>
-
-            {filterType === "entity" && (
-              <>
-                <div className="col-md-3">
-                  <label className="form-label">Entity Type</label>
-                  <select
-                    className="form-select"
-                    value={entityType}
-                    onChange={e => setEntityType(e.target.value)}
-                  >
-                    <option value="grant">Grant</option>
-                    <option value="application">Application</option>
-                  </select>
-                </div>
-                <div className="col-md-3">
-                  <label className="form-label">Entity ID</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={entityId}
-                    onChange={e => setEntityId(e.target.value)}
-                    placeholder="Enter entity ID"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="col-md-3">
-              <label className="form-label">Limit</label>
-              <select
-                className="form-select"
-                value={limit}
-                onChange={e => setLimit(parseInt(e.target.value))}
-              >
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={200}>200</option>
-                <option value={500}>500</option>
-              </select>
-            </div>
-          </div>
+      {/* Error State */}
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <strong>Error loading audit logs:</strong>{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
         </div>
-      </div>
+      )}
 
-      {/* Error Display */}
-      {isError && (
-        <AlertError error={error} fallback="Failed to load audit logs" />
+      {/* Statistics */}
+      {auditData && (
+        <AuditStats logs={auditData.logs} timeRange="Last 7 Days" />
+      )}
+
+      {/* Tab Navigation */}
+      <ul className="nav nav-tabs mb-4">
+        {(
+          [
+            "all",
+            "grants",
+            "applications",
+            "security",
+            "admins",
+          ] as AuditTabType[]
+        ).map(tab => (
+          <li key={tab} className="nav-item">
+            <button
+              className={`nav-link ${activeTab === tab ? "active" : ""} ${
+                isTabDisabled(tab) ? "disabled" : ""
+              }`}
+              onClick={() => !isTabDisabled(tab) && setActiveTab(tab)}
+              disabled={isTabDisabled(tab)}
+            >
+              {getTabLabel(tab)}
+              {isTabDisabled(tab) && (
+                <span className="badge bg-secondary ms-2">Coming Soon</span>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Info Banner for Current Tab */}
+      {activeTab === "grants" && (
+        <div className="alert alert-info mb-4" role="alert">
+          <strong>📝 Grant Management Activity</strong>
+          <p className="mb-0 mt-2">
+            Showing all actions related to grant creation, editing, and
+            deletion. These logs track which administrators made changes to
+            grants in the system.
+          </p>
+        </div>
+      )}
+
+      {activeTab === "applications" && (
+        <div className="alert alert-warning mb-4" role="alert">
+          <strong>⏳ Coming Soon</strong>
+          <p className="mb-0 mt-2">
+            Application audit tracking will be available once the application
+            submission system is implemented by Ronan (Epic #4).
+          </p>
+        </div>
+      )}
+
+      {activeTab === "security" && (
+        <div className="alert alert-warning mb-4" role="alert">
+          <strong>⏳ Coming Soon</strong>
+          <p className="mb-0 mt-2">
+            Security event tracking (unauthorized access attempts, blocked
+            edits, failed logins) will be implemented in the next phase.
+          </p>
+        </div>
+      )}
+
+      {/* Filters */}
+      {!isTabDisabled(activeTab) && (
+        <AuditFilters onFilterChange={_setFilters} adminEmails={adminEmails} />
       )}
 
       {/* Loading State */}
       {isLoading && (
-        <div className="text-center py-4">
-          <div className="spinner-border" role="status">
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
       )}
 
-      {/* Audit Logs Table */}
-      {!isLoading && auditData && (
-        <>
-          <div className="alert alert-info">
-            Showing {auditData.logs.length} of {auditData.count} total logs
-          </div>
-
-          <div className="table-responsive">
-            <table className="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Entity</th>
-                  <th>Status</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {auditData.logs.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center text-muted">
-                      No audit logs found
-                    </td>
-                  </tr>
-                ) : (
-                  auditData.logs.map(log => (
-                    <tr key={log.id}>
-                      <td className="small">
-                        {formatTimestamp(log.timestamp)}
-                      </td>
-                      <td>
-                        <div>
-                          {log.user_email || "System"}
-                          {log.is_admin && (
-                            <span className="badge bg-primary ms-2">Admin</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${getActionBadgeColor(log.action)}`}
-                        >
-                          {log.action.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td>
-                        {log.entity_type} #{log.entity_id}
-                      </td>
-                      <td>
-                        {log.success ? (
-                          <span className="badge bg-success">Success</span>
-                        ) : (
-                          <span className="badge bg-danger">Failed</span>
-                        )}
-                        {log.failure_reason && (
-                          <div className="small text-danger mt-1">
-                            {log.failure_reason}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {log.details && (
-                          <details>
-                            <summary className="btn btn-sm btn-outline-secondary">
-                              View
-                            </summary>
-                            <pre className="mt-2 p-2 bg-light border rounded small">
-                              {formatDetails(log.details)}
-                            </pre>
-                          </details>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
+      {/* Audit Table */}
+      {!isLoading && !isTabDisabled(activeTab) && (
+        <AuditTable logs={filteredLogs} onRowClick={setSelectedLog} />
       )}
+
+      {/* Detail Modal */}
+      <AuditDetailModal
+        log={selectedLog}
+        onClose={() => setSelectedLog(null)}
+      />
     </div>
   )
 }

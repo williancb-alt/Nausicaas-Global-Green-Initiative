@@ -12,6 +12,7 @@ interface SimpleFieldConfiguratorProps {
 
 interface FormData {
   label: string
+  required: boolean
 }
 
 export function SimpleFieldConfigurator({
@@ -26,6 +27,7 @@ export function SimpleFieldConfigurator({
   } = useForm<FormData>({
     defaultValues: {
       label: fieldType === "phone" ? "Phone Number" : "Email Address",
+      required: false,
     },
   })
 
@@ -33,6 +35,7 @@ export function SimpleFieldConfigurator({
     onSubmit({
       type: fieldType,
       label: data.label,
+      required: data.required,
     } as PhoneFieldConfig | EmailFieldConfig)
   }
 
@@ -54,6 +57,18 @@ export function SimpleFieldConfigurator({
           }
         />
       </FormField>
+
+      <div className="form-check mb-3">
+        <input
+          type="checkbox"
+          {...register("required")}
+          className="form-check-input"
+          id="simpleFieldRequired"
+        />
+        <label className="form-check-label" htmlFor="simpleFieldRequired">
+          Required field
+        </label>
+      </div>
 
       <div className="d-flex gap-2 justify-content-end mt-4">
         <Button type="button" variant="secondary" onClick={onCancel}>
