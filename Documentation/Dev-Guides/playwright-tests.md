@@ -66,7 +66,7 @@ The Playwright tests are configured using the `playwright.config.ts` file locate
 - **Reporter:**  
   The configuration uses the HTML reporter for visual test results (`npx playwright show-report`).
 - **Fixtures:**  
-  Custom fixtures are defined in `e2e/fixtures.ts` to handle common setup tasks, such as user authentication, test data creation, and cleanup.  
+  Custom fixtures are defined in `e2e/fixtures/auth.ts` to handle common setup tasks, such as user authentication, test data creation, and cleanup.  
   Fixtures ensure each test starts with a consistent state and can include:
   - Logging in before tests (as admin / non-admin user)
   - Cleaning up after tests
