@@ -2,7 +2,7 @@
 
 ## Overview
 
-[PlayWright](https://playwright.dev/) is the tool used for end-to-end tests in the repository. This enables realistic browser testing as the Chromium browser is spun up for each configured test as if a real-user was navigating through the appliation.
+[PlayWright](https://playwright.dev/) is the tool used for end-to-end tests in the repository. This enables realistic browser testing as the Chromium browser is spun up for each configured test as if a real-user was navigating through the application.
 
 ## Local Environment Setup
 
