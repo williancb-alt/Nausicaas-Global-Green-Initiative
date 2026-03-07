@@ -71,8 +71,8 @@ The Playwright tests are configured using the `playwright.config.ts` file locate
   - Logging in before tests (as admin / non-admin user)
   - Cleaning up after tests
 - **Utilities:**  
-  Utilities such as screenshot capture (`takeScreenshot`) are enabled for debugging failed tests as well as validating successful tests.
-  Helper functions in `e2e/utils.ts` provide reusable actions including creating test users, logging a user in.
+  Utilities such as screenshot capture (`takeScreenshot`) in `e2e/utils/screenshot.ts` are enabled for debugging failed tests as well as validating successful tests.
+  Helper functions in `e2e/utils/users.ts` provide reusable actions including creating test users and logging a user in.
 
 ## Extending Functionality: Adding New Tests
 
