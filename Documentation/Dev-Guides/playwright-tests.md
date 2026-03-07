@@ -61,8 +61,8 @@ The Playwright tests are configured using the `playwright.config.ts` file locate
   All test files are located in the `e2e/tests` folder.
 - **Steps sub-directory**
   `e2e/tests/steps` can be used to define common steps that are reused across many tests (which can then be referenced in one line in tests, keeps tests cleaner)
-- **Timeouts and Retries:**  
-  Global timeout and retry settings are specified to handle flaky tests and slow responses.
+- **Retries:**  
+  Retry settings (for example in CI) are specified to help handle flaky tests and slow responses.
 - **Reporter:**  
   The configuration uses the HTML reporter for visual test results (`npx playwright show-report`).
 - **Fixtures:**  
