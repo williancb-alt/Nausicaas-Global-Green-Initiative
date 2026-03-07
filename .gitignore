@@ -4,6 +4,7 @@
 .python-version
 tmp
 venv
+.venv
 *.rdb
 *.db
 *.DS_Store
