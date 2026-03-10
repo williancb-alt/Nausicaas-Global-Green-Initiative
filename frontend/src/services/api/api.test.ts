@@ -53,7 +53,7 @@ const RESOURCE_DEADLINE = "2024-12-31"
 const UPDATED_RESOURCE_DEADLINE = "2025-01-31"
 const RESOURCE_TIME_REMAINING = "30 days"
 const UPDATED_RESOURCE_TIME_REMAINING = "60 days"
-const urlSearchParams = expect.any(URLSearchParams)
+const urlSearchParams: unknown = expect.any(URLSearchParams)
 
 type ResourceRecord = Award | Grant
 type ResourcePageRecord = AwardPage | GrantPage
@@ -64,7 +64,10 @@ type AuthScenario = {
   execute: () => Promise<AuthSuccess>
 }
 
-type ResourceScenario<TResource extends ResourceRecord, TPage extends ResourcePageRecord> = {
+type ResourceScenario<
+  TResource extends ResourceRecord,
+  TPage extends ResourcePageRecord,
+> = {
   suiteName: string
   resourceLabel: "award" | "grant"
   basePath: string
@@ -108,7 +111,9 @@ async function expectDeleteRequest(
   expect(mockDelete).toHaveBeenCalledWith(...expectedArgs)
 }
 
-function buildAuthSuccess(scenario: Pick<AuthScenario, "successMessage">): AuthSuccess {
+function buildAuthSuccess(
+  scenario: Pick<AuthScenario, "successMessage">,
+): AuthSuccess {
   return {
     status: "success",
     message: scenario.successMessage,
@@ -166,7 +171,10 @@ function buildPage<TItem>({
 }
 
 function buildCreatePayload(
-  scenario: Pick<ResourceScenario<ResourceRecord, ResourcePageRecord>, "resourceLabel" | "resource">,
+  scenario: Pick<
+    ResourceScenario<ResourceRecord, ResourcePageRecord>,
+    "resourceLabel" | "resource"
+  >,
 ) {
   return {
     name: scenario.resource.name,
@@ -199,12 +207,15 @@ function describeResourceApi<
         method: mockGet,
         response: scenario.listResponse,
         execute: scenario.list,
-        expectedArgs: [scenario.basePath, { params: { page: PAGE, per_page: PER_PAGE } }],
+        expectedArgs: [
+          scenario.basePath,
+          { params: { page: PAGE, per_page: PER_PAGE } },
+        ],
       })
     })
 
     it(`should get a single ${scenario.resourceLabel}`, async () => {
-      const response = buildResource({ resource: scenario.resource }) as TResource
+      const response = buildResource({ resource: scenario.resource })
 
       await expectDataRequest({
         method: mockGet,
@@ -221,18 +232,24 @@ function describeResourceApi<
           deadline: UPDATED_RESOURCE_DEADLINE,
           time_remaining: UPDATED_RESOURCE_TIME_REMAINING,
         } as Partial<TResource>,
-      }) as TResource
+      })
 
       await expectDataRequest({
         method: mockPut,
         response,
         execute: scenario.update,
-        expectedArgs: [`${scenario.basePath}/${scenario.resource.name}`, urlSearchParams],
+        expectedArgs: [
+          `${scenario.basePath}/${scenario.resource.name}`,
+          urlSearchParams,
+        ],
       })
     })
 
     it(`should delete a ${scenario.resourceLabel}`, async () => {
-      await expectDeleteRequest(scenario.remove, `${scenario.basePath}/${scenario.resource.name}`)
+      await expectDeleteRequest(
+        scenario.remove,
+        `${scenario.basePath}/${scenario.resource.name}`,
+      )
     })
   })
 }
@@ -262,7 +279,8 @@ const awardScenario: ResourceScenario<Award, AwardPage> = {
     ),
   list: () => api.awards.listAwards(PAGE, PER_PAGE),
   get: () => api.awards.getAward("test-award"),
-  update: () => api.awards.updateAward("test-award", { deadline: UPDATED_DEADLINE }),
+  update: () =>
+    api.awards.updateAward("test-award", { deadline: UPDATED_DEADLINE }),
   remove: () => api.awards.deleteAward("test-award"),
 }
 
@@ -291,7 +309,8 @@ const grantScenario: ResourceScenario<Grant, GrantPage> = {
     ),
   list: () => api.grants.listGrants(PAGE, PER_PAGE),
   get: () => api.grants.getGrant("test-grant"),
-  update: () => api.grants.updateGrant("test-grant", { deadline: UPDATED_DEADLINE }),
+  update: () =>
+    api.grants.updateGrant("test-grant", { deadline: UPDATED_DEADLINE }),
   remove: () => api.grants.deleteGrant("test-grant"),
 }
 
