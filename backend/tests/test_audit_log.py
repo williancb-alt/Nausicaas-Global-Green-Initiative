@@ -11,7 +11,7 @@ from tests.util import register_user, login_user
 @pytest.fixture
 def test_user(client, db):
     """Create a test user for audit log tests."""
-    register_user(client, "audituser@test.com", "password123")
+    register_user(client, "audituser@test.com", "Password123")
     user = User.find_by_email("audituser@test.com")
     return user
 
@@ -19,7 +19,7 @@ def test_user(client, db):
 @pytest.fixture
 def admin_user(client, db):
     """Create an admin user for audit log tests."""
-    register_user(client, "admin@test.com", "password123")
+    register_user(client, "admin@test.com", "Password123")
     user = User.find_by_email("admin@test.com")
     user.admin = True
     db.session.commit()
@@ -117,7 +117,7 @@ class TestAuditApiEndpoints:
 
     def test_get_audit_logs_requires_admin(self, client, db, test_user):
         """Test that non-admin users cannot access audit logs."""
-        login_user(client, "audituser@test.com", "password123")
+        login_user(client, "audituser@test.com", "Password123")
 
         response = client.get("/api/v1/audit")
 
@@ -131,7 +131,7 @@ class TestAuditApiEndpoints:
             entity_id=1,
         )
 
-        login_user(client, "admin@test.com", "password123")
+        login_user(client, "admin@test.com", "Password123")
 
         response = client.get("/api/v1/audit")
 
