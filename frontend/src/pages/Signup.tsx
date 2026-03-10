@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { JSX } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -8,6 +8,7 @@ import { useRegister } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
 import { signupSchema, type SignupFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
+import { PasswordInput } from "../components/form/PasswordInput"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
 import { OAuthButtons } from "../features/oauth/OAuthButtons"
@@ -16,9 +17,6 @@ export function Signup(): JSX.Element {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuthStore()
   const registerMutation = useRegister()
-
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
@@ -72,46 +70,16 @@ export function Signup(): JSX.Element {
               />
             </FormField>
             <FormField label="Password" error={errors.password}>
-              <div className="input-group">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password")}
-                  className="form-control"
-                  autoComplete="new-password"
-                  aria-required="true"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+              <PasswordInput
+                registration={register("password")}
+                placeholder="Enter your password"
+              />
             </FormField>
             <FormField label="Confirm Password" error={errors.confirmPassword}>
-              <div className="input-group">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  {...register("confirmPassword")}
-                  className="form-control"
-                  autoComplete="new-password"
-                  aria-required="true"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showConfirmPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+              <PasswordInput
+                registration={register("confirmPassword")}
+                placeholder="Confirm your password"
+              />
             </FormField>
             {registerMutation.isError && (
               <AlertError
