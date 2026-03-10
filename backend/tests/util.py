@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 
 EMAIL = "new_user@email.com"
 ADMIN_EMAIL = "admin_user@email.com"
-PASSWORD = "test1234"
+PASSWORD = "Test1234"
 BAD_REQUEST = "Input payload validation failed"
 UNAUTHORIZED = "Unauthorized"
 FORBIDDEN = "You are not an administrator"
