@@ -5,9 +5,7 @@ export interface PublicAwardCardProps {
   award: Award
 }
 
-export function PublicAwardCard({
-  award,
-}: PublicAwardCardProps): JSX.Element {
+export function PublicAwardCard({ award }: PublicAwardCardProps): JSX.Element {
   return (
     <div
       className="card mb-3"

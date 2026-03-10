@@ -227,12 +227,11 @@ describe("api (awards)", () => {
   })
 })
 
-
 describe("api (grants)", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
-  
+
   describe("grants.createGrant", () => {
     it("should create a grant", async () => {
       const mockResponse = {

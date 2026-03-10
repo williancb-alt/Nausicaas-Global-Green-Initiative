@@ -50,7 +50,7 @@ export function AdminDashboard({
         onViewAuditLogs={onViewAuditLogs}
         onLogout={onLogout}
         onManageAwards={onManageAwards}
-        />
+      />
       <div className="container-fluid py-5">
         {/* Stats Overview */}
         <div className="row mb-5 g-4">

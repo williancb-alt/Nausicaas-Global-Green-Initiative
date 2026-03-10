@@ -50,9 +50,7 @@ export function AwardsList({
       <div className="row justify-content-center">
         {awards.map(award => (
           <div key={award.name} className="col-12 mb-4">
-            <PublicAwardCard
-              award={award}
-            />
+            <PublicAwardCard award={award} />
           </div>
         ))}
       </div>
