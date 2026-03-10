@@ -31,11 +31,48 @@ vi.mock("axios", () => {
   }
 })
 
-describe("api (auth)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
+const TEST_EMAIL = "test@example.com"
+const TEST_PASSWORD = "password123"
+const PAGE = 1
+const PER_PAGE = 10
+const urlSearchParams = expect.any(URLSearchParams)
+
+function mockDataResponse<T>(method: ReturnType<typeof vi.fn>, response: T) {
+  method.mockResolvedValue({ data: response })
+}
+
+async function expectDataRequest<T>({
+  method,
+  response,
+  execute,
+  expectedArgs,
+}: {
+  method: ReturnType<typeof vi.fn>
+  response: T
+  execute: () => Promise<T>
+  expectedArgs: unknown[]
+}) {
+  mockDataResponse(method, response)
+
+  await expect(execute()).resolves.toEqual(response)
+  expect(method).toHaveBeenCalledWith(...expectedArgs)
+}
+
+async function expectDeleteRequest(
+  execute: () => Promise<void>,
+  ...expectedArgs: unknown[]
+) {
+  mockDelete.mockResolvedValue({ status: 204 })
+
+  await execute()
+  expect(mockDelete).toHaveBeenCalledWith(...expectedArgs)
+}
+
+describe("api (auth)", () => {
   describe("auth.register", () => {
     it("should register a new user", async () => {
       const mockResponse: AuthSuccess = {
@@ -45,15 +82,12 @@ describe("api (auth)", () => {
         expires_in: 900,
       }
 
-      mockPost.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.auth.register("test@example.com", "password123")
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/v1/auth/register",
-        expect.any(URLSearchParams),
-      )
+      await expectDataRequest({
+        method: mockPost,
+        response: mockResponse,
+        execute: () => api.auth.register(TEST_EMAIL, TEST_PASSWORD),
+        expectedArgs: ["/api/v1/auth/register", urlSearchParams],
+      })
     })
   })
 
@@ -66,15 +100,12 @@ describe("api (auth)", () => {
         expires_in: 900,
       }
 
-      mockPost.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.auth.login("test@example.com", "password123")
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/v1/auth/login",
-        expect.any(URLSearchParams),
-      )
+      await expectDataRequest({
+        method: mockPost,
+        response: mockResponse,
+        execute: () => api.auth.login(TEST_EMAIL, TEST_PASSWORD),
+        expectedArgs: ["/api/v1/auth/login", urlSearchParams],
+      })
     })
   })
 
@@ -86,12 +117,12 @@ describe("api (auth)", () => {
         public_id: "123",
       }
 
-      mockGet.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.auth.getUser()
-
-      expect(result).toEqual(mockResponse)
-      expect(mockGet).toHaveBeenCalledWith("/api/v1/auth/user")
+      await expectDataRequest({
+        method: mockGet,
+        response: mockResponse,
+        execute: () => api.auth.getUser(),
+        expectedArgs: ["/api/v1/auth/user"],
+      })
     })
   })
 
@@ -102,21 +133,17 @@ describe("api (auth)", () => {
         message: "successfully logged out",
       }
 
-      mockPost.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.auth.logout()
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPost).toHaveBeenCalledWith("/api/v1/auth/logout")
+      await expectDataRequest({
+        method: mockPost,
+        response: mockResponse,
+        execute: () => api.auth.logout(),
+        expectedArgs: ["/api/v1/auth/logout"],
+      })
     })
   })
 })
 
 describe("api (awards)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   describe("awards.createAward", () => {
     it("should create an award", async () => {
       const mockResponse = {
@@ -124,19 +151,17 @@ describe("api (awards)", () => {
         message: "New award added: test-award.",
       }
 
-      mockPost.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.awards.createAward({
-        name: "test-award",
-        deadline: "12/31/2024",
-        description: "Test award description",
+      await expectDataRequest({
+        method: mockPost,
+        response: mockResponse,
+        execute: () =>
+          api.awards.createAward({
+            name: "test-award",
+            deadline: "12/31/2024",
+            description: "Test award description",
+          }),
+        expectedArgs: ["/api/v1/awards", urlSearchParams],
       })
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/v1/awards",
-        expect.any(URLSearchParams),
-      )
     })
   })
 
@@ -164,13 +189,11 @@ describe("api (awards)", () => {
         ],
       }
 
-      mockGet.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.awards.listAwards(1, 10)
-
-      expect(result).toEqual(mockResponse)
-      expect(mockGet).toHaveBeenCalledWith("/api/v1/awards", {
-        params: { page: 1, per_page: 10 },
+      await expectDataRequest({
+        method: mockGet,
+        response: mockResponse,
+        execute: () => api.awards.listAwards(PAGE, PER_PAGE),
+        expectedArgs: ["/api/v1/awards", { params: { page: PAGE, per_page: PER_PAGE } }],
       })
     })
   })
@@ -184,12 +207,12 @@ describe("api (awards)", () => {
         time_remaining: "30 days",
       }
 
-      mockGet.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.awards.getAward("test-award")
-
-      expect(result).toEqual(mockResponse)
-      expect(mockGet).toHaveBeenCalledWith("/api/v1/awards/test-award")
+      await expectDataRequest({
+        method: mockGet,
+        response: mockResponse,
+        execute: () => api.awards.getAward("test-award"),
+        expectedArgs: ["/api/v1/awards/test-award"],
+      })
     })
   })
 
@@ -202,36 +225,29 @@ describe("api (awards)", () => {
         time_remaining: "60 days",
       }
 
-      mockPut.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.awards.updateAward("test-award", {
-        deadline: "01/31/2025",
+      await expectDataRequest({
+        method: mockPut,
+        response: mockResponse,
+        execute: () =>
+          api.awards.updateAward("test-award", {
+            deadline: "01/31/2025",
+          }),
+        expectedArgs: ["/api/v1/awards/test-award", urlSearchParams],
       })
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPut).toHaveBeenCalledWith(
-        "/api/v1/awards/test-award",
-        expect.any(URLSearchParams),
-      )
     })
   })
 
   describe("awards.deleteAward", () => {
     it("should delete an award", async () => {
-      mockDelete.mockResolvedValue({ status: 204 })
-
-      await api.awards.deleteAward("test-award")
-
-      expect(mockDelete).toHaveBeenCalledWith("/api/v1/awards/test-award")
+      await expectDeleteRequest(
+        () => api.awards.deleteAward("test-award"),
+        "/api/v1/awards/test-award",
+      )
     })
   })
 })
 
 describe("api (grants)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   describe("grants.createGrant", () => {
     it("should create a grant", async () => {
       const mockResponse = {
@@ -239,19 +255,17 @@ describe("api (grants)", () => {
         message: "New grant added: test-grant.",
       }
 
-      mockPost.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.grants.createGrant({
-        name: "test-grant",
-        deadline: "12/31/2024",
-        description: "Test grant description",
+      await expectDataRequest({
+        method: mockPost,
+        response: mockResponse,
+        execute: () =>
+          api.grants.createGrant({
+            name: "test-grant",
+            deadline: "12/31/2024",
+            description: "Test grant description",
+          }),
+        expectedArgs: ["/api/v1/grants", urlSearchParams],
       })
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPost).toHaveBeenCalledWith(
-        "/api/v1/grants",
-        expect.any(URLSearchParams),
-      )
     })
   })
 
@@ -279,13 +293,11 @@ describe("api (grants)", () => {
         ],
       }
 
-      mockGet.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.grants.listGrants(1, 10)
-
-      expect(result).toEqual(mockResponse)
-      expect(mockGet).toHaveBeenCalledWith("/api/v1/grants", {
-        params: { page: 1, per_page: 10 },
+      await expectDataRequest({
+        method: mockGet,
+        response: mockResponse,
+        execute: () => api.grants.listGrants(PAGE, PER_PAGE),
+        expectedArgs: ["/api/v1/grants", { params: { page: PAGE, per_page: PER_PAGE } }],
       })
     })
   })
@@ -299,12 +311,12 @@ describe("api (grants)", () => {
         time_remaining: "30 days",
       }
 
-      mockGet.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.grants.getGrant("test-grant")
-
-      expect(result).toEqual(mockResponse)
-      expect(mockGet).toHaveBeenCalledWith("/api/v1/grants/test-grant")
+      await expectDataRequest({
+        method: mockGet,
+        response: mockResponse,
+        execute: () => api.grants.getGrant("test-grant"),
+        expectedArgs: ["/api/v1/grants/test-grant"],
+      })
     })
   })
 
@@ -317,27 +329,24 @@ describe("api (grants)", () => {
         time_remaining: "60 days",
       }
 
-      mockPut.mockResolvedValue({ data: mockResponse })
-
-      const result = await api.grants.updateGrant("test-grant", {
-        deadline: "01/31/2025",
+      await expectDataRequest({
+        method: mockPut,
+        response: mockResponse,
+        execute: () =>
+          api.grants.updateGrant("test-grant", {
+            deadline: "01/31/2025",
+          }),
+        expectedArgs: ["/api/v1/grants/test-grant", urlSearchParams],
       })
-
-      expect(result).toEqual(mockResponse)
-      expect(mockPut).toHaveBeenCalledWith(
-        "/api/v1/grants/test-grant",
-        expect.any(URLSearchParams),
-      )
     })
   })
 
   describe("grants.deleteGrant", () => {
     it("should delete a grant", async () => {
-      mockDelete.mockResolvedValue({ status: 204 })
-
-      await api.grants.deleteGrant("test-grant")
-
-      expect(mockDelete).toHaveBeenCalledWith("/api/v1/grants/test-grant")
+      await expectDeleteRequest(
+        () => api.grants.deleteGrant("test-grant"),
+        "/api/v1/grants/test-grant",
+      )
     })
   })
 })
