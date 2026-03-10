@@ -1,6 +1,4 @@
 import { JSX } from "react"
-import { useNavigate } from "react-router-dom"
-import { useAuthStore } from "../../store/authStore"
 import type { Award } from "../../services/api/client"
 
 export interface PublicAwardCardProps {
@@ -10,9 +8,6 @@ export interface PublicAwardCardProps {
 export function PublicAwardCard({
   award,
 }: PublicAwardCardProps): JSX.Element {
-  const navigate = useNavigate()
-  const { isAuthenticated, user } = useAuthStore()
-
   return (
     <div
       className="card mb-3"

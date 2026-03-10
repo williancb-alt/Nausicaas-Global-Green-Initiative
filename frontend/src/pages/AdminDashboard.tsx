@@ -16,6 +16,7 @@ interface AdminDashboardProps {
   onLogout: () => void
   onViewApplication: (applicationId: number) => void
   onManageGrants: () => void
+  onManageAwards: () => void
   onViewAuditLogs: () => void
 }
 
@@ -25,6 +26,7 @@ export function AdminDashboard({
   onLogout,
   onViewApplication,
   onManageGrants,
+  onManageAwards,
   onViewAuditLogs,
 }: AdminDashboardProps) {
   const [searchTerm, setSearchTerm] = useState("")
@@ -47,8 +49,8 @@ export function AdminDashboard({
         onManageGrants={onManageGrants}
         onViewAuditLogs={onViewAuditLogs}
         onLogout={onLogout}
-      />
-
+        onManageAwards={onManageAwards}
+        />
       <div className="container-fluid py-5">
         {/* Stats Overview */}
         <div className="row mb-5 g-4">

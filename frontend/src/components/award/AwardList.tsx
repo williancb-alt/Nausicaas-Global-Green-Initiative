@@ -2,14 +2,12 @@ import { JSX } from "react"
 import { useAwards } from "../../hooks/useAwardHooks"
 import { Award } from "../../services/api"
 import { PublicAwardCard } from "./PublicAwardCard"
-import { ApplicationStatusMap } from "../../pages/LandingPage"
 
 interface AwardsListProps {
   isLoading: boolean
   isError: boolean
   awards: Award[]
   awardsData: ReturnType<typeof useAwards>["data"]
-  applicationStatusMap: ApplicationStatusMap
 }
 
 export function AwardsList({
@@ -17,7 +15,6 @@ export function AwardsList({
   isError,
   awards,
   awardsData,
-  applicationStatusMap,
 }: AwardsListProps): JSX.Element {
   if (isLoading) {
     return (
@@ -55,7 +52,6 @@ export function AwardsList({
           <div key={award.name} className="col-12 mb-4">
             <PublicAwardCard
               award={award}
-              applicationStatus={applicationStatusMap.get(award.name)}
             />
           </div>
         ))}
