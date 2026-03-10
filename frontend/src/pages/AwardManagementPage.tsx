@@ -130,7 +130,7 @@ function AwardRow({
       <td>{award.description || "—"}</td>
 
       <td>
-        <VisibilityBadge hidden={award.hidden} />
+        <VisibilityBadge hidden={award.hidden || false} />
       </td>
 
       <td>
