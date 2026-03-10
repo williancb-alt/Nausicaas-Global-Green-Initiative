@@ -39,6 +39,12 @@ const TEST_EMAIL = "test@example.com"
 const TEST_PASSWORD = "password123"
 const PAGE = 1
 const PER_PAGE = 10
+const CREATED_DEADLINE = "12/31/2024"
+const UPDATED_DEADLINE = "01/31/2025"
+const RESOURCE_DEADLINE = "2024-12-31"
+const UPDATED_RESOURCE_DEADLINE = "2025-01-31"
+const RESOURCE_TIME_REMAINING = "30 days"
+const UPDATED_RESOURCE_TIME_REMAINING = "60 days"
 const urlSearchParams = expect.any(URLSearchParams)
 
 function mockDataResponse<T>(method: ReturnType<typeof vi.fn>, response: T) {
@@ -72,15 +78,140 @@ async function expectDeleteRequest(
   expect(mockDelete).toHaveBeenCalledWith(...expectedArgs)
 }
 
+function buildAuthSuccess(message: string): AuthSuccess {
+  return {
+    status: "success",
+    message,
+    token_type: "bearer",
+    expires_in: 900,
+  }
+}
+
+function buildResource(name: string, overrides?: Partial<Award>): Award {
+  return {
+    name,
+    deadline: RESOURCE_DEADLINE,
+    deadline_passed: false,
+    time_remaining: RESOURCE_TIME_REMAINING,
+    ...overrides,
+  }
+}
+
+function buildPage<TItem>(basePath: string, item: TItem): AwardPage & { items: TItem[] } {
+  return {
+    links: {
+      self: `${basePath}?page=${PAGE}&per_page=${PER_PAGE}`,
+      first: `${basePath}?page=${PAGE}&per_page=${PER_PAGE}`,
+      last: `${basePath}?page=${PAGE}&per_page=${PER_PAGE}`,
+    },
+    has_prev: false,
+    has_next: false,
+    page: PAGE,
+    total_pages: 1,
+    items_per_page: PER_PAGE,
+    total_items: 1,
+    items: [item],
+  }
+}
+
+function buildCreatePayload(resourceType: string, resourceName: string) {
+  return {
+    name: resourceName,
+    deadline: CREATED_DEADLINE,
+    description: `Test ${resourceType} description`,
+  }
+}
+
+function describeResourceApi<
+  TResource extends Award,
+  TPage extends { items: TResource[] },
+>({
+  groupName,
+  resourceLabel,
+  basePath,
+  resourceName,
+  apiResource,
+}: {
+  groupName: string
+  resourceLabel: string
+  basePath: string
+  resourceName: string
+  apiResource: {
+    create: (payload: {
+      name: string
+      deadline: string
+      description: string
+    }) => Promise<unknown>
+    list: (page: number, perPage: number) => Promise<TPage>
+    get: (name: string) => Promise<TResource>
+    update: (name: string, payload: { deadline: string }) => Promise<TResource>
+    delete: (name: string) => Promise<void>
+  }
+}) {
+  describe(groupName, () => {
+    it(`should create a ${resourceLabel}`, async () => {
+      const response = {
+        status: "success",
+        message: `New ${resourceLabel} added: ${resourceName}.`,
+      }
+
+      await expectDataRequest({
+        method: mockPost,
+        response,
+        execute: () => apiResource.create(buildCreatePayload(resourceLabel, resourceName)),
+        expectedArgs: [basePath, urlSearchParams],
+      })
+    })
+
+    it(`should list ${resourceLabel}s`, async () => {
+      const response = buildPage(basePath, buildResource(resourceName)) as TPage
+
+      await expectDataRequest({
+        method: mockGet,
+        response,
+        execute: () => apiResource.list(PAGE, PER_PAGE),
+        expectedArgs: [basePath, { params: { page: PAGE, per_page: PER_PAGE } }],
+      })
+    })
+
+    it(`should get a single ${resourceLabel}`, async () => {
+      const response = buildResource(resourceName) as TResource
+
+      await expectDataRequest({
+        method: mockGet,
+        response,
+        execute: () => apiResource.get(resourceName),
+        expectedArgs: [`${basePath}/${resourceName}`],
+      })
+    })
+
+    it(`should update a ${resourceLabel}`, async () => {
+      const response = buildResource(resourceName, {
+        deadline: UPDATED_RESOURCE_DEADLINE,
+        time_remaining: UPDATED_RESOURCE_TIME_REMAINING,
+      }) as TResource
+
+      await expectDataRequest({
+        method: mockPut,
+        response,
+        execute: () => apiResource.update(resourceName, { deadline: UPDATED_DEADLINE }),
+        expectedArgs: [`${basePath}/${resourceName}`, urlSearchParams],
+      })
+    })
+
+    it(`should delete a ${resourceLabel}`, async () => {
+      await expectDeleteRequest(
+        () => apiResource.delete(resourceName),
+        `${basePath}/${resourceName}`,
+      )
+    })
+  })
+}
+
 describe("api (auth)", () => {
   describe("auth.register", () => {
     it("should register a new user", async () => {
-      const mockResponse: AuthSuccess = {
-        status: "success",
-        message: "successfully registered",
-        token_type: "bearer",
-        expires_in: 900,
-      }
+      const mockResponse = buildAuthSuccess("successfully registered")
 
       await expectDataRequest({
         method: mockPost,
@@ -93,12 +224,7 @@ describe("api (auth)", () => {
 
   describe("auth.login", () => {
     it("should login a user", async () => {
-      const mockResponse: AuthSuccess = {
-        status: "success",
-        message: "successfully logged in",
-        token_type: "bearer",
-        expires_in: 900,
-      }
+      const mockResponse = buildAuthSuccess("successfully logged in")
 
       await expectDataRequest({
         method: mockPost,
@@ -144,209 +270,33 @@ describe("api (auth)", () => {
 })
 
 describe("api (awards)", () => {
-  describe("awards.createAward", () => {
-    it("should create an award", async () => {
-      const mockResponse = {
-        status: "success",
-        message: "New award added: test-award.",
-      }
-
-      await expectDataRequest({
-        method: mockPost,
-        response: mockResponse,
-        execute: () =>
-          api.awards.createAward({
-            name: "test-award",
-            deadline: "12/31/2024",
-            description: "Test award description",
-          }),
-        expectedArgs: ["/api/v1/awards", urlSearchParams],
-      })
-    })
-  })
-
-  describe("awards.listAwards", () => {
-    it("should list awards", async () => {
-      const mockResponse: AwardPage = {
-        links: {
-          self: "/api/v1/awards?page=1&per_page=10",
-          first: "/api/v1/awards?page=1&per_page=10",
-          last: "/api/v1/awards?page=1&per_page=10",
-        },
-        has_prev: false,
-        has_next: false,
-        page: 1,
-        total_pages: 1,
-        items_per_page: 10,
-        total_items: 1,
-        items: [
-          {
-            name: "test-award",
-            deadline: "2024-12-31",
-            deadline_passed: false,
-            time_remaining: "30 days",
-          },
-        ],
-      }
-
-      await expectDataRequest({
-        method: mockGet,
-        response: mockResponse,
-        execute: () => api.awards.listAwards(PAGE, PER_PAGE),
-        expectedArgs: ["/api/v1/awards", { params: { page: PAGE, per_page: PER_PAGE } }],
-      })
-    })
-  })
-
-  describe("awards.getAward", () => {
-    it("should get a single award", async () => {
-      const mockResponse: Award = {
-        name: "test-award",
-        deadline: "2024-12-31",
-        deadline_passed: false,
-        time_remaining: "30 days",
-      }
-
-      await expectDataRequest({
-        method: mockGet,
-        response: mockResponse,
-        execute: () => api.awards.getAward("test-award"),
-        expectedArgs: ["/api/v1/awards/test-award"],
-      })
-    })
-  })
-
-  describe("awards.updateAward", () => {
-    it("should update an award", async () => {
-      const mockResponse: Award = {
-        name: "test-award",
-        deadline: "2025-01-31",
-        deadline_passed: false,
-        time_remaining: "60 days",
-      }
-
-      await expectDataRequest({
-        method: mockPut,
-        response: mockResponse,
-        execute: () =>
-          api.awards.updateAward("test-award", {
-            deadline: "01/31/2025",
-          }),
-        expectedArgs: ["/api/v1/awards/test-award", urlSearchParams],
-      })
-    })
-  })
-
-  describe("awards.deleteAward", () => {
-    it("should delete an award", async () => {
-      await expectDeleteRequest(
-        () => api.awards.deleteAward("test-award"),
-        "/api/v1/awards/test-award",
-      )
-    })
+  describeResourceApi<Award, AwardPage>({
+    groupName: "awards",
+    resourceLabel: "award",
+    basePath: "/api/v1/awards",
+    resourceName: "test-award",
+    apiResource: {
+      create: api.awards.createAward,
+      list: api.awards.listAwards,
+      get: api.awards.getAward,
+      update: api.awards.updateAward,
+      delete: api.awards.deleteAward,
+    },
   })
 })
 
 describe("api (grants)", () => {
-  describe("grants.createGrant", () => {
-    it("should create a grant", async () => {
-      const mockResponse = {
-        status: "success",
-        message: "New grant added: test-grant.",
-      }
-
-      await expectDataRequest({
-        method: mockPost,
-        response: mockResponse,
-        execute: () =>
-          api.grants.createGrant({
-            name: "test-grant",
-            deadline: "12/31/2024",
-            description: "Test grant description",
-          }),
-        expectedArgs: ["/api/v1/grants", urlSearchParams],
-      })
-    })
-  })
-
-  describe("grants.listGrants", () => {
-    it("should list grants", async () => {
-      const mockResponse: GrantPage = {
-        links: {
-          self: "/api/v1/grants?page=1&per_page=10",
-          first: "/api/v1/grants?page=1&per_page=10",
-          last: "/api/v1/grants?page=1&per_page=10",
-        },
-        has_prev: false,
-        has_next: false,
-        page: 1,
-        total_pages: 1,
-        items_per_page: 10,
-        total_items: 1,
-        items: [
-          {
-            name: "test-grant",
-            deadline: "2024-12-31",
-            deadline_passed: false,
-            time_remaining: "30 days",
-          },
-        ],
-      }
-
-      await expectDataRequest({
-        method: mockGet,
-        response: mockResponse,
-        execute: () => api.grants.listGrants(PAGE, PER_PAGE),
-        expectedArgs: ["/api/v1/grants", { params: { page: PAGE, per_page: PER_PAGE } }],
-      })
-    })
-  })
-
-  describe("grants.getGrant", () => {
-    it("should get a single grant", async () => {
-      const mockResponse: Grant = {
-        name: "test-grant",
-        deadline: "2024-12-31",
-        deadline_passed: false,
-        time_remaining: "30 days",
-      }
-
-      await expectDataRequest({
-        method: mockGet,
-        response: mockResponse,
-        execute: () => api.grants.getGrant("test-grant"),
-        expectedArgs: ["/api/v1/grants/test-grant"],
-      })
-    })
-  })
-
-  describe("grants.updateGrant", () => {
-    it("should update a grant", async () => {
-      const mockResponse: Grant = {
-        name: "test-grant",
-        deadline: "2025-01-31",
-        deadline_passed: false,
-        time_remaining: "60 days",
-      }
-
-      await expectDataRequest({
-        method: mockPut,
-        response: mockResponse,
-        execute: () =>
-          api.grants.updateGrant("test-grant", {
-            deadline: "01/31/2025",
-          }),
-        expectedArgs: ["/api/v1/grants/test-grant", urlSearchParams],
-      })
-    })
-  })
-
-  describe("grants.deleteGrant", () => {
-    it("should delete a grant", async () => {
-      await expectDeleteRequest(
-        () => api.grants.deleteGrant("test-grant"),
-        "/api/v1/grants/test-grant",
-      )
-    })
+  describeResourceApi<Grant, GrantPage>({
+    groupName: "grants",
+    resourceLabel: "grant",
+    basePath: "/api/v1/grants",
+    resourceName: "test-grant",
+    apiResource: {
+      create: api.grants.createGrant,
+      list: api.grants.listGrants,
+      get: api.grants.getGrant,
+      update: api.grants.updateGrant,
+      delete: api.grants.deleteGrant,
+    },
   })
 })
