@@ -8,6 +8,7 @@ import { useRegister } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
 import { signupSchema, type SignupFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
+import { PasswordInput } from "../components/form/PasswordInput"
 import { AlertError } from "../components/alert/AlertError"
 import { BUTTON_TEXT } from "../utils/constants"
 import { OAuthButtons } from "../features/oauth/OAuthButtons"
@@ -69,22 +70,14 @@ export function Signup(): JSX.Element {
               />
             </FormField>
             <FormField label="Password" error={errors.password}>
-              <input
-                type="password"
-                {...register("password")}
-                className="form-control"
-                autoComplete="new-password"
-                aria-required="true"
+              <PasswordInput
+                registration={register("password")}
                 placeholder="Enter your password"
               />
             </FormField>
             <FormField label="Confirm Password" error={errors.confirmPassword}>
-              <input
-                type="password"
-                {...register("confirmPassword")}
-                className="form-control"
-                autoComplete="new-password"
-                aria-required="true"
+              <PasswordInput
+                registration={register("confirmPassword")}
                 placeholder="Confirm your password"
               />
             </FormField>

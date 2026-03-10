@@ -89,3 +89,24 @@ def test_register_does_not_trigger_welcome_email_on_conflict(client, db, monkeyp
     response = register_user(client, email=EMAIL, password=PASSWORD)
     assert response.status_code == HTTPStatus.CONFLICT
     fake.assert_not_called()
+
+
+def test_auth_register_password_too_short(client):
+    response = register_user(client, password="Short1A")
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "errors" in response.json
+    assert "password" in response.json["errors"]
+
+
+def test_auth_register_password_no_uppercase(client):
+    response = register_user(client, password="test12345")
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "errors" in response.json
+    assert "password" in response.json["errors"]
+
+
+def test_auth_register_password_no_number(client):
+    response = register_user(client, password="Testtest")
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "errors" in response.json
+    assert "password" in response.json["errors"]
