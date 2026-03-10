@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import type { AuthSuccess, Award, AwardPage, Grant, GrantPage } from "./client"
+import type {
+  AuthSuccess,
+  Award,
+  AwardPage,
+  BaseResponse,
+  Grant,
+  GrantPage,
+  UserInfo,
+} from "./client"
 import { api } from "./index"
 
 const { mockPost, mockGet, mockPut, mockDelete } = vi.hoisted(() => {
@@ -61,10 +69,11 @@ type ResourceScenario<TResource extends ResourceRecord, TPage extends ResourcePa
   resourceLabel: "award" | "grant"
   basePath: string
   resource: TResource
-  create: () => Promise<unknown>
+  listResponse: TPage
+  create: () => Promise<BaseResponse>
   list: () => Promise<TPage>
   get: () => Promise<TResource>
-  update: () => Promise<TResource>
+  update: () => Promise<BaseResponse | TResource>
   remove: () => Promise<void>
 }
 
@@ -80,7 +89,7 @@ async function expectDataRequest<T>({
 }: {
   method: ReturnType<typeof vi.fn>
   response: T
-  execute: () => Promise<T>
+  execute: () => Promise<unknown>
   expectedArgs: unknown[]
 }) {
   mockDataResponse(method, response)
@@ -130,7 +139,16 @@ function buildPage<TItem>({
 }: {
   basePath: string
   item: TItem
-}): AwardPage & { items: TItem[] } {
+}): {
+  links: AwardPage["links"]
+  has_prev: boolean
+  has_next: boolean
+  page: number
+  total_pages: number
+  items_per_page: number
+  total_items: number
+  items: TItem[]
+} {
   return {
     links: {
       self: `${basePath}?page=${PAGE}&per_page=${PER_PAGE}`,
@@ -177,14 +195,9 @@ function describeResourceApi<
     })
 
     it(`should list ${scenario.resourceLabel}s`, async () => {
-      const response = buildPage({
-        basePath: scenario.basePath,
-        item: buildResource({ resource: scenario.resource }),
-      }) as TPage
-
       await expectDataRequest({
         method: mockGet,
-        response,
+        response: scenario.listResponse,
         execute: scenario.list,
         expectedArgs: [scenario.basePath, { params: { page: PAGE, per_page: PER_PAGE } }],
       })
@@ -224,26 +237,27 @@ function describeResourceApi<
   })
 }
 
+const awardResource: Award = {
+  name: "test-award",
+  deadline: RESOURCE_DEADLINE,
+  deadline_passed: false,
+  time_remaining: RESOURCE_TIME_REMAINING,
+}
+
 const awardScenario: ResourceScenario<Award, AwardPage> = {
   suiteName: "awards",
   resourceLabel: "award",
   basePath: "/api/v1/awards",
-  resource: {
-    name: "test-award",
-    deadline: RESOURCE_DEADLINE,
-    deadline_passed: false,
-    time_remaining: RESOURCE_TIME_REMAINING,
-  },
+  resource: awardResource,
+  listResponse: buildPage({
+    basePath: "/api/v1/awards",
+    item: buildResource({ resource: awardResource }),
+  }),
   create: () =>
     api.awards.createAward(
       buildCreatePayload({
         resourceLabel: "award",
-        resource: {
-          name: "test-award",
-          deadline: RESOURCE_DEADLINE,
-          deadline_passed: false,
-          time_remaining: RESOURCE_TIME_REMAINING,
-        },
+        resource: awardResource,
       }),
     ),
   list: () => api.awards.listAwards(PAGE, PER_PAGE),
@@ -252,26 +266,27 @@ const awardScenario: ResourceScenario<Award, AwardPage> = {
   remove: () => api.awards.deleteAward("test-award"),
 }
 
+const grantResource: Grant = {
+  name: "test-grant",
+  deadline: RESOURCE_DEADLINE,
+  deadline_passed: false,
+  time_remaining: RESOURCE_TIME_REMAINING,
+}
+
 const grantScenario: ResourceScenario<Grant, GrantPage> = {
   suiteName: "grants",
   resourceLabel: "grant",
   basePath: "/api/v1/grants",
-  resource: {
-    name: "test-grant",
-    deadline: RESOURCE_DEADLINE,
-    deadline_passed: false,
-    time_remaining: RESOURCE_TIME_REMAINING,
-  },
+  resource: grantResource,
+  listResponse: buildPage({
+    basePath: "/api/v1/grants",
+    item: buildResource({ resource: grantResource }),
+  }),
   create: () =>
     api.grants.createGrant(
       buildCreatePayload({
         resourceLabel: "grant",
-        resource: {
-          name: "test-grant",
-          deadline: RESOURCE_DEADLINE,
-          deadline_passed: false,
-          time_remaining: RESOURCE_TIME_REMAINING,
-        },
+        resource: grantResource,
       }),
     ),
   list: () => api.grants.listGrants(PAGE, PER_PAGE),
@@ -319,7 +334,7 @@ describe("api (auth)", () => {
 
   describe("auth.getUser", () => {
     it("should get user info", async () => {
-      const mockResponse = {
+      const mockResponse: UserInfo = {
         email: "test@example.com",
         admin: false,
         public_id: "123",
