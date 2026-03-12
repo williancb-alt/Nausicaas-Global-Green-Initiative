@@ -1,34 +1,58 @@
 name: Build and Push Images to ACR
 
 on:
-  push:
-    # Disabling for main for now until credentials are resolved
-    branches: [ "infra-actions" ]
   workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [staging, production]
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Docker Login to ACR
-        run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+      - name: Azure login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-      - name: Build backend image
+      - name: Set ACR name
+        id: acr
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest ./backend
+          if [ "$ENVIRONMENT" = "staging" ]; then
+            echo "name=nausicaasacrstaging12345" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=nausicaasacrprod12345" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Push backend image
+      - name: ACR login
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest
+          az acr login --name ${{ steps.acr.outputs.name }}
 
-      - name: Build frontend image
+      - name: Build & push backend
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest ./frontend
+          ACR="${{ steps.acr.outputs.name }}.azurecr.io"
+          docker build -t "$ACR/backend:${ENVIRONMENT}" ./backend
+          docker push "$ACR/backend:${ENVIRONMENT}"
 
-      - name: Push frontend image
+      - name: Build & push frontend
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest
+          ACR="${{ steps.acr.outputs.name }}.azurecr.io"
+          docker build -t "$ACR/frontend:${ENVIRONMENT}" ./frontend
+          docker push "$ACR/frontend:${ENVIRONMENT}"
