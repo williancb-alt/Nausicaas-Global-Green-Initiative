@@ -1,5 +1,5 @@
 output "namespace" {
-  value = kubernetes_namespace.staging.metadata[0].name
+  value = kubernetes_namespace.app.metadata[0].name
 }
 
 output "ingress_public_ip" {

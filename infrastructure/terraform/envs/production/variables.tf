@@ -4,23 +4,10 @@ variable "backend_hostname" {
 
 variable "backend_image_tag" {
   type    = string
-  default = "latest"
+  default = "production"
 }
 
 variable "frontend_url" {
-  type = string
-}
-
-variable "db_admin_username" {
-  type = string
-}
-
-variable "db_admin_password" {
-  type      = string
-  sensitive = true
-}
-
-variable "db_name" {
   type = string
 }
 

@@ -37,3 +37,8 @@ output "db_subnet_id" {
 output "postgres_private_dns_zone_id" {
   value = azurerm_private_dns_zone.postgres.id
 }
+
+output "database_url" {
+  value     = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}?sslmode=require"
+  sensitive = true
+}

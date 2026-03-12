@@ -45,10 +45,14 @@ data "terraform_remote_state" "core" {
 }
 
 locals {
-  core_rg_name     = data.terraform_remote_state.core.outputs.resource_group_name
-  core_location    = data.terraform_remote_state.core.outputs.location
-  aks_name         = data.terraform_remote_state.core.outputs.aks_name
-  acr_login_server = data.terraform_remote_state.core.outputs.acr_login_server
+  core_rg_name                 = data.terraform_remote_state.core.outputs.resource_group_name
+  core_location                = data.terraform_remote_state.core.outputs.location
+  aks_name                     = data.terraform_remote_state.core.outputs.aks_name
+  acr_login_server             = data.terraform_remote_state.core.outputs.acr_login_server
+  db_subnet_id                 = data.terraform_remote_state.core.outputs.db_subnet_id
+  postgres_private_dns_zone_id = data.terraform_remote_state.core.outputs.postgres_private_dns_zone_id
+
+  database_url = data.terraform_remote_state.core.outputs.database_url
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -67,10 +71,12 @@ module "app_backend" {
   backend_image_tag = var.backend_image_tag
   frontend_url      = var.frontend_url
 
-  db_name           = var.db_name
-  db_admin_username = var.db_admin_username
-
   node_resource_group = data.azurerm_kubernetes_cluster.aks.node_resource_group
+
+  namespace              = "production"
+  tls_secret_name        = "api-tls"
+  ingress_public_ip_name = "nausicaas-prod-ip"
+  database_url           = local.database_url
 }
 
 module "dns" {

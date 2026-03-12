@@ -1,10 +1,22 @@
 name: Terraform Infrastructure Provisioning & Configuration
 
 on:
-  push:
-    branches: [ "infra-actions" ]
   workflow_dispatch:
     inputs:
+      layer:
+        description: "Which layer to target"
+        required: true
+        type: choice
+        options:
+          - core
+          - app
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
       action:
         description: "Action to perform"
         required: true
@@ -23,12 +35,16 @@ env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  TF_VAR_location: northeurope
-  TF_VAR_acr_name: nausicaasacr12345prod
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+
+    env:
+      LAYER: ${{ github.event.inputs.layer || 'core' }}
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
+      ACTION: ${{ github.event.inputs.action || 'plan' }}
 
     steps:
       - name: Checkout
@@ -41,26 +57,43 @@ jobs:
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
+      - name: Determine Terraform working directory
+        id: workdir
+        run: |
+          if [ "$LAYER" = "core" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/cores/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "core" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/cores/production" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "app" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/envs/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "app" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/envs/production" >> "$GITHUB_ENV"
+          else
+            echo "Unsupported combination: layer=$LAYER environment=$ENVIRONMENT"
+            exit 1
+          fi
+          echo "Using TF_WORKDIR=$TF_WORKDIR"
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.2
 
       - name: Terraform Init
-        working-directory: infrastructure/terraform
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform init
 
       - name: Terraform Plan
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
-        working-directory: infrastructure/terraform
+        if: github.event_name == 'push' || env.ACTION == 'plan' || env.ACTION == 'apply'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
-        working-directory: infrastructure/terraform
+        if: github.event_name == 'push' || env.ACTION == 'apply'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform apply -auto-approve tfplan
 
       - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
-        working-directory: infrastructure/terraform
+        if: env.ACTION == 'destroy'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform destroy -auto-approve

@@ -43,6 +43,30 @@ resource "azurerm_subnet" "db" {
   }
 }
 
+resource "azurerm_postgresql_flexible_server" "main" {
+  name                   = var.db_server_name
+  resource_group_name    = azurerm_resource_group.main.name
+  location               = azurerm_resource_group.main.location
+  administrator_login    = var.db_admin_username
+  administrator_password = var.db_admin_password
+  version                = "15"
+  sku_name               = "B_Standard_B1ms"
+  storage_mb             = 32768
+  backup_retention_days  = 7
+  zone                   = "1"
+
+  delegated_subnet_id           = azurerm_subnet.db.id
+  private_dns_zone_id           = azurerm_private_dns_zone.postgres.id
+  public_network_access_enabled = false
+}
+
+resource "azurerm_postgresql_flexible_server_database" "main" {
+  name      = var.db_name
+  server_id = azurerm_postgresql_flexible_server.main.id
+  charset   = "UTF8"
+  collation = "en_US.utf8"
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_name
   location            = azurerm_resource_group.main.location
@@ -50,9 +74,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = var.dns_prefix
 
   default_node_pool {
-    name       = "system"
-    node_count = var.aks_node_count
-    vm_size    = var.aks_node_size
+    name           = "system"
+    node_count     = var.aks_node_count
+    vm_size        = var.aks_node_size
     vnet_subnet_id = azurerm_subnet.aks.id
   }
 
