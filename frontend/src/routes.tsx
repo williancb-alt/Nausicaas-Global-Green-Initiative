@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./components/protectedRoute/ProtectedRoute"
 import { ForgotPassword } from "./pages/ForgotPassword"
+import { ResetPassword } from "./pages/ResetPassword"
 import { Login } from "./pages/Login"
 import { Signup } from "./pages/Signup"
 import { Applications } from "./pages/Applications"
@@ -111,6 +112,10 @@ export const routes = [
   {
     path: "/forgot-password",
     element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "*",
