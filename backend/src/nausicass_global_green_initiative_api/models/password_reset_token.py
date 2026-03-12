@@ -1,6 +1,6 @@
 import hashlib
 import secrets
-from datetime import timedelta, timezone
+from datetime import timedelta
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.util.datetime_util import utc_now

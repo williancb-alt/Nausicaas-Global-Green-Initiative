@@ -193,11 +193,14 @@ def process_forgot_password_request(email: str) -> Response:
         token_model, raw_token = PasswordResetToken.create(user.id)
         db.session.commit()
         app = current_app._get_current_object()
-        threading.Thread(
-            target=_send_reset_email_async,
-            args=(app, email, raw_token),
-            daemon=True,
-        ).start()
+        if app.config.get("TESTING"):
+            _send_reset_email_async(app, email, raw_token)
+        else:
+            threading.Thread(
+                target=_send_reset_email_async,
+                args=(app, email, raw_token),
+                daemon=True,
+            ).start()
     response = jsonify(
         status="success",
         message="If that email is registered, a reset link has been sent.",
@@ -214,7 +217,7 @@ def process_reset_password_request(token: str, password: str) -> Response:
             "Reset token is invalid or has expired.",
             status="fail",
         )
-    user = User.query.get(reset_token.user_id)
+    user = db.session.get(User, reset_token.user_id)
     user.password = password
     reset_token.used = True
     db.session.commit()
