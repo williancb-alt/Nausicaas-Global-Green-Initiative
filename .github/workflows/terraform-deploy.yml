@@ -58,6 +58,7 @@ jobs:
       TF_VAR_db_admin_password: ${{ secrets.TF_VAR_DB_ADMIN_PASSWORD }}
       TF_VAR_db_admin_username: ${{ secrets.TF_VAR_DB_ADMIN_USERNAME }}
       TF_VAR_db_name: ${{ secrets.TF_VAR_DB_NAME }}
+      TF_VAR_db_server_name: ${{ secrets.TF_VAR_DB_SERVER_NAME }}
       TF_VAR_dns_prefix: ${{ secrets.TF_VAR_DNS_PREFIX }}
       TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
       TF_VAR_location: ${{ secrets.TF_VAR_LOCATION }}
