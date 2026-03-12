@@ -45,6 +45,23 @@ jobs:
       LAYER: ${{ github.event.inputs.layer || 'core' }}
       ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
       ACTION: ${{ github.event.inputs.action || 'plan' }}
+      TF_VAR_acme_email: ${{ secrets.TF_VAR_ACME_EMAIL }}
+      TF_VAR_acme_server_url: ${{ secrets.TF_VAR_ACME_SERVER_URL }}
+      TF_VAR_acr_name: ${{ secrets.TF_VAR_ACR_NAME }}
+      TF_VAR_aks_name: ${{ secrets.TF_VAR_AKS_NAME }}
+      TF_VAR_aks_node_count: ${{ secrets.TF_VAR_AKS_NODE_COUNT }}
+      TF_VAR_aks_node_size: ${{ secrets.TF_VAR_AKS_NODE_SIZE }}
+      TF_VAR_backend_hostname: ${{ secrets.TF_VAR_BACKEND_HOSTNAME }}
+      TF_VAR_backend_image_tag: ${{ secrets.TF_VAR_BACKEND_IMAGE_TAG }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_zone_name: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_NAME }}
+      TF_VAR_db_admin_password: ${{ secrets.TF_VAR_DB_ADMIN_PASSWORD }}
+      TF_VAR_db_admin_username: ${{ secrets.TF_VAR_DB_ADMIN_USERNAME }}
+      TF_VAR_db_name: ${{ secrets.TF_VAR_DB_NAME }}
+      TF_VAR_dns_prefix: ${{ secrets.TF_VAR_DNS_PREFIX }}
+      TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
+      TF_VAR_location: ${{ secrets.TF_VAR_LOCATION }}
+      TF_VAR_rg_name: ${{ secrets.TF_VAR_RG_NAME }}
 
     steps:
       - name: Checkout
