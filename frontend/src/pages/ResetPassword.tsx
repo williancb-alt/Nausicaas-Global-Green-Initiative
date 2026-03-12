@@ -72,9 +72,7 @@ export function ResetPassword(): JSX.Element {
           style={{ width: "100%", maxWidth: "400px" }}
         >
           <div className="card-body p-4">
-            <p className="mb-3">
-              Your password has been reset successfully.
-            </p>
+            <p className="mb-3">Your password has been reset successfully.</p>
             <Link
               to="/login"
               className="text-decoration-underline"
