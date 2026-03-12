@@ -31,4 +31,20 @@ export const authApi = {
     const { data } = await apiClient.post<BaseResponse>("/api/v1/auth/logout")
     return data
   },
+
+  forgotPassword: async (email: string): Promise<BaseResponse> => {
+    const { data } = await apiClient.post<BaseResponse>(
+      "/api/v1/auth/forgot-password",
+      new URLSearchParams({ email }),
+    )
+    return data
+  },
+
+  resetPassword: async (token: string, password: string): Promise<BaseResponse> => {
+    const { data } = await apiClient.post<BaseResponse>(
+      "/api/v1/auth/reset-password",
+      new URLSearchParams({ token, password }),
+    )
+    return data
+  },
 }
