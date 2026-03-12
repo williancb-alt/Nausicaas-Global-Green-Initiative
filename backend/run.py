@@ -15,6 +15,9 @@ from nausicass_global_green_initiative_api.models.user_oauth_account import (
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 from nausicass_global_green_initiative_api.models.award import Award
+from nausicass_global_green_initiative_api.models.password_reset_token import (
+    PasswordResetToken,
+)
 
 app = create_app(os.getenv("FLASK_ENV", "development"))
 
@@ -30,6 +33,7 @@ def shell() -> Dict[
         Type[AuditLog],
         Type[Award],
         Type[UserOAuthAccount],
+        Type[PasswordResetToken],
     ],
 ]:
     return {
@@ -39,6 +43,7 @@ def shell() -> Dict[
         "BlacklistedToken": BlacklistedToken,
         "Grant": Grant,
         "AuditLog": AuditLog,
+        "PasswordResetToken": PasswordResetToken,
     }
 
 
