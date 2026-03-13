@@ -108,8 +108,8 @@ export function ResetPassword(): JSX.Element {
                 registration={register("password")}
                 placeholder="Enter your new password"
               />
-              <PasswordRequirements password={passwordValue} />
             </FormField>
+            <PasswordRequirements password={passwordValue} />
             <FormField label="Confirm Password" error={errors.confirmPassword}>
               <PasswordInput
                 registration={register("confirmPassword")}
