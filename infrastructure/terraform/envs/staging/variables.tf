@@ -18,4 +18,5 @@ variable "cloudflare_zone_name" {
 
 variable "backend_image_ref" {
   type    = string
+  default = ""
 }
