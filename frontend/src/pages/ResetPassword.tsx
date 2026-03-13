@@ -11,6 +11,7 @@ import {
 import { FormField } from "../components/form/FormField"
 import { PasswordInput } from "../components/form/PasswordInput"
 import { AlertError } from "../components/alert/AlertError"
+import { PasswordRequirements } from "../components/form/PasswordRequirements"
 import { BUTTON_TEXT } from "../utils/constants"
 
 export function ResetPassword(): JSX.Element {
@@ -21,10 +22,13 @@ export function ResetPassword(): JSX.Element {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   })
+
+  const passwordValue = watch("password", "")
 
   const onSubmit = (data: ResetPasswordFormData) => {
     if (!token) return
@@ -103,6 +107,7 @@ export function ResetPassword(): JSX.Element {
                 registration={register("password")}
                 placeholder="Enter your new password"
               />
+              <PasswordRequirements password={passwordValue} />
             </FormField>
             <FormField label="Confirm Password" error={errors.confirmPassword}>
               <PasswordInput

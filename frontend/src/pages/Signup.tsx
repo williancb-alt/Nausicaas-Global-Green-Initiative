@@ -10,6 +10,7 @@ import { signupSchema, type SignupFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
 import { PasswordInput } from "../components/form/PasswordInput"
 import { AlertError } from "../components/alert/AlertError"
+import { PasswordRequirements } from "../components/form/PasswordRequirements"
 import { BUTTON_TEXT } from "../utils/constants"
 import { OAuthButtons } from "../features/oauth/OAuthButtons"
 
@@ -21,11 +22,14 @@ export function Signup(): JSX.Element {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   })
+
+  const passwordValue = watch("password", "")
 
   const onSignup = (data: SignupFormData) => {
     registerMutation.mutate(
@@ -74,6 +78,7 @@ export function Signup(): JSX.Element {
                 registration={register("password")}
                 placeholder="Enter your password"
               />
+              <PasswordRequirements password={passwordValue} />
             </FormField>
             <FormField label="Confirm Password" error={errors.confirmPassword}>
               <PasswordInput
