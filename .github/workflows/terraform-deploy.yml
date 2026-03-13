@@ -48,11 +48,11 @@ jobs:
       TF_VAR_acme_email: ${{ secrets.TF_VAR_ACME_EMAIL }}
       TF_VAR_acme_server_url: ${{ secrets.TF_VAR_ACME_SERVER_URL }}
       TF_VAR_acr_name: ${{ secrets.TF_VAR_ACR_NAME }}
+      ACR_NAME: ${{ secrets.TF_VAR_ACR_NAME }}
       TF_VAR_aks_name: ${{ secrets.TF_VAR_AKS_NAME }}
       TF_VAR_aks_node_count: ${{ secrets.TF_VAR_AKS_NODE_COUNT }}
       TF_VAR_aks_node_size: ${{ secrets.TF_VAR_AKS_NODE_SIZE }}
       TF_VAR_backend_hostname: ${{ secrets.TF_VAR_BACKEND_HOSTNAME }}
-      TF_VAR_backend_image_tag: ${{ secrets.TF_VAR_BACKEND_IMAGE_TAG }}
       TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
       TF_VAR_cloudflare_zone_name: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_NAME }}
       TF_VAR_db_admin_password: ${{ secrets.TF_VAR_DB_ADMIN_PASSWORD }}
@@ -74,6 +74,37 @@ jobs:
           client-id: ${{ env.ARM_CLIENT_ID }}
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+      
+      - name: Set ACR name for app layer
+        if: env.LAYER == 'app'
+        run: |
+          if [ "${ENVIRONMENT}" = "staging" ]; then
+            echo "ACR_NAME=nausicaasacrstaging12345" >> "$GITHUB_ENV"
+          else
+            echo "ACR_NAME=nausicaasacrprod12345" >> "$GITHUB_ENV"
+          fi
+          echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
+
+      - name: Login to ACR (app layer)
+        if: env.LAYER == 'app'
+        run: |
+          az acr login --name "$ACR_NAME"
+
+      - name: Resolve backend image digest from tag
+        if: env.LAYER == 'app' && env.ACTION != 'destroy'
+        run: |
+          TAG="${ENVIRONMENT}"
+          DIGEST=$(az acr repository show-manifests \
+            --name "$ACR_NAME" \
+            --repository backend \
+            --query "[?tags[?@=='${TAG}']].digest" -o tsv | head -n1)
+          if [ -z "$DIGEST" ]; then
+            echo "No digest found for backend:${TAG}" >&2
+            exit 1
+          fi
+          IMAGE_REF="${ACR_LOGIN_SERVER}/backend@${DIGEST}"
+          echo "Using backend image ref: $IMAGE_REF"
+          echo "TF_VAR_backend_image_ref=$IMAGE_REF" >> "$GITHUB_ENV"
 
       - name: Determine Terraform working directory
         id: workdir

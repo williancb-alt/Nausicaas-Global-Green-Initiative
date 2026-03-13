@@ -1,5 +1,5 @@
 locals {
-  backend_image = "${var.acr_login_server}/backend:${var.backend_image_tag}"
+  backend_image = var.backend_image_ref
 
   database_url = var.database_url
 
@@ -71,12 +71,6 @@ resource "kubernetes_deployment" "backend" {
         }
       }
     }
-  }
-
-  lifecycle {
-    ignore_changes = [
-      spec[0].template[0].spec[0].container[0].image,
-    ]
   }
 
   depends_on = [helm_release.ingress_nginx]

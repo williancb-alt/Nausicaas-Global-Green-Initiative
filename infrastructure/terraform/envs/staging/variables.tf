@@ -2,11 +2,6 @@ variable "backend_hostname" {
   type = string
 }
 
-variable "backend_image_tag" {
-  type    = string
-  default = "staging"
-}
-
 variable "frontend_url" {
   type = string
 }
@@ -19,4 +14,8 @@ variable "cloudflare_api_token" {
 variable "cloudflare_zone_name" {
   type    = string
   default = "nausicaaglobalgreeninitiative.ie"
+}
+
+variable "backend_image_ref" {
+  type    = string
 }

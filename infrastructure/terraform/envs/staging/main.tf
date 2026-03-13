@@ -66,7 +66,7 @@ module "app_backend" {
   acr_login_server    = local.acr_login_server
 
   backend_hostname  = var.backend_hostname
-  backend_image_tag = var.backend_image_tag
+  backend_image_ref = var.backend_image_ref
   frontend_url      = var.frontend_url
 
   node_resource_group    = data.azurerm_kubernetes_cluster.aks.node_resource_group

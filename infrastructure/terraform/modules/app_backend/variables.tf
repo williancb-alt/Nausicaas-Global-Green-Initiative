@@ -4,7 +4,6 @@ variable "location" { type = string }
 variable "acr_login_server" { type = string }
 
 variable "backend_hostname" { type = string }
-variable "backend_image_tag" { type = string }
 variable "frontend_url" { type = string }
 
 
@@ -31,4 +30,8 @@ variable "database_url" {
 variable "create_namespace" {
   type    = bool
   default = true
+}
+
+variable "backend_image_ref" {
+  type    = string
 }
