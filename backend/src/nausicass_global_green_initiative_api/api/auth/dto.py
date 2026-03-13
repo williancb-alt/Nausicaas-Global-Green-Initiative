@@ -48,3 +48,20 @@ auth_req_parser.add_argument(
     required=True,
     nullable=False,
 )
+
+forgot_password_req_parser = RequestParser(bundle_errors=True)
+forgot_password_req_parser.add_argument(
+    name="email", type=email(), location="form", required=True, nullable=False
+)
+
+reset_password_req_parser = RequestParser(bundle_errors=True)
+reset_password_req_parser.add_argument(
+    name="token", type=str, location="form", required=True, nullable=False
+)
+reset_password_req_parser.add_argument(
+    name="password",
+    type=password_type,
+    location="form",
+    required=True,
+    nullable=False,
+)

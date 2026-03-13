@@ -16,6 +16,10 @@ export const BUTTON_TEXT = {
   LOADING: "Loading...",
   SIGN_UP: "Sign Up",
   SIGNING_UP: "Signing up...",
+  SEND_RESET_LINK: "Send Reset Link",
+  SENDING_RESET_LINK: "Sending...",
+  RESET_PASSWORD: "Reset Password",
+  RESETTING_PASSWORD: "Resetting...",
 } as const
 
 export const MESSAGES = {

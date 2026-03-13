@@ -151,6 +151,24 @@ def delete_grant(test_client: FlaskClient, grant_name: str) -> Response:
     )
 
 
+def forgot_password(test_client: FlaskClient, email: str = EMAIL) -> Response:
+    return test_client.post(
+        url_for("api.auth_forgot_password"),
+        data=f"email={email}",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+
+def reset_password(
+    test_client: FlaskClient, token: str, password: str = PASSWORD
+) -> Response:
+    return test_client.post(
+        url_for("api.auth_reset_password"),
+        data=f"token={token}&password={password}",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+
 def get_access_token_from_cookie(response: Response) -> Optional[str]:
     """Helper to extract access_token for testing token validation."""
     set_cookie_header = response.headers.get("Set-Cookie", "")
