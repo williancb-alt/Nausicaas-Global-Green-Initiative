@@ -54,4 +54,9 @@ module "cert_manager" {
   acme_email           = var.acme_email
   cloudflare_api_token = var.cloudflare_api_token
   acme_server_url      = var.acme_server_url
+  
+  wildcard_enabled     = true
+  wildcard_namespace   = "production"
+  wildcard_secret_name = "nausicaa-wildcard-tls"
+  wildcard_dns_name    = "*.nausicaaglobalgreeninitiative.ie"
 }

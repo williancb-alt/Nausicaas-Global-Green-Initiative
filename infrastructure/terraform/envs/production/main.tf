@@ -74,9 +74,10 @@ module "app_backend" {
   node_resource_group = data.azurerm_kubernetes_cluster.aks.node_resource_group
 
   namespace              = "production"
-  tls_secret_name        = "api-tls"
+  tls_secret_name        = "nausicaa-wildcard-tls"
   ingress_public_ip_name = "nausicaas-prod-ip"
   database_url           = local.database_url
+  create_namespace       = false
 }
 
 module "dns" {

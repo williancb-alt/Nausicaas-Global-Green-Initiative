@@ -40,11 +40,48 @@ spec:
     privateKeySecretRef:
       name: ${var.issuer_name}-account-key
     solvers:
-    - http01:
-        ingress:
-          class: nginx
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
 YAML
 
   validate_schema = false
   depends_on      = [helm_release.cert_manager]
+}
+
+resource "kubernetes_namespace" "wildcard_namespace" {
+  count = var.wildcard_enabled ? 1 : 0
+
+  metadata {
+    name = var.wildcard_namespace
+  }
+}
+
+resource "kubectl_manifest" "wildcard_certificate" {
+  count = var.wildcard_enabled ? 1 : 0
+
+  yaml_body = <<YAML
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-nausicaa
+  namespace: ${var.wildcard_namespace}
+spec:
+  secretName: ${var.wildcard_secret_name}
+  issuerRef:
+    name: ${var.issuer_name}
+    kind: ClusterIssuer
+  dnsNames:
+    - "${var.wildcard_dns_name}"
+YAML
+
+  validate_schema = false
+
+  depends_on = [
+    helm_release.cert_manager,
+    kubectl_manifest.cluster_issuer,
+    kubernetes_namespace.wildcard_namespace,
+  ]
 }

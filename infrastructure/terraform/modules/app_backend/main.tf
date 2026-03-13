@@ -2,9 +2,13 @@ locals {
   backend_image = "${var.acr_login_server}/backend:${var.backend_image_tag}"
 
   database_url = var.database_url
+
+  namespace_name = var.namespace
 }
 
 resource "kubernetes_namespace" "app" {
+  count = var.create_namespace ? 1 : 0
+
   metadata {
     name = var.namespace
   }
@@ -18,7 +22,7 @@ resource "random_password" "flask_secret_key" {
 resource "kubernetes_secret" "backend_env" {
   metadata {
     name      = "backend-env"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = local.namespace_name
   }
 
   type = "Opaque"
@@ -34,7 +38,7 @@ resource "kubernetes_secret" "backend_env" {
 resource "kubernetes_deployment" "backend" {
   metadata {
     name      = "backend"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = local.namespace_name
     labels    = { app = "backend" }
   }
 
@@ -81,7 +85,7 @@ resource "kubernetes_deployment" "backend" {
 resource "kubernetes_service" "backend" {
   metadata {
     name      = "backend"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = local.namespace_name
   }
 
   spec {
@@ -100,7 +104,7 @@ resource "kubernetes_service" "backend" {
 resource "kubernetes_ingress_v1" "backend" {
   metadata {
     name      = "backend-ingress"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = local.namespace_name
     annotations = {
       "kubernetes.io/ingress.class"              = "nginx"
       "cert-manager.io/cluster-issuer"           = "letsencrypt-prod"
@@ -140,7 +144,7 @@ resource "kubernetes_ingress_v1" "backend" {
 resource "kubernetes_job_v1" "backend_migrate" {
   metadata {
     name      = "backend-migrate"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = local.namespace_name
   }
 
   spec {

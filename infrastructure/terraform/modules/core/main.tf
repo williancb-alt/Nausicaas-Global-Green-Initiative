@@ -97,8 +97,6 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 }
 
-data "azurerm_client_config" "current" {}
-
 resource "azurerm_role_assignment" "aks_network_contributor" {
   scope                = azurerm_resource_group.main.id
   role_definition_name = "Network Contributor"

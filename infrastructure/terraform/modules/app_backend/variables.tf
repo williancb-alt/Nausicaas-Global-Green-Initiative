@@ -27,3 +27,8 @@ variable "ingress_public_ip_name" {
 variable "database_url" {
   type = string
 }
+
+variable "create_namespace" {
+  type    = bool
+  default = true
+}
