@@ -100,7 +100,8 @@ export function ResetPassword(): JSX.Element {
         style={{ width: "100%", maxWidth: "400px" }}
       >
         <div className="card-body p-4">
-          <form onSubmit={handleFormSubmit}>
+          <form onSubmit={handleFormSubmit} autoComplete="on">
+            <input type="hidden" autoComplete="username" value="" />
             <p className="mb-3">Enter your new password.</p>
             <FormField label="New Password" error={errors.password}>
               <PasswordInput
