@@ -77,10 +77,32 @@ module "app_backend" {
   create_namespace       = false
 }
 
-module "dns" {
+module "app_frontend" {
+  source = "../../modules/app_frontend"
+
+  resource_group_name = local.core_rg_name
+  location            = local.core_location
+  acr_login_server    = local.acr_login_server
+
+  frontend_hostname  = var.frontend_hostname
+  frontend_image_ref = var.frontend_image_ref
+
+  namespace       = "staging"
+  tls_secret_name = "nausicaa-wildcard-tls"
+}
+
+module "dns_backend" {
   source = "../../modules/dns"
 
   zone_name   = var.cloudflare_zone_name
   record_name = "api-staging"
+  record_ip   = module.app_backend.ingress_public_ip
+}
+
+module "dns_frontend" {
+  source = "../../modules/dns"
+
+  zone_name   = var.cloudflare_zone_name
+  record_name = "staging"
   record_ip   = module.app_backend.ingress_public_ip
 }

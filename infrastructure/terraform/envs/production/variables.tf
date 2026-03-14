@@ -20,3 +20,12 @@ variable "backend_image_ref" {
   type    = string
   default = ""
 }
+
+variable "frontend_hostname" {
+  type = string
+}
+
+variable "frontend_image_ref" {
+  type    = string
+  default = ""
+}

@@ -80,10 +80,68 @@ module "app_backend" {
   create_namespace       = false
 }
 
-module "dns" {
+module "app_frontend" {
+  source = "../../modules/app_frontend"
+
+  resource_group_name = local.core_rg_name
+  location            = local.core_location
+  acr_login_server    = local.acr_login_server
+
+  frontend_hostname  = var.frontend_hostname
+  frontend_image_ref = var.frontend_image_ref
+
+  namespace       = "production"
+  tls_secret_name = "nausicaa-wildcard-tls"
+}
+
+module "dns_backend" {
   source = "../../modules/dns"
 
   zone_name   = var.cloudflare_zone_name
   record_name = "api"
   record_ip   = module.app_backend.ingress_public_ip
+}
+
+module "dns_frontend_root" {
+  source = "../../modules/dns"
+
+  zone_name   = var.cloudflare_zone_name
+  record_name = "@"
+  record_ip   = module.app_backend.ingress_public_ip
+}
+
+module "dns_frontend_www" {
+  source = "../../modules/dns"
+
+  zone_name   = var.cloudflare_zone_name
+  record_name = "www"
+  record_ip   = module.app_backend.ingress_public_ip
+}
+
+data "cloudflare_zone" "main" {
+  name = var.cloudflare_zone_name
+}
+
+resource "cloudflare_ruleset" "redirect_www_to_apex" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = "Redirect www to root"
+  kind    = "zone"
+  phase   = "http_request_redirect"
+
+  rules {
+    enabled     = true
+    description = "301 redirect www to root"
+
+    expression = "(http.host eq \"www.nausicaaglobalgreeninitiative.ie\")"
+
+    action = "redirect"
+
+    action_parameters {
+      status_code = 301
+
+      from_value {
+        host = "nausicaaglobalgreeninitiative.ie"
+      }
+    }
+  }
 }
