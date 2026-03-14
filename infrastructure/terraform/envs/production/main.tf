@@ -83,10 +83,6 @@ module "app_backend" {
 module "app_frontend" {
   source = "../../modules/app_frontend"
 
-  resource_group_name = local.core_rg_name
-  location            = local.core_location
-  acr_login_server    = local.acr_login_server
-
   frontend_hostname  = var.frontend_hostname
   frontend_image_ref = var.frontend_image_ref
 
