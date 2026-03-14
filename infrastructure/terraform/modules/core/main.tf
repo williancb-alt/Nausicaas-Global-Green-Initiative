@@ -140,7 +140,8 @@ resource "azurerm_key_vault_secret" "database_url" {
   key_vault_id = azurerm_key_vault.main.id
 
   depends_on = [
-    azurerm_role_assignment.kv_secrets_user_kubelet
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
   ]
 }
 
@@ -148,4 +149,10 @@ resource "azurerm_role_assignment" "kv_secrets_user_kubelet" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+}
+
+resource "azurerm_role_assignment" "kv_secrets_officer_tf" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
