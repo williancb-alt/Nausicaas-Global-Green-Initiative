@@ -133,10 +133,13 @@ resource "cloudflare_ruleset" "redirect_www_to_apex" {
     action = "redirect"
 
     action_parameters {
-      status_code = 301
-
       from_value {
-        host = "nausicaaglobalgreeninitiative.ie"
+        status_code           = 301
+        preserve_query_string = true
+
+        target_url {
+          expression = "concat(\"https://nausicaaglobalgreeninitiative.ie\", http.request.uri.path)"
+        }
       }
     }
   }
