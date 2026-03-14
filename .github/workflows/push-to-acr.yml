@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment }}
-      BACKEND_BASE_URL:  ${{ vars.BACKEND_BASE_URL }}
-      FRONTEND_BASE_URL: ${{ vars.FRONTEND_BASE_URL }}
+      BACKEND_BASE_URL:  ${{ secrets.BACKEND_BASE_URL }}
+      FRONTEND_BASE_URL: ${{ secrets.FRONTEND_BASE_URL }}
     steps:
       - uses: actions/checkout@v5
 
