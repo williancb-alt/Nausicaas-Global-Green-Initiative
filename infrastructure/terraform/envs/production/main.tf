@@ -107,42 +107,6 @@ module "dns_frontend_root" {
   record_ip   = module.app_backend.ingress_public_ip
 }
 
-module "dns_frontend_www" {
-  source = "../../modules/dns"
-
-  zone_name   = var.cloudflare_zone_name
-  record_name = "www"
-  record_ip   = module.app_backend.ingress_public_ip
-}
-
 data "cloudflare_zone" "main" {
   name = var.cloudflare_zone_name
-}
-
-resource "cloudflare_ruleset" "redirect_www_to_apex" {
-  zone_id         = data.cloudflare_zone.main.id
-  name            = "Redirect www to root"
-  kind            = "zone"
-  phase           = "http_request_redirect"
-  allow_overwrite = true
-
-  rules {
-    enabled     = true
-    description = "301 redirect www to root"
-
-    expression = "(http.host eq \"www.nausicaaglobalgreeninitiative.ie\")"
-
-    action = "redirect"
-
-    action_parameters {
-      from_value {
-        status_code           = 301
-        preserve_query_string = true
-
-        target_url {
-          expression = "concat(\"https://nausicaaglobalgreeninitiative.ie\", http.request.uri.path)"
-        }
-      }
-    }
-  }
 }
