@@ -55,6 +55,7 @@ jobs:
 
       - name: Build & push frontend
         run: |
+          echo "BACKEND_BASE_URL at build time: $BACKEND_BASE_URL"
           ACR="${{ steps.acr.outputs.name }}.azurecr.io"
 
           docker build \
