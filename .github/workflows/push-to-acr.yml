@@ -33,28 +33,19 @@ jobs:
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-      - name: Set ACR name
-        id: acr
-        run: |
-          if [ "$ENVIRONMENT" = "staging" ]; then
-            echo "name=nausicaasacrstaging12345" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=nausicaasacrprod12345" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: ACR login
         run: |
-          az acr login --name ${{ steps.acr.outputs.name }}
+          az acr login --name ${{ vars.ACR_NAME }}
 
       - name: Build & push backend
         run: |
-          ACR="${{ steps.acr.outputs.name }}.azurecr.io"
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
           docker build -t "$ACR/backend:${ENVIRONMENT}" ./backend
           docker push "$ACR/backend:${ENVIRONMENT}"
 
       - name: Build & push frontend
         run: |
-          ACR="${{ steps.acr.outputs.name }}.azurecr.io"
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
 
           docker build \
             --build-arg VITE_API_BASE_URL="${{ secrets.BACKEND_BASE_URL }}" \

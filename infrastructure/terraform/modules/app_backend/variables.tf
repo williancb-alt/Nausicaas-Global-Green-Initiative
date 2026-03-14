@@ -24,7 +24,8 @@ variable "ingress_public_ip_name" {
 }
 
 variable "database_url" {
-  type = string
+  type      = string
+  sensitive = true
 }
 
 variable "create_namespace" {
@@ -33,5 +34,5 @@ variable "create_namespace" {
 }
 
 variable "backend_image_ref" {
-  type    = string
+  type = string
 }
