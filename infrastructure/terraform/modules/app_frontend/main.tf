@@ -29,6 +29,16 @@ resource "kubernetes_deployment" "frontend" {
           port {
             container_port = 80
           }
+
+          env {
+            name  = "VITE_API_BASE_URL"
+            value = "http://backend:8080"
+          }
+
+          env {
+            name  = "SERVER_NAME"
+            value = var.frontend_hostname
+          }
         }
       }
     }
