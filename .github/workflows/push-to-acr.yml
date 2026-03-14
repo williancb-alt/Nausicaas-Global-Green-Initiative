@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment }}
+      BACKEND_BASE_URL:  ${{ vars.BACKEND_BASE_URL }}
+      FRONTEND_BASE_URL: ${{ vars.FRONTEND_BASE_URL }}
     steps:
       - uses: actions/checkout@v5
 
@@ -54,5 +56,10 @@ jobs:
       - name: Build & push frontend
         run: |
           ACR="${{ steps.acr.outputs.name }}.azurecr.io"
-          docker build -t "$ACR/frontend:${ENVIRONMENT}" ./frontend
+
+          docker build \
+            --build-arg VITE_API_BASE_URL="$BACKEND_BASE_URL" \
+            --build-arg SERVER_NAME="$FRONTEND_BASE_URL" \
+            -t "$ACR/frontend:${ENVIRONMENT}" ./frontend
+
           docker push "$ACR/frontend:${ENVIRONMENT}"
