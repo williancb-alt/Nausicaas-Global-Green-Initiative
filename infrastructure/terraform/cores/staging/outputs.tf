@@ -31,3 +31,8 @@ output "key_vault_tenant_id" {
   value     = module.core.key_vault_tenant_id
   sensitive = true
 }
+
+output "key_vault_kubelet_identity_client_id" {
+  value     = module.core.key_vault_kubelet_identity_client_id
+  sensitive = true
+}

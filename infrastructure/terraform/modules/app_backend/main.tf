@@ -28,10 +28,11 @@ resource "kubernetes_manifest" "secret_provider_class" {
     spec = {
       provider = "azure"
       parameters = {
-        usePodIdentity = "false"
-        keyvaultName   = var.key_vault_name
-        tenantId       = var.key_vault_tenant_id
-        objects        = <<-EOT
+        usePodIdentity         = "false"
+        userAssignedIdentityID = var.key_vault_kubelet_identity_client_id
+        keyvaultName           = var.key_vault_name
+        tenantId               = var.key_vault_tenant_id
+        objects                = <<-EOT
           array:
             - objectName: database-url
               objectType: secret

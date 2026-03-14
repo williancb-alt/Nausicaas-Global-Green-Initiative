@@ -61,3 +61,8 @@ output "key_vault_tenant_id" {
   value     = data.azurerm_client_config.current.tenant_id
   sensitive = true
 }
+
+output "key_vault_kubelet_identity_client_id" {
+  value     = azurerm_kubernetes_cluster.aks.kubelet_identity[0].client_id
+  sensitive = true
+}

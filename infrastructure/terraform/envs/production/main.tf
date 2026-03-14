@@ -45,14 +45,15 @@ data "terraform_remote_state" "core" {
 }
 
 locals {
-  core_rg_name                 = data.terraform_remote_state.core.outputs.resource_group_name
-  core_location                = data.terraform_remote_state.core.outputs.location
-  aks_name                     = data.terraform_remote_state.core.outputs.aks_name
-  acr_login_server             = data.terraform_remote_state.core.outputs.acr_login_server
-  db_subnet_id                 = data.terraform_remote_state.core.outputs.db_subnet_id
-  postgres_private_dns_zone_id = data.terraform_remote_state.core.outputs.postgres_private_dns_zone_id
-  key_vault_name               = data.terraform_remote_state.core.outputs.key_vault_name
-  key_vault_tenant_id          = data.terraform_remote_state.core.outputs.key_vault_tenant_id
+  core_rg_name                         = data.terraform_remote_state.core.outputs.resource_group_name
+  core_location                        = data.terraform_remote_state.core.outputs.location
+  aks_name                             = data.terraform_remote_state.core.outputs.aks_name
+  acr_login_server                     = data.terraform_remote_state.core.outputs.acr_login_server
+  db_subnet_id                         = data.terraform_remote_state.core.outputs.db_subnet_id
+  postgres_private_dns_zone_id         = data.terraform_remote_state.core.outputs.postgres_private_dns_zone_id
+  key_vault_name                       = data.terraform_remote_state.core.outputs.key_vault_name
+  key_vault_tenant_id                  = data.terraform_remote_state.core.outputs.key_vault_tenant_id
+  key_vault_kubelet_identity_client_id = data.terraform_remote_state.core.outputs.key_vault_kubelet_identity_client_id
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -75,8 +76,9 @@ module "app_backend" {
   ingress_public_ip_name = "nausicaas-prod-ip"
   create_namespace       = false
 
-  key_vault_name      = local.key_vault_name
-  key_vault_tenant_id = local.key_vault_tenant_id
+  key_vault_name                       = local.key_vault_name
+  key_vault_tenant_id                  = local.key_vault_tenant_id
+  key_vault_kubelet_identity_client_id = local.key_vault_kubelet_identity_client_id
 }
 
 module "app_frontend" {

@@ -37,3 +37,8 @@ variable "key_vault_tenant_id" {
   type      = string
   sensitive = true
 }
+
+variable "key_vault_kubelet_identity_client_id" {
+  type      = string
+  sensitive = true
+}
