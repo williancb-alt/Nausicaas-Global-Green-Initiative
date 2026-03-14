@@ -21,7 +21,7 @@ variable "backend_image_ref" {
   default = ""
 
   validation {
-    condition     = length(trim(var.backend_image_ref)) > 0
+    condition     = length(trim(var.backend_image_ref, " \t\r\n")) > 0
     error_message = "backend_image_ref must be a non-empty image reference (tag or digest)."
   }
 }
@@ -35,7 +35,7 @@ variable "frontend_image_ref" {
   default = ""
 
   validation {
-    condition     = length(trim(var.frontend_image_ref)) > 0
+    condition     = length(trim(var.frontend_image_ref, " \t\r\n")) > 0
     error_message = "frontend_image_ref must be a non-empty image reference (tag or digest)."
   }
 }
