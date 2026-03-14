@@ -16,7 +16,7 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build
+RUN echo "Building with VITE_API_BASE_URL=$VITE_API_BASE_URL" && npm run build
 
 FROM nginx:stable-alpine
 

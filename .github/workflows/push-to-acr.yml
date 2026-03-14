@@ -54,8 +54,6 @@ jobs:
 
       - name: Build & push frontend
         run: |
-          echo "BACKEND_BASE_URL at build time: ${{ secrets.BACKEND_BASE_URL }}"
-          echo "FRONTEND_BASE_URL at build time: ${{ secrets.FRONTEND_BASE_URL }}"
           ACR="${{ steps.acr.outputs.name }}.azurecr.io"
 
           docker build \
