@@ -23,9 +23,11 @@ output "postgres_private_dns_zone_id" {
 }
 
 output "key_vault_name" {
-  value = module.core.key_vault_name
+  value     = module.core.key_vault_name
+  sensitive = true
 }
 
 output "key_vault_tenant_id" {
-  value = module.core.key_vault_tenant_id
+  value     = module.core.key_vault_tenant_id
+  sensitive = true
 }
