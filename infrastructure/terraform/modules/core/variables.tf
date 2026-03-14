@@ -12,3 +12,7 @@ variable "db_admin_password" {
   type      = string
   sensitive = true
 }
+variable "key_vault_name" {
+  type        = string
+  description = "Globally unique name for the Key Vault (3-24 alphanumeric and hyphens)."
+}

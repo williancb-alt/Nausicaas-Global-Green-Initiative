@@ -51,8 +51,8 @@ locals {
   acr_login_server             = data.terraform_remote_state.core.outputs.acr_login_server
   db_subnet_id                 = data.terraform_remote_state.core.outputs.db_subnet_id
   postgres_private_dns_zone_id = data.terraform_remote_state.core.outputs.postgres_private_dns_zone_id
-
-  database_url = data.terraform_remote_state.core.outputs.database_url
+  key_vault_name               = data.terraform_remote_state.core.outputs.key_vault_name
+  key_vault_tenant_id          = data.terraform_remote_state.core.outputs.key_vault_tenant_id
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -61,11 +61,8 @@ data "azurerm_kubernetes_cluster" "aks" {
 }
 
 module "app_backend" {
-  source = "../../modules/app_backend"
-
-  resource_group_name = local.core_rg_name
-  location            = local.core_location
-  acr_login_server    = local.acr_login_server
+  source   = "../../modules/app_backend"
+  location = local.core_location
 
   backend_hostname  = var.backend_hostname
   backend_image_ref = var.backend_image_ref
@@ -76,8 +73,10 @@ module "app_backend" {
   namespace              = "production"
   tls_secret_name        = "nausicaa-wildcard-tls"
   ingress_public_ip_name = "nausicaas-prod-ip"
-  database_url           = local.database_url
   create_namespace       = false
+
+  key_vault_name      = local.key_vault_name
+  key_vault_tenant_id = local.key_vault_tenant_id
 }
 
 module "app_frontend" {
@@ -119,10 +118,11 @@ data "cloudflare_zone" "main" {
 }
 
 resource "cloudflare_ruleset" "redirect_www_to_apex" {
-  zone_id = data.cloudflare_zone.main.id
-  name    = "Redirect www to root"
-  kind    = "zone"
-  phase   = "http_request_redirect"
+  zone_id         = data.cloudflare_zone.main.id
+  name            = "Redirect www to root"
+  kind            = "zone"
+  phase           = "http_request_redirect"
+  allow_overwrite = true
 
   rules {
     enabled     = true

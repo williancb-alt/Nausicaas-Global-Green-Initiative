@@ -46,6 +46,8 @@ module "core" {
   db_name           = var.db_name
   db_admin_username = var.db_admin_username
   db_admin_password = var.db_admin_password
+
+  key_vault_name = var.key_vault_name
 }
 
 module "cert_manager" {

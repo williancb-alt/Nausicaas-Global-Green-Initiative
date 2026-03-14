@@ -32,7 +32,7 @@ resource "kubernetes_deployment" "frontend" {
 
           env {
             name  = "VITE_API_BASE_URL"
-            value = "http://backend:8080"
+            value = "http://backend:80"
           }
 
           env {

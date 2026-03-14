@@ -8,7 +8,7 @@ resource "azurerm_container_registry" "acr" {
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   sku                 = "Basic"
-  admin_enabled       = true
+  admin_enabled       = false
 }
 
 resource "azurerm_virtual_network" "core" {
@@ -84,6 +84,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
     type = "SystemAssigned"
   }
 
+  key_vault_secrets_provider {
+    secret_rotation_enabled  = false
+    secret_rotation_interval = "5m"
+  }
+
   network_profile {
     network_plugin    = "azure"
     load_balancer_sku = "standard"
@@ -114,4 +119,33 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgres_vnet_link" {
   resource_group_name   = azurerm_resource_group.main.name
   private_dns_zone_name = azurerm_private_dns_zone.postgres.name
   virtual_network_id    = azurerm_virtual_network.core.id
+}
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault" "main" {
+  name                       = var.key_vault_name
+  location                   = azurerm_resource_group.main.location
+  resource_group_name        = azurerm_resource_group.main.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = "standard"
+  soft_delete_retention_days = 7
+  purge_protection_enabled   = false
+  enable_rbac_authorization  = true
+}
+
+resource "azurerm_key_vault_secret" "database_url" {
+  name         = "database-url"
+  value        = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}?sslmode=require"
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet
+  ]
+}
+
+resource "azurerm_role_assignment" "kv_secrets_user_kubelet" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 }

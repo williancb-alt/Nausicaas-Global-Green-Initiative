@@ -24,3 +24,7 @@ variable "db_admin_password" {
 variable "db_server_name" {
   type = string
 }
+variable "key_vault_name" {
+  type    = string
+  default = "nausicaas-prod-kv"
+}

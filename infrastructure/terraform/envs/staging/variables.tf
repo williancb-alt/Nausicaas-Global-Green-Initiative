@@ -19,6 +19,11 @@ variable "cloudflare_zone_name" {
 variable "backend_image_ref" {
   type    = string
   default = ""
+
+  validation {
+    condition     = length(trim(var.backend_image_ref)) > 0
+    error_message = "backend_image_ref must be a non-empty image reference (tag or digest)."
+  }
 }
 
 variable "frontend_hostname" {
@@ -28,4 +33,9 @@ variable "frontend_hostname" {
 variable "frontend_image_ref" {
   type    = string
   default = ""
+
+  validation {
+    condition     = length(trim(var.frontend_image_ref)) > 0
+    error_message = "frontend_image_ref must be a non-empty image reference (tag or digest)."
+  }
 }

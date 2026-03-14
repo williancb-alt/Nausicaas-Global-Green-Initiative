@@ -1,7 +1,4 @@
-variable "resource_group_name" { type = string }
 variable "location" { type = string }
-
-variable "acr_login_server" { type = string }
 
 variable "backend_hostname" { type = string }
 variable "frontend_url" { type = string }
@@ -23,11 +20,6 @@ variable "ingress_public_ip_name" {
   type = string
 }
 
-variable "database_url" {
-  type      = string
-  sensitive = true
-}
-
 variable "create_namespace" {
   type    = bool
   default = true
@@ -35,4 +27,13 @@ variable "create_namespace" {
 
 variable "backend_image_ref" {
   type = string
+}
+
+variable "key_vault_name" {
+  type = string
+}
+
+variable "key_vault_tenant_id" {
+  type      = string
+  sensitive = true
 }

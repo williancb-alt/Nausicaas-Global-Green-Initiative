@@ -45,12 +45,12 @@ data "terraform_remote_state" "core" {
 }
 
 locals {
-  core_rg_name     = data.terraform_remote_state.core.outputs.resource_group_name
-  core_location    = data.terraform_remote_state.core.outputs.location
-  aks_name         = data.terraform_remote_state.core.outputs.aks_name
-  acr_login_server = data.terraform_remote_state.core.outputs.acr_login_server
-
-  database_url = data.terraform_remote_state.core.outputs.database_url
+  core_rg_name        = data.terraform_remote_state.core.outputs.resource_group_name
+  core_location       = data.terraform_remote_state.core.outputs.location
+  aks_name            = data.terraform_remote_state.core.outputs.aks_name
+  acr_login_server    = data.terraform_remote_state.core.outputs.acr_login_server
+  key_vault_name      = data.terraform_remote_state.core.outputs.key_vault_name
+  key_vault_tenant_id = data.terraform_remote_state.core.outputs.key_vault_tenant_id
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -61,9 +61,7 @@ data "azurerm_kubernetes_cluster" "aks" {
 module "app_backend" {
   source = "../../modules/app_backend"
 
-  resource_group_name = local.core_rg_name
-  location            = local.core_location
-  acr_login_server    = local.acr_login_server
+  location = local.core_location
 
   backend_hostname  = var.backend_hostname
   backend_image_ref = var.backend_image_ref
@@ -73,8 +71,10 @@ module "app_backend" {
   namespace              = "staging"
   tls_secret_name        = "nausicaa-wildcard-tls"
   ingress_public_ip_name = "nausicaas-staging-ip"
-  database_url           = local.database_url
   create_namespace       = false
+
+  key_vault_name      = local.key_vault_name
+  key_vault_tenant_id = local.key_vault_tenant_id
 }
 
 module "app_frontend" {

@@ -79,12 +79,7 @@ jobs:
       - name: Set ACR name for app layer
         if: env.LAYER == 'app'
         run: |
-          if [ "${ENVIRONMENT}" = "staging" ]; then
-            echo "ACR_NAME=nausicaasacrstaging12345" >> "$GITHUB_ENV"
-          else
-            echo "ACR_NAME=nausicaasacrprod12345" >> "$GITHUB_ENV"
-          fi
-          echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
+          echo "ACR_LOGIN_SERVER=${{ vars.ACR_NAME }}.azurecr.io" >> "$GITHUB_ENV"
 
       - name: Login to ACR (app layer)
         if: env.LAYER == 'app'

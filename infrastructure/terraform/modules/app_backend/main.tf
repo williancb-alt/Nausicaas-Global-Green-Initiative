@@ -1,8 +1,6 @@
 locals {
   backend_image = var.backend_image_ref
 
-  database_url = var.database_url
-
   namespace_name = var.namespace
 }
 
@@ -19,6 +17,42 @@ resource "random_password" "flask_secret_key" {
   special = true
 }
 
+resource "kubernetes_manifest" "secret_provider_class" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "kv-database-url"
+      namespace = local.namespace_name
+    }
+    spec = {
+      provider = "azure"
+      parameters = {
+        usePodIdentity = "false"
+        keyvaultName   = var.key_vault_name
+        tenantId       = var.key_vault_tenant_id
+        objects        = <<-EOT
+          array:
+            - objectName: database-url
+              objectType: secret
+        EOT
+      }
+      secretObjects = [
+        {
+          secretName = "backend-database-url"
+          type       = "Opaque"
+          data = [
+            {
+              objectName = "database-url"
+              key        = "DATABASE_URL"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
 resource "kubernetes_secret" "backend_env" {
   metadata {
     name      = "backend-env"
@@ -29,7 +63,6 @@ resource "kubernetes_secret" "backend_env" {
 
   data = {
     SECRET_KEY    = random_password.flask_secret_key.result
-    DATABASE_URL  = local.database_url
     FRONTEND_URL  = var.frontend_url
     EMAIL_ENABLED = "false"
   }
@@ -59,6 +92,12 @@ resource "kubernetes_deployment" "backend" {
           name  = "backend"
           image = local.backend_image
 
+          volume_mount {
+            name       = "kv-secrets"
+            mount_path = "/mnt/secrets-store"
+            read_only  = true
+          }
+
           port {
             container_port = 8080
           }
@@ -68,12 +107,32 @@ resource "kubernetes_deployment" "backend" {
               name = kubernetes_secret.backend_env.metadata[0].name
             }
           }
+
+          env_from {
+            secret_ref {
+              name = "backend-database-url"
+            }
+          }
+        }
+
+        volume {
+          name = "kv-secrets"
+          csi {
+            driver    = "secrets-store.csi.k8s.io"
+            read_only = true
+            volume_attributes = {
+              secretProviderClass = "kv-database-url"
+            }
+          }
         }
       }
     }
   }
 
-  depends_on = [helm_release.ingress_nginx]
+  depends_on = [
+    helm_release.ingress_nginx,
+    kubernetes_manifest.secret_provider_class,
+  ]
 }
 
 resource "kubernetes_service" "backend" {
@@ -154,9 +213,21 @@ resource "kubernetes_job_v1" "backend_migrate" {
           name  = "migrate"
           image = local.backend_image
 
+          volume_mount {
+            name       = "kv-secrets"
+            mount_path = "/mnt/secrets-store"
+            read_only  = true
+          }
+
           env_from {
             secret_ref {
               name = kubernetes_secret.backend_env.metadata[0].name
+            }
+          }
+
+          env_from {
+            secret_ref {
+              name = "backend-database-url"
             }
           }
 
@@ -166,12 +237,24 @@ resource "kubernetes_job_v1" "backend_migrate" {
             "python -m flask --app run.py db upgrade",
           ]
         }
+
+        volume {
+          name = "kv-secrets"
+          csi {
+            driver    = "secrets-store.csi.k8s.io"
+            read_only = true
+            volume_attributes = {
+              secretProviderClass = "kv-database-url"
+            }
+          }
+        }
       }
     }
   }
 
   depends_on = [
     kubernetes_secret.backend_env,
+    kubernetes_manifest.secret_provider_class,
   ]
 }
 
@@ -188,6 +271,7 @@ resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
+  version          = "4.11.2"
   namespace        = "ingress-nginx"
   create_namespace = true
 

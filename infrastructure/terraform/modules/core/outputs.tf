@@ -41,7 +41,23 @@ output "postgres_private_dns_zone_id" {
   value = azurerm_private_dns_zone.postgres.id
 }
 
-output "database_url" {
-  value     = "postgresql://${var.db_admin_username}:${var.db_admin_password}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/${var.db_name}?sslmode=require"
+output "database_host" {
+  value = azurerm_postgresql_flexible_server.main.fqdn
+}
+
+output "database_name" {
+  value = var.db_name
+}
+
+output "database_user" {
+  value = var.db_admin_username
+}
+
+output "key_vault_name" {
+  value = azurerm_key_vault.main.name
+}
+
+output "key_vault_tenant_id" {
+  value     = data.azurerm_client_config.current.tenant_id
   sensitive = true
 }
