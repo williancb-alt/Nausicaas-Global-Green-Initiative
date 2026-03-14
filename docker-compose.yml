@@ -53,6 +53,7 @@ services:
       - dev
     environment:
       VITE_API_BASE_URL: http://localhost:8080
+      SERVER_NAME: localhost
     depends_on:
       - backend
     ports:
@@ -141,6 +142,7 @@ services:
       - test
     environment:
       VITE_API_BASE_URL: http://localhost:8081
+      SERVER_NAME: localhost
     depends_on:
       - backend-test
     ports:
