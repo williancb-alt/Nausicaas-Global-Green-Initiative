@@ -21,8 +21,3 @@ output "db_subnet_id" {
 output "postgres_private_dns_zone_id" {
   value = module.core.postgres_private_dns_zone_id
 }
-
-output "database_url" {
-  value     = module.core.database_url
-  sensitive = true
-}
