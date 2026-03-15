@@ -150,13 +150,13 @@ jobs:
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform fmt -check -diff
 
-      - name: Terraform Validate
-        working-directory: ${{ env.TF_WORKDIR }}
-        run: terraform validate 
-
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform init
+      
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform validate 
 
       - name: Terraform Plan
         if: github.event_name == 'push' || env.ACTION == 'plan' || env.ACTION == 'apply'
