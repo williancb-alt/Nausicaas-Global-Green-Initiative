@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, JSX } from "react"
 import { useAuthStore } from "../store/authStore"
 import { api } from "../services/api"
 
@@ -14,11 +14,10 @@ interface AppStats {
   count: number
 }
 
-const Dashboard = () => {
+const Dashboard = (): JSX.Element => {
   const authStore = useAuthStore()
   const user = authStore.user
   const [availableGrants, setAvailableGrants] = useState<Grant[]>([])
-  console.log("User in Dashboard 1:", availableGrants)
   const [myApps, setMyApps] = useState<AppStats>({ count: 0 })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -54,7 +53,6 @@ const Dashboard = () => {
 
   // Basic Loading Spinner replacement
   if (loading) {
-    console.log("User in Dashboard: 3", availableGrants)
     return (
       <div
         style={{
