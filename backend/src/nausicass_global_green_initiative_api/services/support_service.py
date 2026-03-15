@@ -5,17 +5,20 @@ from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import utc_now
 
+
 class SupportService:
     @staticmethod
-    def create_support_message(user_id: int, application_id: int, subject: str, message: str) -> SupportMessage:
+    def create_support_message(
+        user_id: int, application_id: int, subject: str, message: str
+    ) -> SupportMessage:
         user = User.query.get(user_id)
         if not user:
             raise ValueError("User not found.")
-            
+
         application = Application.query.get(application_id)
         if not application:
             raise ValueError("Application not found.")
-            
+
         if application.user_id != user_id:
             raise ValueError("Unauthorized access to application.")
 
@@ -23,7 +26,7 @@ class SupportService:
             user_id=user_id,
             application_id=application_id,
             subject=subject,
-            message=message
+            message=message,
         )
         db.session.add(support_msg)
         db.session.commit()
@@ -31,7 +34,7 @@ class SupportService:
         # Notify admins
         admins = User.query.filter_by(admin=True).all()
         admin_emails = [admin.email for admin in admins if admin.email]
-        
+
         if admin_emails:
             email_html = f"""
             <p><strong>New Support Request</strong></p>
@@ -41,11 +44,9 @@ class SupportService:
             <p><strong>Message:</strong></p>
             <blockquote>{message}</blockquote>
             """
-            
+
             EmailService.send_email(
-                to=admin_emails,
-                subject=f"[NEW TICKET] {subject}",
-                html_body=email_html
+                to=admin_emails, subject=f"[NEW TICKET] {subject}", html_body=email_html
             )
 
         return support_msg
@@ -86,7 +87,7 @@ class SupportService:
         EmailService.send_email(
             to=[user.email],
             subject=f"[TICKET UPDATE] RE: {support_msg.subject} [App #{support_msg.application_id}]",
-            html_body=email_html
+            html_body=email_html,
         )
 
         # Update status and save response

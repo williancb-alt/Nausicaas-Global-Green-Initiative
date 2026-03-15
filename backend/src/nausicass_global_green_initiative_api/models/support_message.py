@@ -23,11 +23,13 @@ class SupportMessage(db.Model):
     admin_response = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now)
     answered_at = db.Column(db.DateTime, nullable=True)
-    
+
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref=db.backref("support_messages"))
-    
-    application_id = db.Column(db.Integer, db.ForeignKey("application.id"), nullable=False)
+
+    application_id = db.Column(
+        db.Integer, db.ForeignKey("application.id"), nullable=False
+    )
     application = db.relationship("Application", backref=db.backref("support_messages"))
 
     def __repr__(self) -> str:
