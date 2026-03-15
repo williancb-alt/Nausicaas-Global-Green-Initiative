@@ -42,3 +42,8 @@ variable "key_vault_kubelet_identity_client_id" {
   type      = string
   sensitive = true
 }
+
+variable "environment" {
+  description = "Deployment environment (e.g. staging, production)"
+  type        = string
+}

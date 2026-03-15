@@ -118,11 +118,11 @@ resource "kubernetes_deployment" "backend" {
     name      = "backend"
     namespace = local.namespace_name
     labels = {
-      app.kubernetes.io / name       = "backend"
-      app.kubernetes.io / component  = "api"
-      app.kubernetes.io / part-of    = "nausicaa"
-      app.kubernetes.io / managed-by = "terraform"
-      app.kubernetes.io / env        = var.environment
+      "app.kubernetes.io/name"       = "backend"
+      "app.kubernetes.io/component"  = "api"
+      "app.kubernetes.io/part-of"    = "nausicaa"
+      "app.kubernetes.io/managed-by" = "terraform"
+      "app.kubernetes.io/env"        = var.environment
     }
   }
 
@@ -137,8 +137,8 @@ resource "kubernetes_deployment" "backend" {
       metadata {
         labels = {
           app                      = "backend"
-          app.kubernetes.io / name = "backend"
-          app.kubernetes.io / env  = var.environment
+          "app.kubernetes.io/name" = "backend"
+          "app.kubernetes.io/env"  = var.environment
         }
       }
 
