@@ -15,6 +15,9 @@ from nausicass_global_green_initiative_api.util.datetime_util import (
 from nausicass_global_green_initiative_api.models.token_blacklist import (
     BlacklistedToken,
 )
+from nausicass_global_green_initiative_api.models.password_reset_token import (
+    PasswordResetToken,
+)
 
 
 def _oauth_only_login_message(provider_names: list[str]) -> str:
@@ -156,4 +159,71 @@ def process_logout_request() -> Response:
     db.session.commit()
     response = jsonify(dict(status="success", message="successfully logged out"))
     response.set_cookie("access_token", "", expires=0)
+    return response
+
+
+def _send_reset_email_async(app, email: str, raw_token: str) -> None:
+    with app.app_context():
+        try:
+            frontend_url = app.config.get("FRONTEND_URL", "")
+            reset_link = f"{frontend_url}/reset-password?token={raw_token}"
+            html_body = render_template(
+                "email/password_reset.html",
+                email=email,
+                reset_link=reset_link,
+            )
+            plain_body = (
+                f"A password reset was requested for {email}. "
+                f"Visit the following link to reset your password: {reset_link}"
+            )
+            EmailService.send_email(
+                to=[email],
+                subject="Password Reset - Nausicaas Global Green Initiative",
+                html_body=html_body,
+                plain_body=plain_body,
+            )
+        except Exception:
+            app.logger.exception("Failed to send password reset email")
+
+
+def process_forgot_password_request(email: str) -> Response:
+    """Always returns success to prevent email enumeration."""
+    user = User.find_by_email(email)
+    if user:
+        token_model, raw_token = PasswordResetToken.create(user.id)
+        db.session.commit()
+        app = current_app._get_current_object()
+        if app.config.get("TESTING"):
+            _send_reset_email_async(app, email, raw_token)
+        else:
+            threading.Thread(
+                target=_send_reset_email_async,
+                args=(app, email, raw_token),
+                daemon=True,
+            ).start()
+    response = jsonify(
+        status="success",
+        message="If that email is registered, a reset link has been sent.",
+    )
+    response.status_code = HTTPStatus.OK
+    return response
+
+
+def process_reset_password_request(token: str, password: str) -> Response:
+    reset_token = PasswordResetToken.find_valid_token(token)
+    if not reset_token:
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            "Reset token is invalid or has expired.",
+            status="fail",
+        )
+    user = db.session.get(User, reset_token.user_id)
+    user.password = password
+    reset_token.used = True
+    db.session.commit()
+    response = jsonify(
+        status="success",
+        message="Password has been reset successfully.",
+    )
+    response.status_code = HTTPStatus.OK
     return response

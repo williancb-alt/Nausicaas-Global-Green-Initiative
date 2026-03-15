@@ -8,7 +8,9 @@ import { useRegister } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
 import { signupSchema, type SignupFormData } from "../schemas/authSchema"
 import { FormField } from "../components/form/FormField"
+import { PasswordInput } from "../components/form/PasswordInput"
 import { AlertError } from "../components/alert/AlertError"
+import { PasswordRequirements } from "../components/form/PasswordRequirements"
 import { BUTTON_TEXT } from "../utils/constants"
 import { OAuthButtons } from "../features/oauth/OAuthButtons"
 
@@ -20,11 +22,14 @@ export function Signup(): JSX.Element {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
     reset,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   })
+
+  const passwordValue = watch("password", "")
 
   const onSignup = (data: SignupFormData) => {
     registerMutation.mutate(
@@ -69,22 +74,15 @@ export function Signup(): JSX.Element {
               />
             </FormField>
             <FormField label="Password" error={errors.password}>
-              <input
-                type="password"
-                {...register("password")}
-                className="form-control"
-                autoComplete="new-password"
-                aria-required="true"
+              <PasswordInput
+                registration={register("password")}
                 placeholder="Enter your password"
               />
             </FormField>
+            <PasswordRequirements password={passwordValue} />
             <FormField label="Confirm Password" error={errors.confirmPassword}>
-              <input
-                type="password"
-                {...register("confirmPassword")}
-                className="form-control"
-                autoComplete="new-password"
-                aria-required="true"
+              <PasswordInput
+                registration={register("confirmPassword")}
                 placeholder="Confirm your password"
               />
             </FormField>

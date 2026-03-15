@@ -57,6 +57,19 @@ export function useRegister() {
   })
 }
 
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email: string) => api.auth.forgotPassword(email),
+  })
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({ token, password }: { token: string; password: string }) =>
+      api.auth.resetPassword(token, password),
+  })
+}
+
 export function useUser() {
   const { setUser, clearAuth } = useAuthStore()
 

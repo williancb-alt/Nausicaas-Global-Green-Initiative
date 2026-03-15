@@ -25,6 +25,10 @@ export function AdminDashboardPage(): JSX.Element {
     void navigate("/admin/grants")
   }
 
+  const handleManageAwards = () => {
+    void navigate("/admin/awards")
+  }
+
   const handleViewAuditLogs = () => {
     void navigate("/admin/audit")
   }
@@ -41,6 +45,7 @@ export function AdminDashboardPage(): JSX.Element {
       onLogout={handleLogout}
       onViewApplication={handleViewApplication}
       onManageGrants={handleManageGrants}
+      onManageAwards={handleManageAwards}
       onViewAuditLogs={handleViewAuditLogs}
     />
   )

@@ -65,6 +65,19 @@ export type UpdateGrantParams = {
   hidden?: boolean
 }
 
+export type UpdateAwardParams = {
+  name: string
+  deadline?: string
+  description?: string
+  hidden?: boolean
+}
+
+export type CreateAwardParams = {
+  name: string
+  deadline: string
+  description: string
+}
+
 export type ApplicationStatus =
   | "pending_review"
   | "in_review"

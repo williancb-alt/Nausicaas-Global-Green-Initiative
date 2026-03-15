@@ -6,7 +6,7 @@ from flask.testing import FlaskClient
 
 EMAIL = "new_user@email.com"
 ADMIN_EMAIL = "admin_user@email.com"
-PASSWORD = "test1234"
+PASSWORD = "Test1234"
 BAD_REQUEST = "Input payload validation failed"
 UNAUTHORIZED = "Unauthorized"
 FORBIDDEN = "You are not an administrator"
@@ -148,6 +148,24 @@ def update_grant(
 def delete_grant(test_client: FlaskClient, grant_name: str) -> Response:
     return test_client.delete(
         url_for("api.grant", name=grant_name),
+    )
+
+
+def forgot_password(test_client: FlaskClient, email: str = EMAIL) -> Response:
+    return test_client.post(
+        url_for("api.auth_forgot_password"),
+        data=f"email={email}",
+        content_type="application/x-www-form-urlencoded",
+    )
+
+
+def reset_password(
+    test_client: FlaskClient, token: str, password: str = PASSWORD
+) -> Response:
+    return test_client.post(
+        url_for("api.auth_reset_password"),
+        data=f"token={token}&password={password}",
+        content_type="application/x-www-form-urlencoded",
     )
 
 

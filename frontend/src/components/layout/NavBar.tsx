@@ -35,11 +35,18 @@ const Navbar: React.FC = () => {
         <div className="collapse navbar-collapse" id="mainNavbar">
           <ul className="navbar-nav ms-auto">
             {!isAuthenticated ? (
-              <li className="nav-item">
-                <NavLink className={navLinkClass} to="/login">
-                  Login
-                </NavLink>
-              </li>
+              <>
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to="/login">
+                    Login
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to="/signup">
+                    Sign Up
+                  </NavLink>
+                </li>
+              </>
             ) : user?.admin ? (
               <>
                 <li className="nav-item">
@@ -55,6 +62,11 @@ const Navbar: React.FC = () => {
                 <li className="nav-item">
                   <NavLink className={navLinkClass} to="/admin/grants">
                     Grants
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to="/admin/awards">
+                    Awards
                   </NavLink>
                 </li>
                 <li className="nav-item">
