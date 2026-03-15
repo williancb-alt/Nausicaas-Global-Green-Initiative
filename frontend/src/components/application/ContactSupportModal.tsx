@@ -1,5 +1,6 @@
 import { JSX, useEffect, useState } from "react"
-import { MessageSquare, Send } from "lucide-react"
+import { MessageSquare, Send, AlertCircle } from "lucide-react"
+import { api } from "../../services/api"
 
 interface ContactSupportModalProps {
     isOpen: boolean
@@ -59,18 +60,28 @@ function ContactModalBody({
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [error, setError] = useState<string | null>(null)
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
+        setError(null)
 
-        // Simulate API call for now
-        setTimeout(() => {
+        try {
+            await api.support.createMessage({
+                application_id: applicationId,
+                subject,
+                message,
+            })
             setIsSubmitting(false)
             setIsSuccess(true)
             setTimeout(() => {
                 onClose()
-            }, 2000)
-        }, 1000)
+            }, 3000)
+        } catch (err: any) {
+            setIsSubmitting(false)
+            setError(err.response?.data?.message || err.message || "Failed to send message.")
+        }
     }
 
     if (isSuccess) {
@@ -95,6 +106,13 @@ function ContactModalBody({
             <p className="text-muted mb-4" style={{ fontSize: "0.95rem" }}>
                 Please fill out the form below to send a message to our support team regarding your application.
             </p>
+
+            {error && (
+                <div className="alert alert-danger d-flex align-items-center gap-2 mb-4" style={{ borderRadius: "8px" }}>
+                    <AlertCircle size={18} />
+                    <span className="small">{error}</span>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">

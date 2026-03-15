@@ -3,6 +3,7 @@ import { grantsApi } from "./grants"
 import { awardsApi } from "./awards"
 import { applications } from "./applications"
 import { auditApi } from "./audit"
+import { supportApi } from "./support"
 
 export const api = {
   auth: authApi,
@@ -10,6 +11,7 @@ export const api = {
   grants: grantsApi,
   applications,
   audit: auditApi,
+  support: supportApi,
 }
 
 export * from "./client"

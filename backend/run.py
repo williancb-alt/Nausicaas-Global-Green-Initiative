@@ -18,6 +18,7 @@ from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.password_reset_token import (
     PasswordResetToken,
 )
+from nausicass_global_green_initiative_api.models.support_message import SupportMessage
 
 app = create_app(os.getenv("FLASK_ENV", "development"))
 
@@ -34,6 +35,7 @@ def shell() -> Dict[
         Type[Award],
         Type[UserOAuthAccount],
         Type[PasswordResetToken],
+        Type[SupportMessage],
     ],
 ]:
     return {
@@ -44,6 +46,7 @@ def shell() -> Dict[
         "Grant": Grant,
         "AuditLog": AuditLog,
         "PasswordResetToken": PasswordResetToken,
+        "SupportMessage": SupportMessage,
     }
 
 

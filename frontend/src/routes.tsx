@@ -15,6 +15,7 @@ import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 import { AuditLogs } from "./pages/AuditLogs"
 import { UserDashboard } from "./pages/UserDashboard"
+import { SupportMessagesPage } from "./pages/SupportMessagesPage"
 
 export const routes = [
   {
@@ -98,6 +99,14 @@ export const routes = [
     element: (
       <ProtectedRoute requireAdmin>
         <AuditLogs />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin/support",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <SupportMessagesPage />
       </ProtectedRoute>
     ),
   },
