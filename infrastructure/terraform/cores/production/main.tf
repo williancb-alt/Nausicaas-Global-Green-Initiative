@@ -47,6 +47,13 @@ module "core" {
   db_admin_username = var.db_admin_username
   db_admin_password = var.db_admin_password
 
+  acs_email_connection_string = var.acs_email_connection_string
+  acs_email_sender            = var.acs_email_sender
+  google_client_id            = var.google_client_id
+  google_client_secret        = var.google_client_secret
+  github_client_id            = var.github_client_id
+  github_client_secret        = var.github_client_secret
+
   key_vault_name = var.key_vault_name
 }
 

@@ -33,21 +33,63 @@ resource "kubernetes_manifest" "secret_provider_class" {
         userAssignedIdentityID = var.key_vault_kubelet_identity_client_id
         keyvaultName           = var.key_vault_name
         tenantId               = var.key_vault_tenant_id
-        objects = <<-EOT
+        objects                = <<-EOT
           array:
             - |
               objectName: database-url
+              objectType: secret
+            - |
+              objectName: acs-email-connection-string
+              objectType: secret
+            - |
+              objectName: acs-email-sender
+              objectType: secret
+            - |
+              objectName: google-client-id
+              objectType: secret
+            - |
+              objectName: google-client-secret
+              objectType: secret
+            - |
+              objectName: github-client-id
+              objectType: secret
+            - |
+              objectName: github-client-secret
               objectType: secret
         EOT
       }
       secretObjects = [
         {
-          secretName = "backend-database-url"
+          secretName = "backend-config"
           type       = "Opaque"
           data = [
             {
               objectName = "database-url"
               key        = "DATABASE_URL"
+            },
+            {
+              objectName = "acs-email-connection-string"
+              key        = "ACS_EMAIL_CONNECTION_STRING"
+            },
+            {
+              objectName = "acs-email-sender"
+              key        = "ACS_EMAIL_SENDER"
+            },
+            {
+              objectName = "google-client-id"
+              key        = "GOOGLE_CLIENT_ID"
+            },
+            {
+              objectName = "google-client-secret"
+              key        = "GOOGLE_CLIENT_SECRET"
+            },
+            {
+              objectName = "github-client-id"
+              key        = "GITHUB_CLIENT_ID"
+            },
+            {
+              objectName = "github-client-secret"
+              key        = "GITHUB_CLIENT_SECRET"
             }
           ]
         }
@@ -64,10 +106,10 @@ resource "kubernetes_secret" "backend_env" {
 
   type = "Opaque"
 
-  data = {
+  string_data = {
     SECRET_KEY    = random_password.flask_secret_key.result
     FRONTEND_URL  = var.frontend_url
-    EMAIL_ENABLED = "false"
+    EMAIL_ENABLED = "true"
   }
 }
 
@@ -75,7 +117,13 @@ resource "kubernetes_deployment" "backend" {
   metadata {
     name      = "backend"
     namespace = local.namespace_name
-    labels    = { app = "backend" }
+    labels = {
+      app.kubernetes.io / name       = "backend"
+      app.kubernetes.io / component  = "api"
+      app.kubernetes.io / part-of    = "nausicaa"
+      app.kubernetes.io / managed-by = "terraform"
+      app.kubernetes.io / env        = var.environment
+    }
   }
 
   spec {
@@ -87,7 +135,11 @@ resource "kubernetes_deployment" "backend" {
 
     template {
       metadata {
-        labels = { app = "backend" }
+        labels = {
+          app                      = "backend"
+          app.kubernetes.io / name = "backend"
+          app.kubernetes.io / env  = var.environment
+        }
       }
 
       spec {
@@ -105,6 +157,39 @@ resource "kubernetes_deployment" "backend" {
             container_port = 8080
           }
 
+          liveness_probe {
+            http_get {
+              path = "/health"
+              port = 8080
+            }
+            initial_delay_seconds = 30
+            period_seconds        = 15
+            timeout_seconds       = 5
+            failure_threshold     = 3
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/ready"
+              port = 8080
+            }
+            initial_delay_seconds = 10
+            period_seconds        = 10
+            timeout_seconds       = 3
+            failure_threshold     = 3
+          }
+
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+          }
+
           env_from {
             secret_ref {
               name = kubernetes_secret.backend_env.metadata[0].name
@@ -113,7 +198,7 @@ resource "kubernetes_deployment" "backend" {
 
           env_from {
             secret_ref {
-              name = "backend-database-url"
+              name = "backend-config"
             }
           }
         }
@@ -216,6 +301,17 @@ resource "kubernetes_job_v1" "backend_migrate" {
           name  = "migrate"
           image = local.backend_image
 
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "256Mi"
+            }
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+          }
+
           volume_mount {
             name       = "kv-secrets"
             mount_path = "/mnt/secrets-store"
@@ -230,7 +326,7 @@ resource "kubernetes_job_v1" "backend_migrate" {
 
           env_from {
             secret_ref {
-              name = "backend-database-url"
+              name = "backend-config"
             }
           }
 

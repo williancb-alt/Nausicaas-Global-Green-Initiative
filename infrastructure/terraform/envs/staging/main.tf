@@ -24,7 +24,7 @@ terraform {
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
-      version = ">= 1.14.0"
+      version = "~> 1.14.0"
     }
   }
 }
@@ -40,7 +40,7 @@ data "terraform_remote_state" "core" {
     resource_group_name  = "tfstate-rg"
     storage_account_name = "nausicaastate"
     container_name       = "tfstate"
-    key                  = "infra/core-staging.tfstate"
+    key                  = "infra/core-${var.environment}.tfstate"
   }
 }
 
@@ -52,6 +52,14 @@ locals {
   key_vault_name                       = data.terraform_remote_state.core.outputs.key_vault_name
   key_vault_tenant_id                  = data.terraform_remote_state.core.outputs.key_vault_tenant_id
   key_vault_kubelet_identity_client_id = data.terraform_remote_state.core.outputs.key_vault_kubelet_identity_client_id
+  dns_records = {
+    api = {
+      name = "api"
+    }
+    root = {
+      name = "@"
+    }
+  }
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -69,7 +77,8 @@ module "app_backend" {
   frontend_url      = var.frontend_url
 
   node_resource_group    = data.azurerm_kubernetes_cluster.aks.node_resource_group
-  namespace              = "staging"
+  namespace              = var.environment
+  environment            = var.environment
   tls_secret_name        = "nausicaa-wildcard-tls"
   ingress_public_ip_name = "nausicaas-staging-ip"
   create_namespace       = false
@@ -85,22 +94,16 @@ module "app_frontend" {
   frontend_hostname  = var.frontend_hostname
   frontend_image_ref = var.frontend_image_ref
 
-  namespace       = "staging"
+  namespace       = var.environment
   tls_secret_name = "nausicaa-wildcard-tls"
 }
 
-module "dns_backend" {
+module "dns" {
   source = "../../modules/dns"
 
-  zone_name   = var.cloudflare_zone_name
-  record_name = "api-staging"
-  record_ip   = module.app_backend.ingress_public_ip
-}
-
-module "dns_frontend" {
-  source = "../../modules/dns"
+  for_each = local.dns_records
 
   zone_name   = var.cloudflare_zone_name
-  record_name = "staging"
+  record_name = each.value.name
   record_ip   = module.app_backend.ingress_public_ip
 }

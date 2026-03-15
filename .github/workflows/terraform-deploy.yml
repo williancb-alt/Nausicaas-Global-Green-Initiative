@@ -64,6 +64,12 @@ jobs:
       TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
       TF_VAR_location: ${{ secrets.TF_VAR_LOCATION }}
       TF_VAR_rg_name: ${{ secrets.TF_VAR_RG_NAME }}
+      TF_VAR_acs_email_connection_string: ${{ secrets.TF_VAR_ACS_EMAIL_CONNECTION_STRING }}
+      TF_VAR_acs_email_sender: ${{ secrets.TF_VAR_ACS_EMAIL_SENDER }}
+      TF_VAR_google_client_id: ${{ secrets.TF_VAR_GOOGLE_CLIENT_ID }}
+      TF_VAR_google_client_secret: ${{ secrets.TF_VAR_GOOGLE_CLIENT_SECRET }}
+      TF_VAR_github_client_id: ${{ secrets.TF_VAR_GITHUB_CLIENT_ID }}
+      TF_VAR_github_client_secret: ${{ secrets.TF_VAR_GITHUB_CLIENT_SECRET }}
 
     steps:
       - name: Checkout
@@ -79,7 +85,7 @@ jobs:
       - name: Set ACR name for app layer
         if: env.LAYER == 'app'
         run: |
-          echo "ACR_LOGIN_SERVER=${{ vars.ACR_NAME }}.azurecr.io" >> "$GITHUB_ENV"
+          echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
 
       - name: Login to ACR (app layer)
         if: env.LAYER == 'app'
@@ -87,7 +93,7 @@ jobs:
           az acr login --name "$ACR_NAME"
 
       - name: Resolve backend image digest from tag
-        if: env.LAYER == 'app' && env.ACTION != 'destroy'
+        if: env.LAYER == 'app'
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr repository show-manifests \
@@ -103,7 +109,7 @@ jobs:
           echo "TF_VAR_backend_image_ref=$IMAGE_REF" >> "$GITHUB_ENV"
 
       - name: Resolve frontend image digest from tag
-        if: env.LAYER == 'app' && env.ACTION != 'destroy'
+        if: env.LAYER == 'app'
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr repository show-manifests \
@@ -139,6 +145,14 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.2
+
+      - name: Terraform Fmt Check
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform fmt -check -diff
+
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform validate 
 
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKDIR }}

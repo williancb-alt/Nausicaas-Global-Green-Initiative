@@ -39,3 +39,9 @@ variable "frontend_image_ref" {
     error_message = "frontend_image_ref must be a non-empty image reference (tag or digest)."
   }
 }
+
+variable "environment" {
+  description = "Deployment environment"
+  type        = string
+  default     = "production"
+}

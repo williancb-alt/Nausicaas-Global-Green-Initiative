@@ -145,6 +145,72 @@ resource "azurerm_key_vault_secret" "database_url" {
   ]
 }
 
+resource "azurerm_key_vault_secret" "acs_email_connection_string" {
+  name         = "acs-email-connection-string"
+  value        = var.acs_email_connection_string
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
+resource "azurerm_key_vault_secret" "acs_email_sender" {
+  name         = "acs-email-sender"
+  value        = var.acs_email_sender
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
+resource "azurerm_key_vault_secret" "google_client_id" {
+  name         = "google-client-id"
+  value        = var.google_client_id
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
+resource "azurerm_key_vault_secret" "google_client_secret" {
+  name         = "google-client-secret"
+  value        = var.google_client_secret
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
+resource "azurerm_key_vault_secret" "github_client_id" {
+  name         = "github-client-id"
+  value        = var.github_client_id
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
+resource "azurerm_key_vault_secret" "github_client_secret" {
+  name         = "github-client-secret"
+  value        = var.github_client_secret
+  key_vault_id = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_secrets_user_kubelet,
+    azurerm_role_assignment.kv_secrets_officer_tf
+  ]
+}
+
 resource "azurerm_role_assignment" "kv_secrets_user_kubelet" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets User"

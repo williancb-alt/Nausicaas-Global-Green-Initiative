@@ -12,6 +12,35 @@ variable "db_admin_password" {
   type      = string
   sensitive = true
 }
+variable "acs_email_connection_string" {
+  type      = string
+  sensitive = true
+}
+
+variable "acs_email_sender" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "github_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "github_client_secret" {
+  type      = string
+  sensitive = true
+}
 variable "key_vault_name" {
   type        = string
   description = "Globally unique name for the Key Vault (3-24 alphanumeric and hyphens)."

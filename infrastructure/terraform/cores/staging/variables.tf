@@ -24,6 +24,35 @@ variable "db_admin_password" {
 variable "db_server_name" {
   type = string
 }
+variable "acs_email_connection_string" {
+  type      = string
+  sensitive = true
+}
+
+variable "acs_email_sender" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "github_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "github_client_secret" {
+  type      = string
+  sensitive = true
+}
 variable "key_vault_name" {
   type    = string
   default = "nausicaas-stg-kv"

@@ -24,7 +24,7 @@ terraform {
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
-      version = ">= 1.14.0"
+      version = "~> 1.14.0"
     }
   }
 }
@@ -40,7 +40,7 @@ data "terraform_remote_state" "core" {
     resource_group_name  = "tfstate-rg"
     storage_account_name = "nausicaastate"
     container_name       = "tfstate"
-    key                  = "infra/core-production.tfstate"
+    key                  = "infra/core-${var.environment}.tfstate"
   }
 }
 
@@ -48,12 +48,17 @@ locals {
   core_rg_name                         = data.terraform_remote_state.core.outputs.resource_group_name
   core_location                        = data.terraform_remote_state.core.outputs.location
   aks_name                             = data.terraform_remote_state.core.outputs.aks_name
-  acr_login_server                     = data.terraform_remote_state.core.outputs.acr_login_server
-  db_subnet_id                         = data.terraform_remote_state.core.outputs.db_subnet_id
-  postgres_private_dns_zone_id         = data.terraform_remote_state.core.outputs.postgres_private_dns_zone_id
   key_vault_name                       = data.terraform_remote_state.core.outputs.key_vault_name
   key_vault_tenant_id                  = data.terraform_remote_state.core.outputs.key_vault_tenant_id
   key_vault_kubelet_identity_client_id = data.terraform_remote_state.core.outputs.key_vault_kubelet_identity_client_id
+  dns_records = {
+    api = {
+      name = "api"
+    }
+    root = {
+      name = "@"
+    }
+  }
 }
 
 data "azurerm_kubernetes_cluster" "aks" {
@@ -71,7 +76,8 @@ module "app_backend" {
 
   node_resource_group = data.azurerm_kubernetes_cluster.aks.node_resource_group
 
-  namespace              = "production"
+  namespace              = var.environment
+  environment            = var.environment
   tls_secret_name        = "nausicaa-wildcard-tls"
   ingress_public_ip_name = "nausicaas-prod-ip"
   create_namespace       = false
@@ -87,26 +93,16 @@ module "app_frontend" {
   frontend_hostname  = var.frontend_hostname
   frontend_image_ref = var.frontend_image_ref
 
-  namespace       = "production"
+  namespace       = var.environment
   tls_secret_name = "nausicaa-wildcard-tls"
 }
 
-module "dns_backend" {
+module "dns" {
   source = "../../modules/dns"
 
-  zone_name   = var.cloudflare_zone_name
-  record_name = "api"
-  record_ip   = module.app_backend.ingress_public_ip
-}
-
-module "dns_frontend_root" {
-  source = "../../modules/dns"
+  for_each = local.dns_records
 
   zone_name   = var.cloudflare_zone_name
-  record_name = "@"
+  record_name = each.value.name
   record_ip   = module.app_backend.ingress_public_ip
-}
-
-data "cloudflare_zone" "main" {
-  name = var.cloudflare_zone_name
 }
