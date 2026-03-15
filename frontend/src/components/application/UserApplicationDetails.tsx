@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import type { Application } from "../../types"
 import { UserApplicationResponses } from "./UserApplicationResponses"
 import { SubmissionLockedModal } from "./SubmissionLockedModal"
+import { ContactSupportModal } from "./ContactSupportModal"
 import {
   Calendar,
   FileText,
@@ -257,7 +258,7 @@ function ApplicationGrantOverview({
   )
 }
 
-function ApplicationNeedHelpCard() {
+function ApplicationNeedHelpCard({ onContactClick }: { onContactClick: () => void }) {
   return (
     <div
       className="card border-0 shadow-sm overflow-hidden"
@@ -277,6 +278,7 @@ function ApplicationNeedHelpCard() {
         <button
           className="btn btn-outline-success w-100"
           style={{ borderRadius: "10px" }}
+          onClick={onContactClick}
         >
           Contact Support
         </button>
@@ -290,6 +292,7 @@ export function UserApplicationDetails({
   onBack,
 }: UserApplicationDetailsProps): JSX.Element {
   const [isLockedModalOpen, setIsLockedModalOpen] = useState(true)
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
   const customFieldConfigs = application.grant.custom_fields?.configs ?? null
   const status =
     STATUS_CONFIG[application.status] || STATUS_CONFIG.pending_review
@@ -304,6 +307,12 @@ export function UserApplicationDetails({
         onClose={() => setIsLockedModalOpen(false)}
         status={application.status}
         submittedDate={application.submitted_date}
+      />
+
+      <ContactSupportModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        applicationId={application.id}
       />
 
       <ApplicationHeroHeader
@@ -359,7 +368,7 @@ export function UserApplicationDetails({
               grant={application.grant}
               submittedDate={application.submitted_date}
             />
-            <ApplicationNeedHelpCard />
+            <ApplicationNeedHelpCard onContactClick={() => setIsContactModalOpen(true)} />
           </div>
         </div>
       </div>
