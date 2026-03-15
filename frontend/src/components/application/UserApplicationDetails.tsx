@@ -258,7 +258,11 @@ function ApplicationGrantOverview({
   )
 }
 
-function ApplicationNeedHelpCard({ onContactClick }: { onContactClick: () => void }) {
+function ApplicationNeedHelpCard({
+  onContactClick,
+}: {
+  onContactClick: () => void
+}) {
   return (
     <div
       className="card border-0 shadow-sm overflow-hidden"
@@ -368,7 +372,9 @@ export function UserApplicationDetails({
               grant={application.grant}
               submittedDate={application.submitted_date}
             />
-            <ApplicationNeedHelpCard onContactClick={() => setIsContactModalOpen(true)} />
+            <ApplicationNeedHelpCard
+              onContactClick={() => setIsContactModalOpen(true)}
+            />
           </div>
         </div>
       </div>

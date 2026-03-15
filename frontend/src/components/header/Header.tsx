@@ -29,7 +29,7 @@ export function Header(): JSX.Element {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    overflow: "hidden"
+                    overflow: "hidden",
                   }}
                 >
                   <img
@@ -38,7 +38,7 @@ export function Header(): JSX.Element {
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "contain"
+                      objectFit: "contain",
                     }}
                   />
                 </div>
