@@ -66,27 +66,41 @@ class SupportService:
             raise ValueError("User not found.")
 
         # Send email to user
-        email_html = f"""
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <p>Dear {user.email},</p>
-            <p>Thank you for contacting our Environmental Program Office. We have a response regarding your support request for <strong>Application #{support_msg.application_id}</strong>:</p>
-            <div style="padding: 15px; background: #f9f9f9; border-left: 4px solid #3b7a57; margin: 20px 0;">
-                {reply_text}
-            </div>
-            <p>Original Message:</p>
-            <blockquote style="color: #666; font-style: italic; border-left: 2px solid #ddd; padding-left: 10px;">
-                {support_msg.message}
-            </blockquote>
-            <p>Best Regards,<br>Nausicaas Global Green Initiative Team</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="font-size: 0.9rem; color: #555;"><strong>Note:</strong> If you are not satisfied with this response or have further questions, please raise a new support ticket through your dashboard.</p>
-            <p style="font-size: 0.8rem; color: #999;">This is an automated notification and this mailbox is not monitored. Please do not reply directly to this email.</p>
-        </div>
-        """
+        email_html = (
+            '<div style="font-family: Arial, sans-serif; line-height: 1.6; '
+            'color: #333;">\n'
+            f"    <p>Dear {user.email},</p>\n"
+            "    <p>Thank you for contacting our Environmental Program Office. "
+            "We have a response regarding your support request for "
+            f"<strong>Application #{support_msg.application_id}</strong>:</p>\n"
+            '    <div style="padding: 15px; background: #f9f9f9; '
+            'border-left: 4px solid #3b7a57; margin: 20px 0;">\n'
+            f"        {reply_text}\n"
+            "    </div>\n"
+            "    <p>Original Message:</p>\n"
+            '    <blockquote style="color: #666; font-style: italic; '
+            'border-left: 2px solid #ddd; padding-left: 10px;">\n'
+            f"        {support_msg.message}\n"
+            "    </blockquote>\n"
+            "    <p>Best Regards,<br>Nausicaas Global Green Initiative Team</p>\n"
+            '    <hr style="border: none; border-top: 1px solid #eee; '
+            'margin: 20px 0;">\n'
+            '    <p style="font-size: 0.9rem; color: #555;"><strong>Note:</strong> '
+            "If you are not satisfied with this response or have further questions, "
+            "please raise a new support ticket through your dashboard.</p>\n"
+            '    <p style="font-size: 0.8rem; color: #999;">This is an automated '
+            "notification and this mailbox is not monitored. Please do not reply "
+            "directly to this email.</p>\n"
+            "</div>"
+        )
 
+        email_subject = (
+            f"[TICKET UPDATE] RE: {support_msg.subject} "
+            f"[App #{support_msg.application_id}]"
+        )
         EmailService.send_email(
             to=[user.email],
-            subject=f"[TICKET UPDATE] RE: {support_msg.subject} [App #{support_msg.application_id}]",
+            subject=email_subject,
             html_body=email_html,
         )
 
