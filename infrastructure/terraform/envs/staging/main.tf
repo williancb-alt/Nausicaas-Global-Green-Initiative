@@ -54,10 +54,10 @@ locals {
   key_vault_kubelet_identity_client_id = data.terraform_remote_state.core.outputs.key_vault_kubelet_identity_client_id
   dns_records = {
     api = {
-      name = "api"
+      name = "api-staging"
     }
     root = {
-      name = "@"
+      name = "staging"
     }
   }
 }
