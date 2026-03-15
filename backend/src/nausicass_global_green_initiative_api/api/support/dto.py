@@ -1,12 +1,8 @@
 from flask_restx import Model
-from flask_restx.fields import Integer, List, Nested, String
-from flask_restx.inputs import positive
+from flask_restx.fields import Integer, Nested, String
 from flask_restx.reqparse import RequestParser
 
-from nausicass_global_green_initiative_api.api.applications.dto import (
-    applicant_model,
-    application_model,
-)
+from nausicass_global_green_initiative_api.api.applications.dto import applicant_model
 
 create_support_reqparser = RequestParser(bundle_errors=True)
 create_support_reqparser.add_argument(

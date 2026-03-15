@@ -5,20 +5,18 @@ import click
 from flask_sqlalchemy import SQLAlchemy
 
 from nausicass_global_green_initiative_api import create_app, db
-from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.models.token_blacklist import (
-    BlacklistedToken,
-)
-from nausicass_global_green_initiative_api.models.user_oauth_account import (
-    UserOAuthAccount,
-)
-from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 from nausicass_global_green_initiative_api.models.award import Award
+from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.password_reset_token import (
     PasswordResetToken,
 )
 from nausicass_global_green_initiative_api.models.support_message import SupportMessage
+from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
+from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.models.user_oauth_account import (
+    UserOAuthAccount,
+)
 
 app = create_app(os.getenv("FLASK_ENV", "development"))
 

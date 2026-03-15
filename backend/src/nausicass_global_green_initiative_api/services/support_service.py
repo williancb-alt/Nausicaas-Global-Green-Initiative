@@ -1,7 +1,7 @@
 from nausicass_global_green_initiative_api import db
+from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.models.support_message import SupportMessage
 from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import utc_now
 

@@ -8,8 +8,8 @@ from flask_restx.inputs import positive
 from flask_restx.reqparse import RequestParser
 
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    make_tzaware,
     DATE_MONTH_NAME,
+    make_tzaware,
 )
 
 

@@ -1,21 +1,21 @@
 from http import HTTPStatus
 from typing import TypedDict
 
-from flask import Response, jsonify, url_for, current_app, render_template
+from flask import Response, current_app, jsonify, render_template, url_for
 from flask_restx import abort, marshal
 from flask_sqlalchemy.pagination import Pagination
 
 from nausicass_global_green_initiative_api import db
-from nausicass_global_green_initiative_api.api.auth.decorators import (
-    token_required,
-    admin_token_required,
-)
 from nausicass_global_green_initiative_api.api.applications.dto import (
     application_pagination_model,
 )
-from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.models.grant import Grant
+from nausicass_global_green_initiative_api.api.auth.decorators import (
+    admin_token_required,
+    token_required,
+)
 from nausicass_global_green_initiative_api.models.application import Application
+from nausicass_global_green_initiative_api.models.grant import Grant
+from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 
 

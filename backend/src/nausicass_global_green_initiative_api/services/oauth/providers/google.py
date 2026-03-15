@@ -1,11 +1,10 @@
 from flask import Response, url_for
 
-from nausicass_global_green_initiative_api.services.oauth.core import oauth, logger
-
+from nausicass_global_green_initiative_api.services.oauth.core import logger, oauth
 from nausicass_global_green_initiative_api.services.oauth.helpers import (
-    redirect_to_frontend_with_error,
-    get_or_create_oauth_user,
     complete_oauth_login,
+    get_or_create_oauth_user,
+    redirect_to_frontend_with_error,
 )
 
 

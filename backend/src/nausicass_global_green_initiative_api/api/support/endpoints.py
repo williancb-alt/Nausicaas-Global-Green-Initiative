@@ -1,19 +1,19 @@
 from http import HTTPStatus
-from flask import request
+
 from flask_restx import Namespace, Resource
 
+from nausicass_global_green_initiative_api.api.applications.dto import applicant_model
+from nausicass_global_green_initiative_api.api.auth.decorators import (
+    admin_token_required,
+    token_required,
+)
 from nausicass_global_green_initiative_api.api.support.dto import (
     create_support_reqparser,
     reply_support_reqparser,
     support_message_model,
 )
-from nausicass_global_green_initiative_api.api.applications.dto import applicant_model
-from nausicass_global_green_initiative_api.services.support_service import SupportService
 from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.api.auth.decorators import (
-    token_required,
-    admin_token_required,
-)
+from nausicass_global_green_initiative_api.services.support_service import SupportService
 
 support_ns = Namespace("support", description="Operations relating to support messages")
 support_ns.models[applicant_model.name] = applicant_model

@@ -2,13 +2,13 @@ from http import HTTPStatus
 
 from tests.util import (
     ADMIN_EMAIL,
-    EMAIL,
     DEFAULT_NAME,
+    EMAIL,
     FORBIDDEN,
-    login_user,
     create_grant,
-    retrieve_grant,
     delete_grant,
+    login_user,
+    retrieve_grant,
 )
 
 

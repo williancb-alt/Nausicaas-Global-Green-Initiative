@@ -5,7 +5,7 @@ import pytest
 from nausicass_global_green_initiative_api.models.audit_log import AuditAction, AuditLog
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
-from tests.util import register_user, login_user
+from tests.util import login_user, register_user
 
 
 @pytest.fixture

@@ -2,11 +2,11 @@ from http import HTTPStatus
 
 from tests.util import (
     ADMIN_EMAIL,
-    EMAIL,
-    DEFAULT_NAME,
     DEFAULT_DEADLINE,
-    login_user,
+    DEFAULT_NAME,
+    EMAIL,
     create_grant,
+    login_user,
     retrieve_grant,
 )
 

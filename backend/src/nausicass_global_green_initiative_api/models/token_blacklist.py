@@ -2,8 +2,8 @@ from datetime import timezone
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    utc_now,
     dtaware_fromtimestamp,
+    utc_now,
 )
 
 

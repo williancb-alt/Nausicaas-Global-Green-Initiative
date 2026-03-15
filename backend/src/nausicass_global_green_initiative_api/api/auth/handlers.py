@@ -6,17 +6,15 @@ from flask_restx import abort
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import token_required
+from nausicass_global_green_initiative_api.models.password_reset_token import (
+    PasswordResetToken,
+)
+from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    remaining_fromtimestamp,
     format_timespan_digits,
-)
-from nausicass_global_green_initiative_api.models.token_blacklist import (
-    BlacklistedToken,
-)
-from nausicass_global_green_initiative_api.models.password_reset_token import (
-    PasswordResetToken,
+    remaining_fromtimestamp,
 )
 
 
