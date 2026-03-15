@@ -33,12 +33,13 @@ const Dashboard = () => {
       try {
         setLoading(true)
         const grantResponse = await api.grants.listGrants(1, 10)
-        const grants = grantResponse.items.filter(
-          (g: Grant) => !g.deadline_passed,
+        // Ensure type safety for items filtering
+        const grants = (grantResponse.items as Grant[]).filter(
+          g => !g.deadline_passed,
         )
         setAvailableGrants(grants)
         setMyApps({ count: 2 })
-      } catch (err) {
+      } catch (err: unknown) {
         console.error(err)
         setError("Failed to load dashboard data")
       } finally {
