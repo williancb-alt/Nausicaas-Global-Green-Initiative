@@ -106,7 +106,7 @@ resource "kubernetes_secret" "backend_env" {
 
   type = "Opaque"
 
-  string_data = {
+  data = {
     SECRET_KEY    = random_password.flask_secret_key.result
     FRONTEND_URL  = var.frontend_url
     EMAIL_ENABLED = "true"

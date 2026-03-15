@@ -20,7 +20,7 @@ resource "kubernetes_secret" "cloudflare_api_token" {
 
   type = "Opaque"
 
-  string_data = {
+  data = {
     api-token = var.cloudflare_api_token
   }
 
