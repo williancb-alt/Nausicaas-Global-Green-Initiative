@@ -16,12 +16,18 @@ create_support_reqparser.add_argument(
     "message", type=str, location="json", required=True, nullable=False, help="Message content"
 )
 
+reply_support_reqparser = RequestParser(bundle_errors=True)
+reply_support_reqparser.add_argument(
+    "message", type=str, location="json", required=True, nullable=False, help="Reply message content"
+)
+
 support_message_model = Model(
     "SupportMessage",
     {
         "id": Integer,
         "subject": String,
         "message": String,
+        "admin_response": String,
         "status": String,
         "created_at_str": String,
         "user": Nested(applicant_model),

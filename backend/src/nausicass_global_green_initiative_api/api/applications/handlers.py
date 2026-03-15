@@ -203,7 +203,7 @@ def _send_status_update_email(application: Application) -> None:
         new_status = application.status
         feedback = application.feedback
 
-        subject = f"Update on your application for {grant_name}"
+        subject = f"[APPLICATION UPDATE] {grant_name}"
         html_body = render_template(
             "email/application_status_update.html",
             grant_name=grant_name,

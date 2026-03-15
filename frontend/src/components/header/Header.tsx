@@ -1,6 +1,7 @@
 import { JSX } from "react"
 import { Link } from "react-router-dom"
 import NavBar from "../layout/NavBar"
+import logo from "../../assets/logo.png"
 
 export function Header(): JSX.Element {
   return (
@@ -23,19 +24,23 @@ export function Header(): JSX.Element {
               >
                 <div
                   style={{
-                    width: "75px",
-                    height: "75px",
-                    borderRadius: "50%",
-                    backgroundColor: "#3b7a57",
+                    width: "100px",
+                    height: "100px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "1.1rem",
-                    color: "white",
-                    fontWeight: 700,
+                    overflow: "hidden"
                   }}
                 >
-                  NG
+                  <img
+                    src={logo}
+                    alt="NG"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain"
+                    }}
+                  />
                 </div>
               </Link>
             </div>

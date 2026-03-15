@@ -196,6 +196,6 @@ export function UserDashboard(): JSX.Element {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   )
 }

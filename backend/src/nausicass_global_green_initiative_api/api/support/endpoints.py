@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.support.dto import (
     create_support_reqparser,
+    reply_support_reqparser,
     support_message_model,
 )
 from nausicass_global_green_initiative_api.api.applications.dto import applicant_model
@@ -62,3 +63,20 @@ class SupportList(Resource):
         messages = SupportService.get_all_messages()
         return messages, HTTPStatus.OK
 
+@support_ns.route("/<int:message_id>/reply")
+class SupportReply(Resource):
+    @support_ns.doc(security="Bearer")
+    @support_ns.expect(reply_support_reqparser)
+    @support_ns.response(int(HTTPStatus.OK), "Reply sent successfully")
+    @support_ns.response(int(HTTPStatus.NOT_FOUND), "Message not found")
+    @admin_token_required
+    def post(self, message_id: int):
+        """Send a reply to a support message."""
+        req_data = reply_support_reqparser.parse_args()
+        reply_text = req_data.get("message")
+        
+        try:
+            SupportService.reply_to_support_message(message_id, reply_text)
+            return {"message": "Reply sent successfully."}, HTTPStatus.OK
+        except ValueError as e:
+            support_ns.abort(int(HTTPStatus.NOT_FOUND), str(e))
