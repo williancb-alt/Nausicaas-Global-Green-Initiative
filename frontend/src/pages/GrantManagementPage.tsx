@@ -1,4 +1,4 @@
-import { JSX, useState } from "react" // CI Refresh
+import { JSX, useState } from "react" // v1.0.1 - 2026-03-16 12:40
 import {
   useGrants,
   useCreateGrant,
@@ -556,9 +556,9 @@ export function GrantManagementPage(): JSX.Element {
         const parsed =
           typeof grant.custom_fields === "string"
             ? (JSON.parse(grant.custom_fields) as {
-                configs?: DynamicFieldConfig[]
-                values?: Record<string, string>
-              })
+              configs?: DynamicFieldConfig[]
+              values?: Record<string, string>
+            })
             : grant.custom_fields
         setEditCustomFieldConfigs(parsed.configs ?? [])
         setEditCustomFieldValues(parsed.values ?? {})
