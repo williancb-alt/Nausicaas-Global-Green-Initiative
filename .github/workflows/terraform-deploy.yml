@@ -92,7 +92,7 @@ jobs:
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
       
       - name: Set ACR name for app layer
-        if: env.LAYER == "app"
+        if: env.LAYER == 'app'
         run: |
           echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
 
