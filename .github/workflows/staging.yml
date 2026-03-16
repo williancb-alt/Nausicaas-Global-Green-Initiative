@@ -17,6 +17,7 @@ jobs:
     uses: ./.github/workflows/backend-ci.yml
     secrets:
       SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   frontend_ci:
     name: Frontend CI
@@ -26,6 +27,7 @@ jobs:
 
   e2e:
     name: Playwright E2E
+    needs: [backend_ci, frontend_ci]
     uses: ./.github/workflows/playwright-e2e.yml
 
   core_staging:
