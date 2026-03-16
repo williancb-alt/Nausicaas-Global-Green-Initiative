@@ -24,6 +24,10 @@ import {
   GRANT_MESSAGES,
 } from "../utils/constants"
 
+type GrantEditField =
+  | typeof GRANT_FORM_FIELDS.DEADLINE
+  | typeof GRANT_FORM_FIELDS.DESCRIPTION
+
 /**
  * Component for the Grant Creation Form.
  */
@@ -336,7 +340,7 @@ function GrantEditArea({
 }: {
   editingId: string
   editFormData: { name: string; deadline: string; description: string }
-  handleEditChange: (field: any, value: string) => void
+  handleEditChange: (field: GrantEditField, value: string) => void
   isPending: boolean
   onSave: () => void
   onCancel: () => void
@@ -386,7 +390,9 @@ function GrantEditArea({
               type="text"
               className="form-control"
               value={editFormData.deadline}
-              onChange={e => handleEditChange(GRANT_FORM_FIELDS.DEADLINE, e.target.value)}
+              onChange={e =>
+                handleEditChange(GRANT_FORM_FIELDS.DEADLINE, e.target.value)
+              }
               placeholder="MM/DD/YY"
               style={GRANT_MANAGEMENT_STYLES.input}
             />
@@ -401,7 +407,9 @@ function GrantEditArea({
             <textarea
               className="form-control"
               value={editFormData.description}
-              onChange={e => handleEditChange(GRANT_FORM_FIELDS.DESCRIPTION, e.target.value)}
+              onChange={e =>
+                handleEditChange(GRANT_FORM_FIELDS.DESCRIPTION, e.target.value)
+              }
               placeholder="Grant description"
               rows={3}
               style={GRANT_MANAGEMENT_STYLES.input}
@@ -474,9 +482,6 @@ function GrantEditArea({
 }
 
 export function GrantManagementPage(): JSX.Element {
-  type GrantEditField =
-    | typeof GRANT_FORM_FIELDS.DEADLINE
-    | typeof GRANT_FORM_FIELDS.DESCRIPTION
   const { data: grantsData, isLoading } = useGrants()
   const createGrant = useCreateGrant()
   const updateGrant = useUpdateGrant()
@@ -549,9 +554,9 @@ export function GrantManagementPage(): JSX.Element {
         const parsed =
           typeof grant.custom_fields === "string"
             ? (JSON.parse(grant.custom_fields) as {
-              configs?: DynamicFieldConfig[]
-              values?: Record<string, string>
-            })
+                configs?: DynamicFieldConfig[]
+                values?: Record<string, string>
+              })
             : grant.custom_fields
         setEditCustomFieldConfigs(parsed.configs ?? [])
         setEditCustomFieldValues(parsed.values ?? {})

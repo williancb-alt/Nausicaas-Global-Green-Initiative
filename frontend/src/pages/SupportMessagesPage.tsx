@@ -106,10 +106,7 @@ function SupportFilterBar({
   stats: { total: number; pending: number; replied: number }
 }): JSX.Element {
   return (
-    <div
-      className="card border-0 shadow-sm"
-      style={{ borderRadius: "16px" }}
-    >
+    <div className="card border-0 shadow-sm" style={{ borderRadius: "16px" }}>
       <div className="card-body p-3">
         <div className="row g-3 align-items-center">
           <div className="col-md-6 border-end-sm">
@@ -126,10 +123,7 @@ function SupportFilterBar({
           </div>
           <div className="col-md-6">
             <div className="d-flex align-items-center gap-2 px-2 overflow-auto pb-1 pb-md-0">
-              <Filter
-                size={16}
-                className="text-muted me-2 d-none d-sm-block"
-              />
+              <Filter size={16} className="text-muted me-2 d-none d-sm-block" />
               <button
                 onClick={() => setStatusFilter("all")}
                 className={`btn btn-sm px-3 rounded-pill transition-all ${statusFilter === "all" ? "btn-dark" : "btn-light text-muted border-0"}`}
@@ -189,9 +183,7 @@ function SupportMessageCard({
       style={{
         borderRadius: "16px",
         borderLeft:
-          msg.status === "Replied"
-            ? "6px solid #10b981"
-            : "6px solid #3b82f6",
+          msg.status === "Replied" ? "6px solid #10b981" : "6px solid #3b82f6",
       }}
     >
       <div className="card-header bg-white border-0 py-3 px-4">
@@ -276,7 +268,8 @@ function SupportMessageCard({
               <CheckCircle2 size={14} /> Official Response Profile
             </label>
             <p className="text-muted small mb-3">
-              Sent to <strong>{msg.user.email}</strong> via secure gateway. This record is permanent and cannot be modified.
+              Sent to <strong>{msg.user.email}</strong> via secure gateway. This
+              record is permanent and cannot be modified.
             </p>
             <div
               className="bg-success bg-opacity-10 p-4 rounded border border-success border-opacity-25"
@@ -300,7 +293,8 @@ function SupportMessageCard({
               Compose Official Response
             </h6>
             <p className="text-muted small mb-3">
-              This message will be sent to <strong>{msg.user.email}</strong> from the official initiative email address.
+              This message will be sent to <strong>{msg.user.email}</strong>{" "}
+              from the official initiative email address.
             </p>
             <textarea
               className="form-control mb-3"
@@ -318,7 +312,10 @@ function SupportMessageCard({
                 style={{ borderRadius: "10px" }}
               >
                 {isSending ? (
-                  <div className="spinner-border spinner-border-sm" role="status"></div>
+                  <div
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                  ></div>
                 ) : (
                   <Send size={18} />
                 )}
@@ -354,7 +351,9 @@ export function SupportMessagesPage(): JSX.Element {
       if (err instanceof AxiosError) {
         const apiError = err as AxiosError<{ message?: string }>
         setError(
-          apiError.response?.data?.message || err.message || "Failed to load messages."
+          apiError.response?.data?.message ||
+            err.message ||
+            "Failed to load messages.",
         )
       } else if (err instanceof Error) {
         setError(err.message)
@@ -408,7 +407,9 @@ export function SupportMessagesPage(): JSX.Element {
       if (err instanceof AxiosError) {
         const apiError = err as AxiosError<{ message?: string }>
         setError(
-          apiError.response?.data?.message || err.message || "Failed to send reply."
+          apiError.response?.data?.message ||
+            err.message ||
+            "Failed to send reply.",
         )
       } else if (err instanceof Error) {
         setError(err.message)
