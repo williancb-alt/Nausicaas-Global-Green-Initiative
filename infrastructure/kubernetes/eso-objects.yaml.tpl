@@ -9,7 +9,7 @@ spec:
       tenantId: ${ARM_TENANT_ID}
       vaultUrl: "https://${TF_VAR_permanent_key_vault_name}.vault.azure.net"
 ---
-apiVersion: external-secrets.io/v1
+apiVersion: external-secrets.io/v1alpha1
 kind: PushSecret
 metadata:
   name: wildcard-tls-to-akv
