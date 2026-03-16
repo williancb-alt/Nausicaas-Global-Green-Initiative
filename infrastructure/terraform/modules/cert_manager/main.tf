@@ -102,6 +102,11 @@ resource "helm_release" "external_secrets" {
   depends_on = [helm_release.cert_manager]
 }
 
+resource "time_sleep" "wait_for_external_secrets_crds" {
+  depends_on      = [helm_release.external_secrets]
+  create_duration = "30s"
+}
+
 resource "kubectl_manifest" "azure_secret_store" {
   count = var.wildcard_enabled && var.permanent_key_vault_name != "" && var.azure_tenant_id != "" ? 1 : 0
 
@@ -118,7 +123,8 @@ spec:
       vaultUrl: "https://${var.permanent_key_vault_name}.vault.azure.net"
 YAML
 
-  depends_on = [helm_release.external_secrets]
+  depends_on = [helm_release.external_secrets,
+  time_sleep.wait_for_external_secrets_crds]
 }
 
 resource "kubectl_manifest" "push_wildcard_to_akv" {
