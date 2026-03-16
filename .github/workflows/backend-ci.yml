@@ -11,7 +11,10 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
-  workflow_call: {}
+  workflow_call:
+    secrets:
+      SAFETY_API_KEY:
+        required: true
 
 permissions:
   actions: read
