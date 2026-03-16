@@ -194,6 +194,8 @@ jobs:
             crd/pushsecrets.external-secrets.io \
             crd/externalsecrets.external-secrets.io \
             --timeout=120s
+          
+          kubectl api-resources > /dev/null 2>&1 || true
 
           envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -
 
