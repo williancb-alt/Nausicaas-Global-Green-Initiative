@@ -248,7 +248,6 @@ resource "kubernetes_ingress_v1" "backend" {
     namespace = local.namespace_name
     annotations = {
       "kubernetes.io/ingress.class"              = "nginx"
-      "cert-manager.io/cluster-issuer"           = "letsencrypt-prod"
       "nginx.ingress.kubernetes.io/ssl-redirect" = "true"
     }
   }
