@@ -1,6 +1,5 @@
 import { GRANT_FORM_FIELDS } from "../../../utils/constants"
 import type { DynamicFieldConfig } from "../../../types"
-import type { Grant } from "../../../services/api/client"
 
 export type GrantEditField =
   | typeof GRANT_FORM_FIELDS.DEADLINE

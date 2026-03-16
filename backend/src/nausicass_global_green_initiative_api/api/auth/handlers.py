@@ -1,3 +1,6 @@
+# Nausicaas Global Green Initiative API - Auth Handlers
+# Version: 1.0.0
+
 import threading
 from http import HTTPStatus
 
