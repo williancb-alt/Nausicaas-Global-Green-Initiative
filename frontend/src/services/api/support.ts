@@ -12,6 +12,7 @@ export interface SupportMessage {
   }
   application_id: number
   admin_response?: string
+  answered_at?: string
 }
 
 export const supportApi = {

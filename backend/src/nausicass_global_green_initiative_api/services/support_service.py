@@ -37,14 +37,13 @@ class SupportService:
         admin_emails = [admin.email for admin in admins if admin.email]
 
         if admin_emails:
-            email_html = f"""
-            <p><strong>New Support Request</strong></p>
-            <p><strong>From:</strong> {user.email}</p>
-            <p><strong>Application ID:</strong> {application.id}</p>
-            <p><strong>Subject:</strong> {subject}</p>
-            <p><strong>Message:</strong></p>
-            <blockquote>{message}</blockquote>
-            """
+            email_html = render_template(
+                "email/support_admin_alert.html",
+                email=user.email,
+                application_id=application.id,
+                subject=subject,
+                message=message,
+            )
 
             EmailService.send_email(
                 to=admin_emails, subject=f"[NEW TICKET] {subject}", html_body=email_html
