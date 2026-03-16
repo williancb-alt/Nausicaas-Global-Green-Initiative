@@ -45,6 +45,18 @@ spec:
   target:
     name: nausicaa-wildcard-tls
     creationPolicy: Orphan
+    template:
+      type: kubernetes.io/tls
+      metadata:
+        annotations:
+          cert-manager.io/certificate-name: "wildcard-nausicaa"
+          cert-manager.io/issuer-name: "letsencrypt-prod"
+          cert-manager.io/issuer-kind: "ClusterIssuer"
+          cert-manager.io/issuer-group: "cert-manager.io"
+          cert-manager.io/alt-names: "*.nausicaaglobalgreeninitiative.ie"
+          cert-manager.io/common-name: ""
+          cert-manager.io/ip-sans: ""
+          cert-manager.io/uri-sans: ""
   data:
     - secretKey: tls.crt
       remoteRef:
