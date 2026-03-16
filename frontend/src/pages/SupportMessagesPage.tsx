@@ -14,6 +14,7 @@ import {
   Eye,
   Filter,
 } from "lucide-react"
+import { AxiosError } from "axios"
 
 type FilterStatus = "all" | "pending" | "replied"
 
@@ -36,13 +37,15 @@ export function SupportMessagesPage(): JSX.Element {
       const data = await api.support.getAllMessages()
       setMessages(data)
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        const apiError = err as { response?: { data?: { message?: string } } }
+      if (err instanceof AxiosError) {
+        const apiError = err as AxiosError<{ message?: string }>
         setError(
           apiError.response?.data?.message ||
             err.message ||
             "Failed to load messages.",
         )
+      } else if (err instanceof Error) {
+        setError(err.message)
       } else {
         setError("Failed to load messages.")
       }
@@ -92,13 +95,15 @@ export function SupportMessagesPage(): JSX.Element {
       setTimeout(() => setSuccessMsg(null), 5000)
       void fetchMessages()
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        const apiError = err as { response?: { data?: { message?: string } } }
+      if (err instanceof AxiosError) {
+        const apiError = err as AxiosError<{ message?: string }>
         setError(
           apiError.response?.data?.message ||
             err.message ||
             "Failed to send reply.",
         )
+      } else if (err instanceof Error) {
+        setError(err.message)
       } else {
         setError("Failed to send reply.")
       }

@@ -1,7 +1,7 @@
-// Heartbeat commit to force CI refresh
 import React, { JSX, useEffect, useState } from "react"
 import { MessageSquare, Send, AlertCircle } from "lucide-react"
 import { api } from "../../services/api"
+import { AxiosError } from "axios"
 
 interface ContactSupportModalProps {
   isOpen: boolean
@@ -62,11 +62,12 @@ function ContactModalBody({
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!message.trim()) return
+
     setIsSubmitting(true)
     setError(null)
 
@@ -83,13 +84,15 @@ function ContactModalBody({
       }, 3000)
     } catch (err: unknown) {
       setIsSubmitting(false)
-      if (err instanceof Error) {
-        const apiError = err as { response?: { data?: { message?: string } } }
+      if (err instanceof AxiosError) {
+        const apiError = err as AxiosError<{ message?: string }>
         setError(
           apiError.response?.data?.message ||
-          err.message ||
-          "Failed to send message.",
+            err.message ||
+            "Failed to send message.",
         )
+      } else if (err instanceof Error) {
+        setError(err.message)
       } else {
         setError("Failed to send message.")
       }
