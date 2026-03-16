@@ -2,12 +2,14 @@ name: Staging CI / CD
 
 on:
   push:
-    branches: [main, terraform-code]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
+  actions: read
+  security-events: write
 
 jobs:
   backend_ci:
