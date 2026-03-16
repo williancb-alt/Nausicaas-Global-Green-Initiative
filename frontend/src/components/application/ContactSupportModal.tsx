@@ -1,3 +1,4 @@
+// Heartbeat commit to force CI refresh
 import React, { JSX, useEffect, useState } from "react"
 import { MessageSquare, Send, AlertCircle } from "lucide-react"
 import { api } from "../../services/api"
@@ -86,8 +87,8 @@ function ContactModalBody({
         const apiError = err as { response?: { data?: { message?: string } } }
         setError(
           apiError.response?.data?.message ||
-            err.message ||
-            "Failed to send message.",
+          err.message ||
+          "Failed to send message.",
         )
       } else {
         setError("Failed to send message.")
