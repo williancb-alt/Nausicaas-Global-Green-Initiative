@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { api } from "../services/api"
+import type { UserInfo } from "../services/api/client"
 
 export interface Grant {
   name: string
@@ -8,7 +9,7 @@ export interface Grant {
   time_remaining: string
 }
 
-export function useDashboardData(user: any) {
+export function useDashboardData(user: UserInfo | null) {
   const [availableGrants, setAvailableGrants] = useState<Grant[]>([])
   const [myApps, setMyApps] = useState({ count: 0 })
   const [loading, setLoading] = useState(false)
