@@ -556,9 +556,9 @@ export function GrantManagementPage(): JSX.Element {
         const parsed =
           typeof grant.custom_fields === "string"
             ? (JSON.parse(grant.custom_fields) as {
-              configs?: DynamicFieldConfig[]
-              values?: Record<string, string>
-            })
+                configs?: DynamicFieldConfig[]
+                values?: Record<string, string>
+              })
             : grant.custom_fields
         setEditCustomFieldConfigs(parsed.configs ?? [])
         setEditCustomFieldValues(parsed.values ?? {})
