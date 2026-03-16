@@ -80,3 +80,4 @@ dist-ssr
 terraform.tfvars
 crash.log
 crash.*.log
+frontend/coverage/

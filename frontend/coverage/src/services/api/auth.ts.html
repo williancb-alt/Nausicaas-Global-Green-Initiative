@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.28% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>27/42</span>
+                <span class='fraction'>42/42</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.28% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>27/42</span>
+                <span class='fraction'>42/42</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -125,12 +125,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -144,30 +162,12 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import {
   apiClient,
@@ -203,24 +203,24 @@ export const authApi = {
     return data
   },
 &nbsp;
-  forgotPassword: <span class="fstat-no" title="function not covered" >async (email: string): Promise&lt;BaseResponse&gt; =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const { data } = await apiClient.post&lt;BaseResponse&gt;(</span>
-<span class="cstat-no" title="statement not covered" >      "/api/v1/auth/forgot-password",</span>
-<span class="cstat-no" title="statement not covered" >      new URLSearchParams({ email }),</span>
-<span class="cstat-no" title="statement not covered" >    )</span>
-<span class="cstat-no" title="statement not covered" >    return data</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  forgotPassword: async (email: string): Promise&lt;BaseResponse&gt; =&gt; {
+    const { data } = await apiClient.post&lt;BaseResponse&gt;(
+      "/api/v1/auth/forgot-password",
+      new URLSearchParams({ email }),
+    )
+    return data
+  },
 &nbsp;
-  resetPassword: <span class="fstat-no" title="function not covered" >async (</span>
-<span class="cstat-no" title="statement not covered" >    token: string,</span>
-<span class="cstat-no" title="statement not covered" >    password: string,</span>
-<span class="cstat-no" title="statement not covered" >  ): Promise&lt;BaseResponse&gt; =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const { data } = await apiClient.post&lt;BaseResponse&gt;(</span>
-<span class="cstat-no" title="statement not covered" >      "/api/v1/auth/reset-password",</span>
-<span class="cstat-no" title="statement not covered" >      new URLSearchParams({ token, password }),</span>
-<span class="cstat-no" title="statement not covered" >    )</span>
-<span class="cstat-no" title="statement not covered" >    return data</span>
-<span class="cstat-no" title="statement not covered" >  },</span>
+  resetPassword: async (
+    token: string,
+    password: string,
+  ): Promise&lt;BaseResponse&gt; =&gt; {
+    const { data } = await apiClient.post&lt;BaseResponse&gt;(
+      "/api/v1/auth/reset-password",
+      new URLSearchParams({ token, password }),
+    )
+    return data
+  },
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -229,7 +229,7 @@ export const authApi = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-16T15:40:43.521Z
+                at 2026-03-16T15:42:53.891Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
