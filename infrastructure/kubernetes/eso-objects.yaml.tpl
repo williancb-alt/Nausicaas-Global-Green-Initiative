@@ -25,12 +25,12 @@ spec:
   data:
     - match:
         secretKey: tls.crt
-      remoteRef:
-        remoteKey: wildcard-tls-crt
+        remoteRef:
+          remoteKey: wildcard-tls-crt
     - match:
         secretKey: tls.key
-      remoteRef:
-        remoteKey: wildcard-tls-key
+        remoteRef:
+          remoteKey: wildcard-tls-key
 ---
 apiVersion: external-secrets.io/v1
 kind: ExternalSecret
