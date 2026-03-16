@@ -23,10 +23,6 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = ">= 1.14.0"
     }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.9"
-    }
   }
 }
 
@@ -82,12 +78,4 @@ module "cert_manager" {
   acme_email           = var.acme_email
   cloudflare_api_token = var.cloudflare_api_token
   acme_server_url      = var.acme_server_url
-
-  wildcard_enabled     = true
-  wildcard_namespace   = "production"
-  wildcard_secret_name = "nausicaa-wildcard-tls"
-  wildcard_dns_name    = "*.nausicaaglobalgreeninitiative.ie"
-
-  permanent_key_vault_name = data.terraform_remote_state.permanent.outputs.key_vault_name
-  azure_tenant_id          = data.terraform_remote_state.permanent.outputs.key_vault_tenant_id
 }

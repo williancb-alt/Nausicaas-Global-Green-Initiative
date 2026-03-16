@@ -180,6 +180,22 @@ jobs:
         if: github.event_name == 'push' || env.ACTION == 'apply'
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform apply -auto-approve tfplan
+      
+      - name: Apply ESO Kubernetes objects
+        if: env.LAYER == 'core' && env.ACTION == 'apply'
+        run: |
+          az aks get-credentials \
+            --resource-group "$TF_VAR_rg_name" \
+            --name "$TF_VAR_aks_name" \
+            --overwrite-existing
+          envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -
+
+          kubectl wait externalsecret wildcard-tls-from-akv \
+            -n "${ENVIRONMENT}" \
+            --for=condition=Ready \
+            --timeout=120s || true
+          
+          envsubst < infrastructure/kubernetes/wildcard-certificate.yaml.tpl | kubectl apply -f -
 
       - name: Terraform Destroy
         if: env.ACTION == 'destroy'
