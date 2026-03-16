@@ -36,3 +36,13 @@ variable "wildcard_namespace" {
   type    = string
   default = "production"
 }
+
+variable "permanent_key_vault_name" {
+  type    = string
+  default = ""
+}
+
+variable "azure_tenant_id" {
+  type    = string
+  default = ""
+}

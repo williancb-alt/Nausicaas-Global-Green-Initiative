@@ -31,6 +31,16 @@ provider "azurerm" {
   skip_provider_registration = true
 }
 
+data "terraform_remote_state" "permanent" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = "tfstate-rg"
+    storage_account_name = "nausicaastate"
+    container_name       = "tfstate"
+    key                  = "infra/permanent-production.tfstate"
+  }
+}
+
 module "core" {
   source = "../../modules/core"
 
@@ -38,7 +48,6 @@ module "core" {
   rg_name        = var.rg_name
   aks_name       = var.aks_name
   dns_prefix     = var.dns_prefix
-  acr_name       = var.acr_name
   aks_node_count = var.aks_node_count
   aks_node_size  = var.aks_node_size
 
@@ -55,6 +64,12 @@ module "core" {
   github_client_secret        = var.github_client_secret
 
   key_vault_name = var.key_vault_name
+
+  permanent_acr_name       = data.terraform_remote_state.permanent.outputs.acr_name
+  permanent_acr_id         = data.terraform_remote_state.permanent.outputs.acr_id
+  permanent_rg_name        = data.terraform_remote_state.permanent.outputs.resource_group_name
+  permanent_key_vault_name = data.terraform_remote_state.permanent.outputs.key_vault_name
+  permanent_key_vault_id   = data.terraform_remote_state.permanent.outputs.key_vault_id
 }
 
 module "cert_manager" {
@@ -68,4 +83,7 @@ module "cert_manager" {
   wildcard_namespace   = "production"
   wildcard_secret_name = "nausicaa-wildcard-tls"
   wildcard_dns_name    = "*.nausicaaglobalgreeninitiative.ie"
+
+  permanent_key_vault_name = data.terraform_remote_state.permanent.outputs.key_vault_name
+  azure_tenant_id          = data.terraform_remote_state.permanent.outputs.key_vault_tenant_id
 }

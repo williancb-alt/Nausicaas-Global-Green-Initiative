@@ -10,6 +10,7 @@ on:
         options:
           - core
           - app
+          - permanent
       environment:
         description: "Environment"
         required: true
@@ -45,10 +46,9 @@ jobs:
       LAYER: ${{ github.event.inputs.layer || 'core' }}
       ENVIRONMENT: ${{ github.event.inputs.environment || 'staging' }}
       ACTION: ${{ github.event.inputs.action || 'plan' }}
+      ACR_NAME: ${{ vars.ACR_NAME }}
       TF_VAR_acme_email: ${{ secrets.TF_VAR_ACME_EMAIL }}
       TF_VAR_acme_server_url: ${{ secrets.TF_VAR_ACME_SERVER_URL }}
-      TF_VAR_acr_name: ${{ secrets.TF_VAR_ACR_NAME }}
-      ACR_NAME: ${{ secrets.TF_VAR_ACR_NAME }}
       TF_VAR_aks_name: ${{ secrets.TF_VAR_AKS_NAME }}
       TF_VAR_aks_node_count: ${{ secrets.TF_VAR_AKS_NODE_COUNT }}
       TF_VAR_aks_node_size: ${{ secrets.TF_VAR_AKS_NODE_SIZE }}
@@ -64,6 +64,9 @@ jobs:
       TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
       TF_VAR_location: ${{ secrets.TF_VAR_LOCATION }}
       TF_VAR_rg_name: ${{ secrets.TF_VAR_RG_NAME }}
+      TF_VAR_permanent_rg_name: ${{ secrets.TF_VAR_PERMANENT_RG_NAME }}
+      TF_VAR_permanent_key_vault_name: ${{ secrets.TF_VAR_PERMANENT_KEY_VAULT_NAME }}
+      TF_VAR_permanent_acr_name: ${{ vars.ACR_NAME }}
       TF_VAR_acs_email_connection_string: ${{ secrets.TF_VAR_ACS_EMAIL_CONNECTION_STRING }}
       TF_VAR_acs_email_sender: ${{ secrets.TF_VAR_ACS_EMAIL_SENDER }}
       TF_VAR_google_client_id: ${{ secrets.TF_VAR_GOOGLE_CLIENT_ID }}
@@ -74,6 +77,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      
+      - name: Block destroy on permanent layer
+        if: env.LAYER == "permanent" && env.ACTION == "destroy"
+        run: |
+          echo "Destroy is not allowed for layer=permanent."
+          exit 1
 
       - name: Azure login via OIDC
         uses: azure/login@v2
@@ -83,17 +92,17 @@ jobs:
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
       
       - name: Set ACR name for app layer
-        if: env.LAYER == 'app'
+        if: env.LAYER == "app"
         run: |
           echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
 
       - name: Login to ACR (app layer)
-        if: env.LAYER == 'app'
+        if: env.LAYER == "app"
         run: |
           az acr login --name "$ACR_NAME"
 
       - name: Resolve backend image digest from tag
-        if: env.LAYER == 'app'
+        if: env.LAYER == "app"
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr repository show-manifests \
@@ -109,7 +118,7 @@ jobs:
           echo "TF_VAR_backend_image_ref=$IMAGE_REF" >> "$GITHUB_ENV"
 
       - name: Resolve frontend image digest from tag
-        if: env.LAYER == 'app'
+        if: env.LAYER == "app"
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr repository show-manifests \
@@ -135,6 +144,10 @@ jobs:
             echo "TF_WORKDIR=infrastructure/terraform/envs/staging" >> "$GITHUB_ENV"
           elif [ "$LAYER" = "app" ] && [ "$ENVIRONMENT" = "production" ]; then
             echo "TF_WORKDIR=infrastructure/terraform/envs/production" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "permanent" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/permanent/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "permanent" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/permanent/production" >> "$GITHUB_ENV"
           else
             echo "Unsupported combination: layer=$LAYER environment=$ENVIRONMENT"
             exit 1
@@ -159,16 +172,16 @@ jobs:
         run: terraform validate 
 
       - name: Terraform Plan
-        if: github.event_name == 'push' || env.ACTION == 'plan' || env.ACTION == 'apply'
+        if: github.event_name == "push" || env.ACTION == "plan" || env.ACTION == "apply"
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        if: github.event_name == 'push' || env.ACTION == 'apply'
+        if: github.event_name == "push" || env.ACTION == "apply"
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform apply -auto-approve tfplan
 
       - name: Terraform Destroy
-        if: env.ACTION == 'destroy'
+        if: env.ACTION == "destroy"
         working-directory: ${{ env.TF_WORKDIR }}
         run: terraform destroy -auto-approve

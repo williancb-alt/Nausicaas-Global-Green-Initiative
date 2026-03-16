@@ -11,7 +11,7 @@ output "aks_name" {
 }
 
 output "acr_login_server" {
-  value = azurerm_container_registry.acr.login_server
+  value = data.azurerm_container_registry.permanent.login_server
 }
 
 output "kube_host" {

@@ -1,6 +1,5 @@
 variable "location" { type = string }
 variable "rg_name" { type = string }
-variable "acr_name" { type = string }
 variable "aks_name" { type = string }
 variable "dns_prefix" { type = string }
 variable "aks_node_count" { type = number }
@@ -41,7 +40,28 @@ variable "github_client_secret" {
   type      = string
   sensitive = true
 }
+
 variable "key_vault_name" {
   type        = string
   description = "Globally unique name for the Key Vault (3-24 alphanumeric and hyphens)."
+}
+
+variable "permanent_acr_name" {
+  type = string
+}
+
+variable "permanent_acr_id" {
+  type = string
+}
+
+variable "permanent_rg_name" {
+  type = string
+}
+
+variable "permanent_key_vault_name" {
+  type = string
+}
+
+variable "permanent_key_vault_id" {
+  type = string
 }
