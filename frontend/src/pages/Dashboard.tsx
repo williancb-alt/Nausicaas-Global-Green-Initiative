@@ -1,8 +1,15 @@
 import { useState, useEffect, JSX } from "react"
 import { useAuthStore } from "../store/authStore"
 import { api } from "../services/api"
+import {
+  DashboardLoading,
+  DashboardError,
+} from "../components/dashboard/DashboardHelpers"
+import {
+  DashboardHeader,
+  GrantCard,
+} from "../components/dashboard/DashboardComponents"
 
-// Types
 interface Grant {
   name: string
   deadline: string
@@ -10,15 +17,11 @@ interface Grant {
   time_remaining: string
 }
 
-interface AppStats {
-  count: number
-}
-
 const Dashboard = (): JSX.Element => {
   const authStore = useAuthStore()
   const user = authStore.user
   const [availableGrants, setAvailableGrants] = useState<Grant[]>([])
-  const [myApps, setMyApps] = useState<AppStats>({ count: 0 })
+  const [myApps, setMyApps] = useState({ count: 0 })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -32,7 +35,6 @@ const Dashboard = (): JSX.Element => {
       try {
         setLoading(true)
         const grantResponse = await api.grants.listGrants(1, 10)
-        // Ensure type safety for items filtering
         const grants = (grantResponse.items as Grant[]).filter(
           g => !g.deadline_passed,
         )
@@ -51,50 +53,8 @@ const Dashboard = (): JSX.Element => {
     }
   }, [user])
 
-  // Basic Loading Spinner replacement
-  if (loading) {
-    return (
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "50px",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <div
-          className="spinner"
-          style={{
-            border: "4px solid #f3f3f3",
-            borderTop: "4px solid #3498db",
-            borderRadius: "50%",
-            width: "40px",
-            height: "40px",
-            animation: "spin 2s linear infinite",
-            margin: "auto",
-          }}
-        ></div>
-        <p>Loading Dashboard...</p>
-      </div>
-    )
-  }
-
-  // Basic Error Alert replacement
-  if (error) {
-    return (
-      <div
-        style={{
-          backgroundColor: "#f8d7da",
-          color: "#721c24",
-          padding: "15px",
-          margin: "20px",
-          borderRadius: "4px",
-          border: "1px solid #f5c6cb",
-        }}
-      >
-        {error}
-      </div>
-    )
-  }
+  if (loading) return <DashboardLoading />
+  if (error) return <DashboardError error={error} />
 
   return (
     <div
@@ -105,48 +65,13 @@ const Dashboard = (): JSX.Element => {
         fontFamily: "sans-serif",
       }}
     >
-      {/* Header Section */}
-      <header
-        style={{
-          marginBottom: "30px",
-          borderBottom: "1px solid #eee",
-          paddingBottom: "20px",
-        }}
-      >
-        <h1>User Dashboard</h1>
-        <p>
-          Welcome, <strong>{user?.email || user?.public_id || "User"}</strong>
-        </p>
+      <DashboardHeader
+        userEmail={user?.email || user?.public_id || "User"}
+        grantCount={availableGrants.length}
+        appCount={myApps.count}
+        onLogout={() => void handleLogout()}
+      />
 
-        <div
-          style={{
-            backgroundColor: "#e1f5fe",
-            padding: "15px",
-            borderRadius: "8px",
-            marginBottom: "15px",
-            color: "#01579b",
-          }}
-        >
-          <strong>Available Grants:</strong> {availableGrants.length} |
-          <strong> Your Applications:</strong> {myApps.count}
-        </div>
-
-        <button
-          onClick={() => void handleLogout()}
-          style={{
-            backgroundColor: "#dc3545",
-            color: "white",
-            border: "none",
-            padding: "8px 16px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Logout
-        </button>
-      </header>
-
-      {/* Grants Grid */}
       <div
         style={{
           display: "grid",
@@ -156,37 +81,7 @@ const Dashboard = (): JSX.Element => {
       >
         {availableGrants.length > 0 ? (
           availableGrants.map(grant => (
-            <div
-              key={grant.name}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "20px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              }}
-            >
-              <h3 style={{ marginTop: "0" }}>{grant.name}</h3>
-              <p>
-                <strong>Deadline:</strong> {grant.deadline}
-                <br />
-                <strong>Time Left:</strong>{" "}
-                <span style={{ color: "#28a745" }}>{grant.time_remaining}</span>
-              </p>
-              <button
-                style={{
-                  width: "100%",
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  border: "none",
-                  padding: "10px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
-              >
-                Apply Now
-              </button>
-            </div>
+            <GrantCard key={grant.name} grant={grant} />
           ))
         ) : (
           <div

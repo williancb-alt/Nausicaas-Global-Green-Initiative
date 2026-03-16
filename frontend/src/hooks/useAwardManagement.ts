@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   useAwards,
@@ -109,11 +109,14 @@ export function useAwardManagement() {
   return {
     awards: awardsData?.items ?? [],
     isLoading,
-    register,
-    handleSubmit,
+    form: {
+      register,
+      handleSubmit,
+      reset,
+      formState: { errors },
+    } as UseFormReturn<CreateAwardFormData>,
     onCreate,
     isCreating: createAward.isPending,
-    errors,
     editingId,
     setEditingId,
     editFormData,

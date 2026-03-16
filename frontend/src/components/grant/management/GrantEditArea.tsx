@@ -1,15 +1,11 @@
 import { JSX } from "react"
-import { DynamicFieldPreview } from "../../dynamicFields/DynamicFieldPreview"
-import { DynamicFieldInput } from "../../dynamicFields/DynamicFieldInput"
 import {
   GRANT_FORM_FIELDS,
   GRANT_MANAGEMENT_STYLES,
 } from "../../../utils/constants"
 import { GrantEditAreaProps } from "./types"
+import { CustomFieldManagement } from "./CustomFieldManagement"
 
-/**
- * Component for the Grant Editing Area.
- */
 export function GrantEditArea({
   editingId,
   editFormData,
@@ -90,49 +86,15 @@ export function GrantEditArea({
           </div>
         </div>
 
-        <div className="mt-3">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <label
-              className="form-label mb-0"
-              style={{ color: "#2f6f44", fontWeight: 600 }}
-            >
-              Custom Fields
-            </label>
-            <button
-              type="button"
-              className="btn btn-sm"
-              style={{ backgroundColor: "#3b7a57", color: "white" }}
-              onClick={() => setIsFieldModalOpen(true)}
-            >
-              Add Field
-            </button>
-          </div>
+        <CustomFieldManagement
+          configs={customFieldConfigs}
+          values={customFieldValues}
+          onSetValue={setFieldValue}
+          onRemove={handleRemoveField}
+          onOpenModal={() => setIsFieldModalOpen(true)}
+        />
 
-          <DynamicFieldPreview fields={customFieldConfigs} />
-          {customFieldConfigs.map((f, idx) => (
-            <div key={idx} className="d-flex align-items-start gap-2 mb-2">
-              <div className="flex-grow-1">
-                <DynamicFieldInput
-                  field={f}
-                  index={idx}
-                  value={customFieldValues[f.label] || ""}
-                  onChange={v => setFieldValue(f.label, v)}
-                />
-              </div>
-              <div>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={() => handleRemoveField(idx)}
-                >
-                  -
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="d-flex gap-2 mt-3">
+        <div className="d-flex gap-2 mt-4 pt-3 border-top">
           <button
             className="btn"
             style={{ backgroundColor: "#3b7a57", color: "white" }}

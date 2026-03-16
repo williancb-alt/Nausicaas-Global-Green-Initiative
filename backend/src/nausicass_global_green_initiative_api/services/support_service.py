@@ -12,11 +12,11 @@ class SupportService:
     def create_support_message(
         user_id: int, application_id: int, subject: str, message: str
     ) -> SupportMessage:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             raise ValueError("User not found.")
 
-        application = Application.query.get(application_id)
+        application = db.session.get(Application, application_id)
         if not application:
             raise ValueError("Application not found.")
 
@@ -32,15 +32,23 @@ class SupportService:
         db.session.add(support_msg)
         db.session.commit()
 
-        # Notify admins
+        SupportService._notify_admins_of_support_request(
+            user.email, application.id, subject, message
+        )
+        return support_msg
+
+    @staticmethod
+    def _notify_admins_of_support_request(
+        email: str, application_id: int, subject: str, message: str
+    ):
         admins = User.query.filter_by(admin=True).all()
         admin_emails = [admin.email for admin in admins if admin.email]
 
         if admin_emails:
             email_html = render_template(
                 "email/support_admin_alert.html",
-                email=user.email,
-                application_id=application.id,
+                email=email,
+                application_id=application_id,
                 subject=subject,
                 message=message,
             )
@@ -49,23 +57,31 @@ class SupportService:
                 to=admin_emails, subject=f"[NEW TICKET] {subject}", html_body=email_html
             )
 
-        return support_msg
-
     @staticmethod
     def get_all_messages():
         return SupportMessage.get_all()
 
     @staticmethod
     def reply_to_support_message(message_id: int, reply_text: str):
-        support_msg = SupportMessage.query.get(message_id)
+        support_msg = db.session.get(SupportMessage, message_id)
         if not support_msg:
             raise ValueError("Support message not found.")
 
-        user = User.query.get(support_msg.user_id)
+        user = db.session.get(User, support_msg.user_id)
         if not user:
             raise ValueError("User not found.")
 
-        # Send email to user
+        SupportService._notify_user_of_support_reply(support_msg, user, reply_text)
+
+        # Update status and save response
+        support_msg.status = "Replied"
+        support_msg.admin_response = reply_text
+        support_msg.answered_at = utc_now()
+        db.session.commit()
+        return support_msg
+
+    @staticmethod
+    def _notify_user_of_support_reply(support_msg, user, reply_text: str):
         email_html = render_template(
             "email/support_reply.html",
             email=user.email,
@@ -83,10 +99,3 @@ class SupportService:
             subject=email_subject,
             html_body=email_html,
         )
-
-        # Update status and save response
-        support_msg.status = "Replied"
-        support_msg.admin_response = reply_text
-        support_msg.answered_at = utc_now()
-        db.session.commit()
-        return support_msg
