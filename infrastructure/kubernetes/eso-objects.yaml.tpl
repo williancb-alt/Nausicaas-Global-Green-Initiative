@@ -1,4 +1,4 @@
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ClusterSecretStore
 metadata:
   name: azure-permanent
@@ -9,7 +9,7 @@ spec:
       tenantId: ${ARM_TENANT_ID}
       vaultUrl: "https://${TF_VAR_permanent_key_vault_name}.vault.azure.net"
 ---
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: PushSecret
 metadata:
   name: wildcard-tls-to-akv
@@ -32,7 +32,7 @@ spec:
       remoteRef:
         remoteKey: wildcard-tls-key
 ---
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: wildcard-tls-from-akv

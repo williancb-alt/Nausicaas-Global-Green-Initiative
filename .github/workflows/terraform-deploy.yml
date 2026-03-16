@@ -199,8 +199,8 @@ jobs:
           
           ESO_READY=false
           for i in $(seq 1 24); do
-            if kubectl get --raw /apis/external-secrets.io/v1beta1 > /dev/null 2>&1; then
-              echo "external-secrets.io/v1beta1 API group is available"
+            if kubectl get --raw /apis/external-secrets.io/v1 > /dev/null 2>&1; then
+              echo "external-secrets.io/v1 API group is available"
               ESO_READY=true
               break
             fi
@@ -208,7 +208,7 @@ jobs:
             sleep 5
           done
           if [ "$ESO_READY" != "true" ]; then
-            echo "Timeout: external-secrets.io/v1beta1 API group never appeared"
+            echo "Timeout: external-secrets.io/v1 API group never appeared"
             exit 1
           fi
 
