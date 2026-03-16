@@ -12,16 +12,9 @@ class SupportService:
     def create_support_message(
         user_id: int, application_id: int, subject: str, message: str
     ) -> SupportMessage:
-        user = db.session.get(User, user_id)
-        if not user:
-            raise ValueError("User not found.")
-
-        application = db.session.get(Application, application_id)
-        if not application:
-            raise ValueError("Application not found.")
-
-        if application.user_id != user_id:
-            raise ValueError("Unauthorized access to application.")
+        user, application = SupportService._validate_creation_request(
+            user_id, application_id
+        )
 
         support_msg = SupportMessage(
             user_id=user_id,
@@ -36,6 +29,21 @@ class SupportService:
             user.email, application.id, subject, message
         )
         return support_msg
+
+    @staticmethod
+    def _validate_creation_request(user_id: int, application_id: int):
+        user = db.session.get(User, user_id)
+        if not user:
+            raise ValueError("User not found.")
+
+        application = db.session.get(Application, application_id)
+        if not application:
+            raise ValueError("Application not found.")
+
+        if application.user_id != user_id:
+            raise ValueError("Unauthorized access to application.")
+
+        return user, application
 
     @staticmethod
     def _notify_admins_of_support_request(
@@ -63,13 +71,7 @@ class SupportService:
 
     @staticmethod
     def reply_to_support_message(message_id: int, reply_text: str):
-        support_msg = db.session.get(SupportMessage, message_id)
-        if not support_msg:
-            raise ValueError("Support message not found.")
-
-        user = db.session.get(User, support_msg.user_id)
-        if not user:
-            raise ValueError("User not found.")
+        support_msg, user = SupportService._get_reply_context(message_id)
 
         SupportService._notify_user_of_support_reply(support_msg, user, reply_text)
 
@@ -79,6 +81,18 @@ class SupportService:
         support_msg.answered_at = utc_now()
         db.session.commit()
         return support_msg
+
+    @staticmethod
+    def _get_reply_context(message_id: int):
+        support_msg = db.session.get(SupportMessage, message_id)
+        if not support_msg:
+            raise ValueError("Support message not found.")
+
+        user = db.session.get(User, support_msg.user_id)
+        if not user:
+            raise ValueError("User not found.")
+
+        return support_msg, user
 
     @staticmethod
     def _notify_user_of_support_reply(support_msg, user, reply_text: str):
