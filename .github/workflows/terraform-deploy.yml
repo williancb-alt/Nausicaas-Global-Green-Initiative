@@ -188,6 +188,8 @@ jobs:
             --resource-group "$TF_VAR_rg_name" \
             --name "$TF_VAR_aks_name" \
             --overwrite-existing
+          
+          kubectl create namespace "${ENVIRONMENT}" --dry-run=client -o yaml | kubectl apply -f -
 
           kubectl wait --for=condition=Established \
             crd/clustersecretstores.external-secrets.io \
@@ -195,9 +197,33 @@ jobs:
             crd/externalsecrets.external-secrets.io \
             --timeout=120s
           
-          kubectl api-resources > /dev/null 2>&1 || true
+          ESO_READY=false
+          for i in $(seq 1 24); do
+            if kubectl get --raw /apis/external-secrets.io/v1beta1 > /dev/null 2>&1; then
+              echo "external-secrets.io/v1beta1 API group is available"
+              ESO_READY=true
+              break
+            fi
+            echo "Waiting for API group to appear in discovery... attempt $i/24"
+            sleep 5
+          done
+          if [ "$ESO_READY" != "true" ]; then
+            echo "Timeout: external-secrets.io/v1beta1 API group never appeared"
+            exit 1
+          fi
 
-          envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -
+          for i in $(seq 1 12); do
+            if envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -; then
+              echo "ESO objects applied successfully"
+              break
+            fi
+            if [ "$i" -eq 12 ]; then
+              echo "Failed to apply ESO objects after 12 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/12 failed, retrying in 10s..."
+            sleep 10
+          done
 
           kubectl wait externalsecret wildcard-tls-from-akv \
             -n "${ENVIRONMENT}" \
