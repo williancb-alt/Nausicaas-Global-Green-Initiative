@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@/types"
+import { ApplicationStatus } from "../../types"
 
 const STATUS_STYLE: Record<
   ApplicationStatus,
