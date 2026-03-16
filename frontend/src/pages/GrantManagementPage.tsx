@@ -28,6 +28,20 @@ type GrantEditField =
   | typeof GRANT_FORM_FIELDS.DEADLINE
   | typeof GRANT_FORM_FIELDS.DESCRIPTION
 
+interface GrantEditAreaProps {
+  editingId: string
+  editFormData: { name: string; deadline: string; description: string }
+  handleEditChange: (field: GrantEditField, value: string) => void
+  isPending: boolean
+  onSave: () => void
+  onCancel: () => void
+  customFieldConfigs: DynamicFieldConfig[]
+  customFieldValues: Record<string, string>
+  setFieldValue: (label: string, value: string) => void
+  handleRemoveField: (index: number) => void
+  setIsFieldModalOpen: (open: boolean) => void
+}
+
 /**
  * Component for the Grant Creation Form.
  */
@@ -337,19 +351,7 @@ function GrantEditArea({
   setFieldValue,
   handleRemoveField,
   setIsFieldModalOpen,
-}: {
-  editingId: string
-  editFormData: { name: string; deadline: string; description: string }
-  handleEditChange: (field: GrantEditField, value: string) => void
-  isPending: boolean
-  onSave: () => void
-  onCancel: () => void
-  customFieldConfigs: DynamicFieldConfig[]
-  customFieldValues: Record<string, string>
-  setFieldValue: (label: string, value: string) => void
-  handleRemoveField: (index: number) => void
-  setIsFieldModalOpen: (open: boolean) => void
-}): JSX.Element {
+}: GrantEditAreaProps): JSX.Element {
   return (
     <div
       className="card mt-4"
@@ -554,9 +556,9 @@ export function GrantManagementPage(): JSX.Element {
         const parsed =
           typeof grant.custom_fields === "string"
             ? (JSON.parse(grant.custom_fields) as {
-              configs?: DynamicFieldConfig[]
-              values?: Record<string, string>
-            })
+                configs?: DynamicFieldConfig[]
+                values?: Record<string, string>
+              })
             : grant.custom_fields
         setEditCustomFieldConfigs(parsed.configs ?? [])
         setEditCustomFieldValues(parsed.values ?? {})
