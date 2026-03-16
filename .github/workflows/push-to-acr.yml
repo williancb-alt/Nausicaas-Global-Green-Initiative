@@ -7,6 +7,12 @@ on:
         type: choice
         options: [staging, production]
         required: true
+  workflow_call:
+    inputs:
+      environment:
+        description: "staging or production"
+        required: true
+        type: string
 
 permissions:
   id-token: write

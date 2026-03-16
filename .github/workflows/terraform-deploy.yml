@@ -1,6 +1,17 @@
 name: Terraform Infrastructure Provisioning & Configuration
 
 on:
+  workflow_call:
+    inputs:
+      layer:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       layer:
