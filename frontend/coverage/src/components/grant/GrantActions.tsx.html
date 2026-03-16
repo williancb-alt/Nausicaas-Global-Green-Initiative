@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/25</span>
+                <span class='fraction'>25/25</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/25</span>
+                <span class='fraction'>25/25</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -107,7 +107,7 @@
 <a name='L42'></a><a href='#L42'>42</a>
 <a name='L43'></a><a href='#L43'>43</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -118,38 +118,38 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { JSX, MouseEvent } from "react"
 import { Grant } from "../../services/api"
-<span class="cstat-no" title="statement not covered" >import { Button } from "../button/Button"</span>
+import { Button } from "../button/Button"
 &nbsp;
 interface GrantActionsProps {
   isExpanded: boolean
@@ -160,35 +160,35 @@ interface GrantActionsProps {
   onDeleteClick: (e: MouseEvent) =&gt; void
 }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export function GrantActions({</span>
-<span class="cstat-no" title="statement not covered" >  isExpanded,</span>
-<span class="cstat-no" title="statement not covered" >  onEdit,</span>
-<span class="cstat-no" title="statement not covered" >  onDelete,</span>
-<span class="cstat-no" title="statement not covered" >  isDeleting,</span>
-<span class="cstat-no" title="statement not covered" >  onEditClick,</span>
-<span class="cstat-no" title="statement not covered" >  onDeleteClick,</span>
-<span class="cstat-no" title="statement not covered" >}: GrantActionsProps): JSX.Element {</span>
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div className="d-flex align-items-center gap-2"&gt;</span>
-<span class="cstat-no" title="statement not covered" >      {onEdit &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button variant="secondary" size="sm" onClick={onEditClick}&gt;</span>
+export function GrantActions({
+  isExpanded,
+  onEdit,
+  onDelete,
+  isDeleting,
+  onEditClick,
+  onDeleteClick,
+}: GrantActionsProps): JSX.Element {
+  return (
+    &lt;div className="d-flex align-items-center gap-2"&gt;
+      {onEdit &amp;&amp; (
+        &lt;Button variant="secondary" size="sm" onClick={onEditClick}&gt;
           Edit
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
+        &lt;/Button&gt;
       )}
-<span class="cstat-no" title="statement not covered" >      {onDelete &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >        &lt;Button</span>
-<span class="cstat-no" title="statement not covered" >          variant="danger"</span>
-<span class="cstat-no" title="statement not covered" >          size="sm"</span>
-<span class="cstat-no" title="statement not covered" >          onClick={onDeleteClick}</span>
-<span class="cstat-no" title="statement not covered" >          disabled={isDeleting}</span>
+      {onDelete &amp;&amp; (
+        &lt;Button
+          variant="danger"
+          size="sm"
+          onClick={onDeleteClick}
+          disabled={isDeleting}
         &gt;
-<span class="cstat-no" title="statement not covered" >          {isDeleting ? "..." : "Delete"}</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/Button&gt;</span>
+          {<span class="branch-0 cbranch-no" title="branch not covered" >isDeleting ? "..." : "</span>Delete"}
+        &lt;/Button&gt;
       )}
-<span class="cstat-no" title="statement not covered" >      &lt;span className="ms-2"&gt;{isExpanded ? "\u25B2" : "\u25BC"}&lt;/span&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
+      &lt;span className="ms-2"&gt;{<span class="branch-0 cbranch-no" title="branch not covered" >isExpanded ? "\u25B2" : "</span>\u25BC"}&lt;/span&gt;
+    &lt;/div&gt;
   )
-<span class="cstat-no" title="statement not covered" >}</span>
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -196,7 +196,7 @@ interface GrantActionsProps {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-16T15:42:53.891Z
+                at 2026-03-16T20:57:38.117Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/20</span>
+                <span class='fraction'>16/20</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">25% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/20</span>
+                <span class='fraction'>16/20</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -105,28 +105,28 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
+<span class="cline-any cline-yes">48x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">48x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">48x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ReactElement, cloneElement, isValidElement } from "react"
 import { FieldError } from "react-hook-form"
 &nbsp;
@@ -136,29 +136,29 @@ interface FormFieldProps {
   children: ReactElement&lt;{ className?: string }&gt;
 }
 &nbsp;
-export <span class="fstat-no" title="function not covered" >function FormField({ label, error, children }: FormFieldProps) {</span>
-<span class="cstat-no" title="statement not covered" >  const errorId = `${label.toLowerCase().replace(/\s+/g, "-")}-error`</span>
+export function FormField({ label, error, children }: FormFieldProps) {
+  const errorId = `${label.toLowerCase().replace(/\s+/g, "-")}-error`
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  const inputWithError = isValidElement(children)</span>
-<span class="cstat-no" title="statement not covered" >    ? cloneElement(children, {</span>
-<span class="cstat-no" title="statement not covered" >        className: [children.props.className, error &amp;&amp; "is-invalid"]</span>
-<span class="cstat-no" title="statement not covered" >          .filter(Boolean)</span>
-<span class="cstat-no" title="statement not covered" >          .join(" "),</span>
-<span class="cstat-no" title="statement not covered" >      })</span>
+  const inputWithError = isValidElement(children)
+    ? cloneElement(children, {
+        className: [children.props.className, <span class="branch-0 cbranch-no" title="branch not covered" >error &amp;&amp; "is-invalid"]</span>
+          .filter(Boolean)
+          .join(" "),
+      }<span class="branch-0 cbranch-no" title="branch not covered" >)</span>
 <span class="cstat-no" title="statement not covered" >    : children</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div className="mb-3"&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;label className="form-label"&gt;{label}&lt;/label&gt;</span>
-<span class="cstat-no" title="statement not covered" >      {inputWithError}</span>
-<span class="cstat-no" title="statement not covered" >      {error &amp;&amp; (</span>
+  return (
+    &lt;div className="mb-3"&gt;
+      &lt;label className="form-label"&gt;{label}&lt;/label&gt;
+      {inputWithError}
+      {<span class="branch-0 cbranch-no" title="branch not covered" >error &amp;&amp; (</span>
 <span class="cstat-no" title="statement not covered" >        &lt;div className="invalid-feedback" id={errorId}&gt;</span>
 <span class="cstat-no" title="statement not covered" >          {error.message}</span>
 <span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
       )}
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
+    &lt;/div&gt;
   )
-<span class="cstat-no" title="statement not covered" >}</span>
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -166,7 +166,7 @@ export <span class="fstat-no" title="function not covered" >function FormField({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-03-16T15:42:53.891Z
+                at 2026-03-16T20:57:38.117Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
