@@ -44,7 +44,7 @@ spec:
     kind: ClusterSecretStore
   target:
     name: nausicaa-wildcard-tls
-    creationPolicy: Owner
+    creationPolicy: Merge
   data:
     - secretKey: tls.crt
       remoteRef:

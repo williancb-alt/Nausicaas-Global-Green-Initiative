@@ -5,6 +5,8 @@ resource "helm_release" "cert_manager" {
   namespace        = "cert-manager"
   create_namespace = true
   version          = "v1.16.0"
+  timeout          = 600
+  cleanup_on_fail  = true
 
   set {
     name  = "installCRDs"
@@ -58,9 +60,20 @@ resource "helm_release" "external_secrets" {
   namespace        = "external-secrets"
   create_namespace = true
   version          = "2.1.0"
+  timeout          = 600
+  cleanup_on_fail  = true
 
   set {
     name  = "installCRDs"
+    value = "true"
+  }
+
+  set {
+    name  = "serviceAccount.annotations.azure\\.workload\\.identity/client-id"
+    value = var.eso_uami_client_id
+  }
+  set {
+    name  = "podLabels.azure\\.workload\\.identity/use"
     value = "true"
   }
 

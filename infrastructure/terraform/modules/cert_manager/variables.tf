@@ -16,3 +16,8 @@ variable "acme_server_url" {
   type    = string
   default = "https://acme-staging-v02.api.letsencrypt.org/directory"
 }
+
+variable "eso_uami_client_id" {
+  type    = string
+  default = ""
+}

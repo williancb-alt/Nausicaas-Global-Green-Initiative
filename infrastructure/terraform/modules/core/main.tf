@@ -22,6 +22,27 @@ resource "azurerm_subnet" "aks" {
   address_prefixes     = ["10.10.0.0/24"]
 }
 
+resource "azurerm_user_assigned_identity" "eso" {
+  name                = "${var.rg_name}-eso-identity"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = azurerm_resource_group.main.location
+}
+
+resource "azurerm_federated_identity_credential" "eso" {
+  name                = "eso-federated-credential"
+  resource_group_name = azurerm_resource_group.main.name
+  parent_id           = azurerm_user_assigned_identity.eso.id
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = azurerm_kubernetes_cluster.aks.oidc_issuer_url
+  subject             = "system:serviceaccount:external-secrets:external-secrets"
+}
+
+resource "azurerm_role_assignment" "eso_permanent_kv" {
+  scope                = data.azurerm_key_vault.permanent.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = azurerm_user_assigned_identity.eso.principal_id
+}
+
 resource "azurerm_subnet" "db" {
   name                 = "db-subnet"
   resource_group_name  = azurerm_resource_group.main.name
@@ -65,10 +86,12 @@ resource "azurerm_postgresql_flexible_server_database" "main" {
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
-  name                = var.aks_name
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  dns_prefix          = var.dns_prefix
+  name                      = var.aks_name
+  location                  = azurerm_resource_group.main.location
+  resource_group_name       = azurerm_resource_group.main.name
+  dns_prefix                = var.dns_prefix
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
 
   default_node_pool {
     name           = "system"
@@ -123,12 +146,6 @@ data "azurerm_client_config" "current" {}
 data "azurerm_key_vault" "permanent" {
   name                = var.permanent_key_vault_name
   resource_group_name = var.permanent_rg_name
-}
-
-resource "azurerm_role_assignment" "aks_permanent_kv_officer" {
-  scope                = data.azurerm_key_vault.permanent.id
-  role_definition_name = "Key Vault Secrets Officer"
-  principal_id         = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
 }
 
 resource "azurerm_key_vault" "main" {

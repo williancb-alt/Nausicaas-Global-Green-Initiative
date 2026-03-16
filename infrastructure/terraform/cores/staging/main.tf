@@ -78,4 +78,5 @@ module "cert_manager" {
   acme_email           = var.acme_email
   cloudflare_api_token = var.cloudflare_api_token
   acme_server_url      = var.acme_server_url
+  eso_uami_client_id   = module.core.eso_uami_client_id
 }

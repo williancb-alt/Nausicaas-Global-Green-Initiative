@@ -66,3 +66,8 @@ output "key_vault_kubelet_identity_client_id" {
   value     = azurerm_kubernetes_cluster.aks.kubelet_identity[0].client_id
   sensitive = true
 }
+
+output "eso_uami_client_id" {
+  value     = azurerm_user_assigned_identity.eso.client_id
+  sensitive = true
+}
