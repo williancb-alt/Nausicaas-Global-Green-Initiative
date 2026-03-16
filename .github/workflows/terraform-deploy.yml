@@ -188,6 +188,13 @@ jobs:
             --resource-group "$TF_VAR_rg_name" \
             --name "$TF_VAR_aks_name" \
             --overwrite-existing
+
+          kubectl wait --for=condition=Established \
+            crd/clustersecretstores.external-secrets.io \
+            crd/pushsecrets.external-secrets.io \
+            crd/externalsecrets.external-secrets.io \
+            --timeout=120s
+
           envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -
 
           kubectl wait externalsecret wildcard-tls-from-akv \
