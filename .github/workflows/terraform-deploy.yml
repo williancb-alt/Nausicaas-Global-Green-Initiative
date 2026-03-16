@@ -106,8 +106,8 @@ jobs:
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr manifest list-metadata \
-            --name "$ACR_NAME" \
-            --repository backend \
+            --registry "$ACR_NAME" \
+            --name backend \
             --query "[?tags[?@=='${TAG}']].digest" -o tsv | head -n1)
           if [ -z "$DIGEST" ]; then
             echo "No digest found for backend:${TAG}" >&2
@@ -122,8 +122,8 @@ jobs:
         run: |
           TAG="${ENVIRONMENT}"
           DIGEST=$(az acr manifest list-metadata \
-            --name "$ACR_NAME" \
-            --repository frontend \
+            --registry "$ACR_NAME" \
+            --name frontend \
             --query "[?tags[?@=='${TAG}']].digest" -o tsv | head -n1)
           if [ -z "$DIGEST" ]; then
             echo "No digest found for frontend:${TAG}" >&2
