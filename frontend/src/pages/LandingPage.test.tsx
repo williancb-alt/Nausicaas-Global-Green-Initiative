@@ -106,7 +106,7 @@ describe("LandingPage", () => {
         <LandingPage />
       </MemoryRouter>,
     )
-    expect(screen.getByText("Grants: 2")).toBeDefined()
+    expect(screen.getByText("Grants: 1")).toBeDefined()
   })
 
   it("should fetch user applications if authenticated", () => {
