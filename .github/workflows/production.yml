@@ -63,7 +63,6 @@ jobs:
   core_production:
     name: Ensure production core infra in place
     needs: prepare
-    environment: production
     uses: ./.github/workflows/terraform-deploy.yml
     with:
       layer: core
@@ -74,7 +73,6 @@ jobs:
   build_and_push_release_images:
     name: Build & push release images to ACR
     needs: [prepare, core_production]
-    environment: production
     uses: ./.github/workflows/push-to-acr.yml
     with:
       environment: production
@@ -84,7 +82,6 @@ jobs:
   deploy_app_production:
     name: Deploy app to production
     needs: [prepare, build_and_push_release_images]
-    environment: production
     uses: ./.github/workflows/terraform-deploy.yml
     with:
       layer: app
