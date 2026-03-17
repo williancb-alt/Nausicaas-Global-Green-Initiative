@@ -7,11 +7,19 @@ on:
         type: choice
         options: [staging, production]
         required: true
+      tag:
+        description: "Optional image tag override (e.g. 1.2.3). If empty, uses env name."
+        required: false
+        type: string
   workflow_call:
     inputs:
       environment:
         description: "staging or production"
         required: true
+        type: string
+      tag:
+        description: "Optional image tag override (e.g. 1.2.3). If empty, uses env name."
+        required: false
         type: string
 
 permissions:
@@ -29,6 +37,7 @@ jobs:
     environment: ${{ inputs.environment || github.event.inputs.environment }}
     env:
       ENVIRONMENT: ${{ inputs.environment || github.event.inputs.environment }}
+      IMAGE_TAG: ${{ inputs.tag || github.event.inputs.tag || inputs.environment || github.event.inputs.environment }}
     steps:
       - uses: actions/checkout@v5
 
@@ -46,8 +55,8 @@ jobs:
       - name: Build & push backend
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
-          docker build -t "$ACR/backend:${ENVIRONMENT}" ./backend
-          docker push "$ACR/backend:${ENVIRONMENT}"
+          docker build -t "$ACR/backend:${IMAGE_TAG}" ./backend
+          docker push "$ACR/backend:${IMAGE_TAG}"
 
       - name: Build & push frontend
         run: |
@@ -56,6 +65,6 @@ jobs:
           docker build \
             --build-arg VITE_API_BASE_URL="${{ secrets.BACKEND_BASE_URL }}" \
             --build-arg SERVER_NAME="${{ secrets.FRONTEND_BASE_URL }}" \
-            -t "$ACR/frontend:${ENVIRONMENT}" ./frontend
+            -t "$ACR/frontend:${IMAGE_TAG}" ./frontend
 
-          docker push "$ACR/frontend:${ENVIRONMENT}"
+          docker push "$ACR/frontend:${IMAGE_TAG}"

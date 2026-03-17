@@ -12,6 +12,10 @@ on:
       action:
         required: true
         type: string
+      image_tag:
+        required: false
+        description: "Optional image tag override for app layer (e.g. 1.2.3). If not set, defaults to ENVIRONMENT (staging/production)."
+        type: string
   workflow_dispatch:
     inputs:
       layer:
@@ -37,6 +41,10 @@ on:
           - plan
           - apply
           - destroy
+      image_tag:
+        description: "Optional image tag override for app layer (e.g. 1.2.3). If not set, defaults to ENVIRONMENT (staging/production)."
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -47,6 +55,7 @@ env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  IMAGE_TAG: ${{ inputs.image_tag || github.event.inputs.image_tag || inputs.environment || github.event.inputs.environment || 'staging' }}
 
 jobs:
   terraform:
@@ -115,7 +124,7 @@ jobs:
       - name: Resolve backend image digest from tag
         if: env.LAYER == 'app'
         run: |
-          TAG="${ENVIRONMENT}"
+          TAG="${IMAGE_TAG}"
           DIGEST=$(az acr manifest list-metadata \
             --registry "$ACR_NAME" \
             --name backend \
@@ -131,7 +140,7 @@ jobs:
       - name: Resolve frontend image digest from tag
         if: env.LAYER == 'app'
         run: |
-          TAG="${ENVIRONMENT}"
+          TAG="${IMAGE_TAG}"
           DIGEST=$(az acr manifest list-metadata \
             --registry "$ACR_NAME" \
             --name frontend \

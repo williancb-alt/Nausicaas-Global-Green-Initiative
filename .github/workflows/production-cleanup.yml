@@ -1,4 +1,4 @@
-name: Staging env scheduled destroy (for Azure cost optimisation)
+name: Prod env scheduled destroy (for Azure cost optimisation)
 
 on:
   workflow_dispatch: {}
@@ -11,21 +11,21 @@ permissions:
 
 jobs:
   destroy_app:
-    name: Destroy staging app layer (envs/staging)
+    name: Destroy prod app layer (envs/production)
     uses: ./.github/workflows/terraform-deploy.yml
     with:
       layer: app
-      environment: staging
+      environment: production
       action: destroy
     secrets: inherit
 
   destroy_core:
-    name: Destroy staging core layer (cores/staging)
+    name: Destroy production core layer (cores/production)
     needs: [destroy_app]
     if: always()
     uses: ./.github/workflows/terraform-deploy.yml
     with:
       layer: core
-      environment: staging
+      environment: production
       action: destroy
     secrets: inherit
