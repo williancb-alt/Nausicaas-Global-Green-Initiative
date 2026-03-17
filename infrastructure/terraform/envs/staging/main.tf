@@ -57,7 +57,7 @@ locals {
       name = "api-staging"
     }
     root = {
-      name = "staging"
+      name = "ui-staging"
     }
   }
 }

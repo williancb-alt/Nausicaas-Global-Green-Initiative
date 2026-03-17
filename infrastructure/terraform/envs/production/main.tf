@@ -56,7 +56,7 @@ locals {
       name = "api"
     }
     root = {
-      name = "@"
+      name = "ui"
     }
   }
 }
