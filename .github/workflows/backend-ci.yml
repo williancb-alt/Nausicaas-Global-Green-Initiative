@@ -1,13 +1,9 @@
 name: Backend CI
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend-ci.yml"
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -121,7 +117,7 @@ jobs:
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-  
+
   security-snyk:
     name: Security Scan with Snyk
     runs-on: ubuntu-latest
@@ -146,11 +142,11 @@ jobs:
       - name: Set up Node (for Snyk CLI)
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-      
+          node-version: "24"
+
       - name: Install Snyk package
         run: npm install -g snyk
-      
+
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true
         env:
