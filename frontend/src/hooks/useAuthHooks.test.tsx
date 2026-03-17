@@ -5,7 +5,7 @@ import { api } from "../services/api"
 import { useAuthStore } from "../store/authStore"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
-import { UserInfo } from "../services/api/client"
+import { mockUser, mockAdminUser } from "../test/mock-data"
 
 // Mock dependencies
 vi.mock("../services/api")
@@ -38,16 +38,11 @@ describe("useAuthHooks", () => {
 
   describe("useLogin", () => {
     it("should login and set user on success", async () => {
-      const mockUser: UserInfo = {
-        email: "test@test.com",
-        admin: false,
-        public_id: "user-1",
-      }
       vi.mocked(api.auth.login).mockResolvedValue({
         status: "success",
         message: "ok",
       } as any)
-      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
+      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
 
       const { result } = renderHook(() => useLogin(), {
         wrapper: createWrapper(),
@@ -100,16 +95,11 @@ describe("useAuthHooks", () => {
 
   describe("useRegister", () => {
     it("should register and set user on success", async () => {
-      const mockUser: UserInfo = {
-        email: "new@test.com",
-        admin: false,
-        public_id: "user-2",
-      }
       vi.mocked(api.auth.register).mockResolvedValue({
         status: "success",
         message: "ok",
       } as any)
-      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
+      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
 
       const { result } = renderHook(() => useRegister(), {
         wrapper: createWrapper(),
@@ -124,19 +114,14 @@ describe("useAuthHooks", () => {
 
   describe("useUser", () => {
     it("should fetch user and set it in store", async () => {
-      const mockUser: UserInfo = {
-        email: "cached@test.com",
-        admin: true,
-        public_id: "admin-1",
-      }
-      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
+      vi.mocked(api.auth.getUser).mockResolvedValue(mockAdminUser as any)
 
       const { result } = renderHook(() => useUser(), {
         wrapper: createWrapper(),
       })
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(setUserMock).toHaveBeenCalledWith(mockUser)
+      expect(setUserMock).toHaveBeenCalledWith(mockAdminUser)
     })
 
     it("should clear auth if user fetch fails", async () => {

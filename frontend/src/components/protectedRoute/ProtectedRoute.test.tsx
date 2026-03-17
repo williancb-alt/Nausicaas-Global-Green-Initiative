@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { useUser } from "../../hooks/useAuthHooks"
 
+import { mockUser, mockAdminUser } from "../../test/mock-data"
+
 // Mock dependencies
 vi.mock("../../hooks/useAuthHooks")
 vi.mock("react-router-dom", async () => {
@@ -16,21 +18,23 @@ vi.mock("react-router-dom", async () => {
 })
 
 describe("ProtectedRoute", () => {
+  const renderProtected = (props = {}) =>
+    render(
+      <ProtectedRoute {...props}>
+        <div>Content</div>
+      </ProtectedRoute>,
+    )
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("should show loading state", () => {
     vi.mocked(useUser).mockReturnValue({
-      data: undefined,
       isLoading: true,
       isError: false,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute>
-        <div>Protected Content</div>
-      </ProtectedRoute>,
-    )
+    } as any)
+    renderProtected()
     expect(screen.getByText("Loading...")).toBeDefined()
   })
 
@@ -39,71 +43,50 @@ describe("ProtectedRoute", () => {
       data: null,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute>
-        <div>Protected Content</div>
-      </ProtectedRoute>,
-    )
+    } as any)
+    renderProtected()
     const nav = screen.getByTestId("navigate")
     expect(nav.getAttribute("data-to")).toBe("/login")
   })
 
   it("should redirect to login if there is an error", () => {
     vi.mocked(useUser).mockReturnValue({
-      data: undefined,
       isLoading: false,
       isError: true,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute>
-        <div>Protected Content</div>
-      </ProtectedRoute>,
-    )
+    } as any)
+    renderProtected()
     const nav = screen.getByTestId("navigate")
     expect(nav.getAttribute("data-to")).toBe("/login")
   })
 
   it("should redirect to home if admin is required but user is not admin", () => {
     vi.mocked(useUser).mockReturnValue({
-      data: { admin: false },
+      data: mockUser,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute requireAdmin={true}>
-        <div>Admin Content</div>
-      </ProtectedRoute>,
-    )
+    } as any)
+    renderProtected({ requireAdmin: true })
     const nav = screen.getByTestId("navigate")
     expect(nav.getAttribute("data-to")).toBe("/")
   })
 
   it("should render children if authenticated and admin check passes", () => {
     vi.mocked(useUser).mockReturnValue({
-      data: { admin: true },
+      data: mockAdminUser,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute requireAdmin={true}>
-        <div>Admin Content</div>
-      </ProtectedRoute>,
-    )
-    expect(screen.getByText("Admin Content")).toBeDefined()
+    } as any)
+    renderProtected({ requireAdmin: true })
+    expect(screen.getByText("Content")).toBeDefined()
   })
 
   it("should render children if authenticated and no admin check required", () => {
     vi.mocked(useUser).mockReturnValue({
-      data: { admin: false },
+      data: mockUser,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useUser>)
-    render(
-      <ProtectedRoute>
-        <div>User Content</div>
-      </ProtectedRoute>,
-    )
-    expect(screen.getByText("User Content")).toBeDefined()
+    } as any)
+    renderProtected()
+    expect(screen.getByText("Content")).toBeDefined()
   })
 })

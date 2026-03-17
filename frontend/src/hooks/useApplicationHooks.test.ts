@@ -10,8 +10,8 @@ import {
   useDeleteApplication,
 } from "./useApplicationHooks"
 import { api } from "../services/api"
-import { ApplicationsResponse } from "../services/api/applications"
 import { Application } from "../types"
+import { EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -38,13 +38,10 @@ describe("useMyApplications", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("should fetch current user applications", async () => {
-    const mockData: ApplicationsResponse = {
+    const mockData = {
+      ...EMPTY_PAGINATED_RESPONSE,
       items: [{ id: 1, status: "approved" } as any],
       total_items: 1,
-      total_pages: 1,
-      page: 1,
-      has_next: false,
-      has_prev: false,
     }
     vi.mocked(api.applications.getMyApplications).mockResolvedValueOnce(
       mockData,
@@ -75,16 +72,8 @@ describe("useApplications", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("should fetch all applications", async () => {
-    const mockData: ApplicationsResponse = {
-      items: [],
-      total_items: 0,
-      total_pages: 0,
-      page: 1,
-      has_next: false,
-      has_prev: false,
-    }
     vi.mocked(api.applications.getAllApplications).mockResolvedValueOnce(
-      mockData,
+      EMPTY_PAGINATED_RESPONSE,
     )
 
     const { result } = renderHook(() => useApplications(), {
@@ -92,7 +81,7 @@ describe("useApplications", () => {
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toEqual(mockData)
+    expect(result.current.data).toEqual(EMPTY_PAGINATED_RESPONSE)
   })
 })
 

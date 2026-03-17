@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { BrowserRouter } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { GrantManagementPage } from "./GrantManagementPage"
-import type { GrantPage } from "../services/api/client"
 import { useGrantsStore } from "../store/grantsStore"
+import { EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
+import { mockMutationSuccess, mockMutationLoading } from "../test/test-utils"
 
 // Mock the hooks
 vi.mock("../hooks/useGrantHooks", () => ({
@@ -26,7 +27,8 @@ import {
   useDeleteGrant,
 } from "../hooks/useGrantHooks"
 
-const mockGrants: GrantPage = {
+const mockGrants = {
+  ...EMPTY_PAGINATED_RESPONSE,
   items: [
     {
       name: "visible-grant",
@@ -45,17 +47,12 @@ const mockGrants: GrantPage = {
       hidden: true,
     },
   ],
-  page: 1,
-  total_pages: 1,
+  total_items: 2,
   links: {
     self: "/api/v1/grants?page=1",
     first: "/api/v1/grants?page=1",
     last: "/api/v1/grants?page=1",
   },
-  has_prev: false,
-  has_next: false,
-  items_per_page: 10,
-  total_items: 2,
 }
 
 function mockAllHooks() {
@@ -64,27 +61,9 @@ function mockAllHooks() {
     isLoading: false,
     isError: false,
   } as any)
-  vi.mocked(useCreateGrant).mockReturnValue({
-    mutate: vi.fn(),
-    isPending: false,
-    isError: false,
-    error: null,
-    reset: vi.fn(),
-  } as any)
-  vi.mocked(useUpdateGrant).mockReturnValue({
-    mutate: vi.fn(),
-    isPending: false,
-    isError: false,
-    error: null,
-    reset: vi.fn(),
-  } as any)
-  vi.mocked(useDeleteGrant).mockReturnValue({
-    mutate: vi.fn(),
-    isPending: false,
-    isError: false,
-    error: null,
-    reset: vi.fn(),
-  } as any)
+  vi.mocked(useCreateGrant).mockReturnValue(mockMutationSuccess() as any)
+  vi.mocked(useUpdateGrant).mockReturnValue(mockMutationSuccess() as any)
+  vi.mocked(useDeleteGrant).mockReturnValue(mockMutationSuccess() as any)
 }
 
 describe("GrantManagementPage", () => {
@@ -134,11 +113,8 @@ describe("GrantManagementPage", () => {
   it("should toggle visibility when hide button is clicked", () => {
     const updateMutate = vi.fn()
     vi.mocked(useUpdateGrant).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: updateMutate,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
 
     renderComponent()
@@ -158,11 +134,8 @@ describe("GrantManagementPage", () => {
     // We mock mutate to do nothing (stay pending)
     const updateMutate = vi.fn()
     vi.mocked(useUpdateGrant).mockReturnValue({
+      ...mockMutationLoading(),
       mutate: updateMutate,
-      isPending: true,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
 
     renderComponent()
@@ -185,11 +158,8 @@ describe("GrantManagementPage", () => {
       },
     )
     vi.mocked(useUpdateGrant).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: updateMutate as any,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 

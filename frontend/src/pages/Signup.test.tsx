@@ -5,13 +5,17 @@ import { Signup } from "./Signup"
 import { useRegister } from "../hooks/useAuthHooks"
 import { useAuthStore } from "../store/authStore"
 import { BUTTON_TEXT } from "../utils/constants"
+import {
+  mockMutationSuccess,
+  mockMutationLoading,
+  mockMutationError,
+} from "../test/test-utils"
 
 vi.mock("../hooks/useAuthHooks")
 vi.mock("../store/authStore")
 vi.mock("../features/oauth/OAuthButtons", () => ({
   OAuthButtons: () => null,
 }))
-// Mock PasswordRequirements to avoid complex validation UI testing
 vi.mock("../components/form/PasswordRequirements", () => ({
   PasswordRequirements: () => <div data-testid="password-reqs" />,
 }))
@@ -24,8 +28,6 @@ const renderInRouter = () =>
   )
 
 describe("Signup Page", () => {
-  const mutateMock = vi.fn()
-
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useAuthStore).mockReturnValue({
@@ -34,16 +36,7 @@ describe("Signup Page", () => {
       setUser: vi.fn(),
       clearAuth: vi.fn(),
     } as any)
-    vi.mocked(useRegister).mockReturnValue({
-      mutate: mutateMock,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
-      isSuccess: false,
-      status: "idle",
-      data: undefined,
-    } as any)
+    vi.mocked(useRegister).mockReturnValue(mockMutationSuccess() as any)
   })
 
   it("should render the signup form", () => {
@@ -57,32 +50,16 @@ describe("Signup Page", () => {
   })
 
   it("should show loading state while signing up", () => {
-    vi.mocked(useRegister).mockReturnValue({
-      mutate: mutateMock,
-      isPending: true,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
-      isSuccess: false,
-      status: "pending",
-      data: undefined,
-    } as any)
+    vi.mocked(useRegister).mockReturnValue(mockMutationLoading() as any)
 
     renderInRouter()
     expect(screen.getByText(BUTTON_TEXT.SIGNING_UP)).toBeDefined()
   })
 
   it("should show error on failure", () => {
-    vi.mocked(useRegister).mockReturnValue({
-      mutate: mutateMock,
-      isPending: false,
-      isError: true,
-      error: new Error("Email already exists"),
-      reset: vi.fn(),
-      isSuccess: false,
-      status: "error",
-      data: undefined,
-    } as any)
+    vi.mocked(useRegister).mockReturnValue(
+      mockMutationError(new Error("Email already exists")) as any,
+    )
 
     renderInRouter()
     expect(screen.getByText("Email already exists")).toBeDefined()

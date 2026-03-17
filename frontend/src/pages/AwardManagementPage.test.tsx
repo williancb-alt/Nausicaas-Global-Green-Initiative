@@ -10,6 +10,9 @@ import {
 import { useAwardsStore } from "../store/awardsStore"
 import { AWARD_MESSAGES } from "../utils/constants"
 
+import { EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
+import { mockMutationSuccess } from "../test/test-utils"
+
 // Mock dependencies
 vi.mock("../hooks/useAwardHooks")
 vi.mock("../store/awardsStore")
@@ -52,41 +55,27 @@ describe("AwardManagementPage", () => {
       setCurrentPage: setCurrentPageMock,
       currentPage: 1,
       itemsPerPage: 10,
-    } as any) // Using as any to satisfy all store fields without defining them all
+    } as any)
     vi.mocked(useAwards).mockReturnValue({
       data: {
+        ...EMPTY_PAGINATED_RESPONSE,
         items: mockAwards,
         total_items: 2,
-        total_pages: 1,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
       },
       isLoading: false,
       isError: false,
     } as any)
     vi.mocked(useCreateAward).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: createAwardMutateMock,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
     vi.mocked(useUpdateAward).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: updateAwardMutateMock,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
     vi.mocked(useDeleteAward).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: deleteAwardMutateMock,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
     } as any)
   })
 
@@ -101,29 +90,19 @@ describe("AwardManagementPage", () => {
 
   it("should show loading state", () => {
     vi.mocked(useAwards).mockReturnValue({
-      data: undefined,
       isLoading: true,
       isError: false,
-    } as unknown as ReturnType<typeof useAwards>)
+    } as any)
     render(<AwardManagementPage />)
     expect(screen.getByText(AWARD_MESSAGES.loadingAwards)).toBeDefined()
   })
 
   it("should show empty state when no awards are found", () => {
     vi.mocked(useAwards).mockReturnValue({
-      data: {
-        items: [],
-        total_items: 0,
-        total_pages: 0,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
-      },
+      data: EMPTY_PAGINATED_RESPONSE,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useAwards>)
+    } as any)
     render(<AwardManagementPage />)
     expect(screen.getByText(AWARD_MESSAGES.noAwards)).toBeDefined()
   })

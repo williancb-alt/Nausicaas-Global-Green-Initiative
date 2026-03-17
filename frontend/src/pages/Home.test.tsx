@@ -10,6 +10,9 @@ import {
 } from "../hooks/useGrantHooks"
 import { useQueryClient } from "@tanstack/react-query"
 
+import { mockAdminUser, EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
+import { mockMutationSuccess, mockMutationLoading } from "../test/test-utils"
+
 // Mock everything the component depends on
 vi.mock("../store/authStore")
 vi.mock("../store/grantsStore")
@@ -22,27 +25,12 @@ vi.mock("@tanstack/react-query", async importOriginal => {
   }
 })
 
-const defaultGrantsMock = {
-  data: undefined,
-  isLoading: false,
-  isError: false,
-  refetch: vi.fn(),
-} as any
-
-const defaultMutation = {
-  mutate: vi.fn(),
-  isPending: false,
-  isError: false,
-  error: null,
-  reset: vi.fn(),
-} as any
-
 describe("Home Page", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useAuthStore).mockReturnValue({
       isAuthenticated: true,
-      user: { email: "test@test.com", admin: true, public_id: "admin-1" },
+      user: mockAdminUser,
       setUser: vi.fn(),
       clearAuth: vi.fn(),
     } as any)
@@ -53,9 +41,14 @@ describe("Home Page", () => {
       setItemsPerPage: vi.fn(),
       reset: vi.fn(),
     } as any)
-    vi.mocked(useGrants).mockReturnValue(defaultGrantsMock)
-    vi.mocked(useCreateGrant).mockReturnValue(defaultMutation)
-    vi.mocked(useDeleteGrant).mockReturnValue(defaultMutation) // useDeleteGrant is slightly different return type usually but defaultMutation is already any
+    vi.mocked(useGrants).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as any)
+    vi.mocked(useCreateGrant).mockReturnValue(mockMutationSuccess() as any)
+    vi.mocked(useDeleteGrant).mockReturnValue(mockMutationSuccess() as any)
     vi.mocked(useQueryClient).mockReturnValue({
       invalidateQueries: vi.fn(),
       clear: vi.fn(),
@@ -79,35 +72,30 @@ describe("Home Page", () => {
 
   it("should show loading state for grants", () => {
     vi.mocked(useGrants).mockReturnValue({
-      ...defaultGrantsMock,
+      data: undefined,
       isLoading: true,
-    })
+      isError: false,
+      refetch: vi.fn(),
+    } as any)
     render(<Home />)
     expect(screen.getByText(/Loading grants/i)).toBeDefined()
   })
 
   it("should show empty state when no grants exist", () => {
     vi.mocked(useGrants).mockReturnValue({
-      ...defaultGrantsMock,
-      data: {
-        items: [],
-        total_pages: 0,
-        total_items: 0,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
-      },
-    })
+      data: EMPTY_PAGINATED_RESPONSE,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as any)
     render(<Home />)
     expect(screen.getByText(/no grants/i)).toBeDefined()
   })
 
   it("should list grants when data is available", () => {
     vi.mocked(useGrants).mockReturnValue({
-      ...defaultGrantsMock,
       data: {
+        ...EMPTY_PAGINATED_RESPONSE,
         items: [
           {
             name: "Env Grant",
@@ -120,13 +108,11 @@ describe("Home Page", () => {
         ],
         total_pages: 1,
         total_items: 1,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
       },
-    })
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as any)
     render(<Home />)
     expect(screen.getByText("Env Grant")).toBeDefined()
   })
@@ -143,10 +129,7 @@ describe("Home Page", () => {
   })
 
   it("should show pending state on create button", () => {
-    vi.mocked(useCreateGrant).mockReturnValue({
-      ...defaultMutation,
-      isPending: true,
-    })
+    vi.mocked(useCreateGrant).mockReturnValue(mockMutationLoading() as any)
     render(<Home />)
     expect(screen.getByText(/Creating.../i)).toBeDefined()
   })

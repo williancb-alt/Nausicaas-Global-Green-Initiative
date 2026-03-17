@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { awardsApi } from "./awards"
-import { apiClient, BaseResponse, Award, AwardPage } from "./client"
+import { apiClient, BaseResponse, Award } from "./client"
+import { EMPTY_PAGINATED_RESPONSE } from "../../test/mock-data"
 
 vi.mock("./client", async importOriginal => {
   const actual = await importOriginal<typeof import("./client")>()
@@ -20,13 +21,18 @@ const mockedPost = vi.mocked(apiClient.post)
 const mockedPut = vi.mocked(apiClient.put)
 const mockedDelete = vi.mocked(apiClient.delete)
 
+const createSuccessResponse = (message: string): BaseResponse => ({
+  status: "success",
+  message,
+})
+
 describe("awardsApi", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("should call createAward and return data", async () => {
-    const mockResponse: BaseResponse = { status: "success", message: "created" }
+    const mockResponse = createSuccessResponse("created")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await awardsApi.createAward({
@@ -42,20 +48,10 @@ describe("awardsApi", () => {
   })
 
   it("should call listAwards and return page data", async () => {
-    const mockPage: AwardPage = {
-      items: [],
-      links: { self: "", first: "", last: "" },
-      has_next: false,
-      has_prev: false,
-      page: 1,
-      total_pages: 1,
-      total_items: 0,
-      items_per_page: 10,
-    }
-    mockedGet.mockResolvedValueOnce({ data: mockPage })
+    mockedGet.mockResolvedValueOnce({ data: EMPTY_PAGINATED_RESPONSE })
 
     const result = await awardsApi.listAwards(1, 10)
-    expect(result).toEqual(mockPage)
+    expect(result).toEqual(EMPTY_PAGINATED_RESPONSE)
     expect(mockedGet).toHaveBeenCalledWith("/api/v1/awards", {
       params: { page: 1, per_page: 10 },
     })

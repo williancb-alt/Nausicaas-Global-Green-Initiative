@@ -7,6 +7,9 @@ import { useLogout } from "../hooks/useAuthHooks"
 import { useApplications } from "../hooks/useApplicationHooks"
 import * as router from "react-router-dom"
 
+import { mockAdminUser, EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
+import { mockMutationSuccess } from "../test/test-utils"
+
 // Mock dependencies
 vi.mock("../store/authStore")
 vi.mock("../hooks/useAuthHooks")
@@ -52,29 +55,14 @@ describe("AdminDashboardPage", () => {
     vi.clearAllMocks()
     vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
     vi.mocked(useAuthStore).mockReturnValue({
-      user: { email: "admin@test.com", admin: true, public_id: "admin-1" },
+      user: mockAdminUser,
       isAuthenticated: true,
       setUser: vi.fn(),
       clearAuth: vi.fn(),
     } as any)
-    vi.mocked(useLogout).mockReturnValue({
-      mutate: vi.fn(),
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
-    } as any)
+    vi.mocked(useLogout).mockReturnValue(mockMutationSuccess() as any)
     vi.mocked(useApplications).mockReturnValue({
-      data: {
-        items: [],
-        total_items: 0,
-        total_pages: 0,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
-      },
+      data: EMPTY_PAGINATED_RESPONSE,
       isLoading: false,
       isError: false,
     } as any)

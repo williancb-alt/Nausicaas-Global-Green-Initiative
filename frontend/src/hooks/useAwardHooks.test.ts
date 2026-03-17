@@ -10,7 +10,8 @@ import {
   useAward,
 } from "./useAwardHooks"
 import { api } from "../services/api"
-import { Award, AwardPage, BaseResponse } from "../services/api/client"
+import { BaseResponse } from "../services/api/client"
+import { EMPTY_PAGINATED_RESPONSE, mockAward } from "../test/mock-data"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -40,24 +41,12 @@ describe("useAwards", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("should fetch awards list", async () => {
-    const mockPage: AwardPage = {
-      items: [
-        {
-          name: "Green Award",
-          deadline: "2026-12-31",
-          deadline_passed: false,
-          time_remaining: "1 year",
-        },
-      ],
+    const mockPage = {
+      ...EMPTY_PAGINATED_RESPONSE,
+      items: [mockAward],
       total_items: 1,
-      total_pages: 1,
-      page: 1,
-      has_next: false,
-      has_prev: false,
-      items_per_page: 10,
-      links: { self: "", first: "", last: "" },
     }
-    vi.mocked(api.awards.listAwards).mockResolvedValueOnce(mockPage)
+    vi.mocked(api.awards.listAwards).mockResolvedValueOnce(mockPage as any)
 
     const { result } = renderHook(() => useAwards(), {
       wrapper: createWrapper(),
@@ -84,13 +73,7 @@ describe("useAward", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("should fetch a single award by name", async () => {
-    const mockAward: Award = {
-      name: "Green Award",
-      deadline: "2026-12-31",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-    vi.mocked(api.awards.getAward).mockResolvedValueOnce(mockAward)
+    vi.mocked(api.awards.getAward).mockResolvedValueOnce(mockAward as any)
 
     const { result } = renderHook(() => useAward("Green Award"), {
       wrapper: createWrapper(),

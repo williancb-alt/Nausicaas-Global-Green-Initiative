@@ -110,29 +110,22 @@ describe("AuditLogs", () => {
 
   it("should show loading state", () => {
     vi.mocked(useQuery).mockReturnValue({
-      data: undefined,
       isLoading: true,
-      error: null,
       isError: false,
       status: "loading",
-      fetchStatus: "fetching",
-      refetch: vi.fn(),
     } as any)
 
     render(<AuditLogs />)
     expect(screen.getAllByText("Loading...").length).toBeGreaterThan(0)
-    expect(screen.getByRole("status")).toBeDefined() // Spinner
+    expect(screen.getByRole("status")).toBeDefined()
   })
 
   it("should show error state", () => {
     vi.mocked(useQuery).mockReturnValue({
-      data: undefined,
       isLoading: false,
-      error: new Error("Fetch failed"),
       isError: true,
+      error: new Error("Fetch failed"),
       status: "error",
-      fetchStatus: "idle",
-      refetch: vi.fn(),
     } as any)
 
     render(<AuditLogs />)

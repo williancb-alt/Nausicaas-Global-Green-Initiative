@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { MemoryRouter } from "react-router-dom"
 import { UserApplicationDetails } from "./UserApplicationDetails"
-import type { Application } from "../../types"
+import { mockApplication } from "../../test/mock-data"
 
 // Mock sub-components
 vi.mock("./UserApplicationResponses", () => ({
@@ -23,37 +23,32 @@ vi.mock("./SubmissionLockedModal", () => ({
     ) : null,
 }))
 
-const mockApplication: Application = {
-  id: 1,
-  status: "approved",
+const detailedMockApp = {
+  ...mockApplication,
+  status: "approved" as const,
   submitted_date: "2026-03-16",
   grant: {
     name: "Green Energy Grant",
     description: "Save the world with energy.",
   },
-  applicant: { email: "user@test.com" } as unknown as Application["applicant"],
-  field_values: {
-    field_0: "Response 0",
-  } as unknown as Application["field_values"],
-} as Application
+}
 
 describe("UserApplicationDetails", () => {
   const onBackMock = vi.fn()
+
+  const renderDetails = (app = detailedMockApp) =>
+    render(
+      <MemoryRouter>
+        <UserApplicationDetails application={app as any} onBack={onBackMock} />
+      </MemoryRouter>,
+    )
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("should render application details with approved status", () => {
-    render(
-      <MemoryRouter>
-        <UserApplicationDetails
-          application={mockApplication}
-          onBack={onBackMock}
-        />
-      </MemoryRouter>,
-    )
-
+    renderDetails()
     expect(
       screen.getAllByText("Green Energy Grant").length,
     ).toBeGreaterThanOrEqual(1)
@@ -63,67 +58,28 @@ describe("UserApplicationDetails", () => {
   })
 
   it("should show reviewer feedback if present", () => {
-    const appWithFeedback = { ...mockApplication, feedback: "Great job!" }
-    render(
-      <MemoryRouter>
-        <UserApplicationDetails
-          application={appWithFeedback}
-          onBack={onBackMock}
-        />
-      </MemoryRouter>,
-    )
-
+    renderDetails({ ...detailedMockApp, feedback: "Great job!" } as any)
     expect(screen.getByText("Reviewer Feedback")).toBeDefined()
     expect(screen.getByText("Great job!")).toBeDefined()
   })
 
   it("should toggle the locked modal", () => {
-    render(
-      <MemoryRouter>
-        <UserApplicationDetails
-          application={mockApplication}
-          onBack={onBackMock}
-        />
-      </MemoryRouter>,
-    )
-
-    // Modal is open by default
+    renderDetails()
     expect(screen.getByTestId("locked-modal")).toBeDefined()
-
-    // Close modal
     fireEvent.click(screen.getByText("Close Modal"))
     expect(screen.queryByTestId("locked-modal")).toBeNull()
-
-    // Reopen via the strip
     fireEvent.click(screen.getByText("Why?"))
     expect(screen.getByTestId("locked-modal")).toBeDefined()
   })
 
   it("should call onBack when back button is clicked", () => {
-    render(
-      <MemoryRouter>
-        <UserApplicationDetails
-          application={mockApplication}
-          onBack={onBackMock}
-        />
-      </MemoryRouter>,
-    )
-
+    renderDetails()
     fireEvent.click(screen.getByText("Back to Dashboard"))
     expect(onBackMock).toHaveBeenCalled()
   })
 
   it("should handle different application statuses", () => {
-    const pendingApp = {
-      ...mockApplication,
-      status: "pending_review",
-    } as Application
-    render(
-      <MemoryRouter>
-        <UserApplicationDetails application={pendingApp} onBack={onBackMock} />
-      </MemoryRouter>,
-    )
-
+    renderDetails({ ...detailedMockApp, status: "pending_review" } as any)
     expect(screen.getByText("Pending Review")).toBeDefined()
   })
 })

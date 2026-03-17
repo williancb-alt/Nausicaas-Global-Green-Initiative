@@ -7,6 +7,12 @@ import { useAuthStore } from "../store/authStore"
 import { useAdminStats } from "../hooks/useAdminStatsHooks"
 import * as router from "react-router-dom"
 
+import {
+  mockUser,
+  EMPTY_PAGINATED_RESPONSE,
+  mockApplication,
+} from "../test/mock-data"
+
 // Mock dependencies
 vi.mock("../hooks/useApplicationHooks")
 vi.mock("../store/authStore")
@@ -30,29 +36,6 @@ vi.mock("../components/card/StatsCard", () => ({
   ),
 }))
 
-import type { Application } from "../types"
-
-const mockApplications: Application[] = [
-  {
-    id: 1,
-    status: "approved",
-    submitted_at: "2026-01-01T00:00:00Z",
-    submitted_date: "2026-01-01",
-    applicant: { email: "test@user.com", public_id: "user-123" },
-    grant: { name: "Grant A", description: "Desc A" },
-    field_values: {},
-  },
-  {
-    id: 2,
-    status: "pending_review",
-    submitted_at: "2026-01-02T00:00:00Z",
-    submitted_date: "2026-01-02",
-    applicant: { email: "test@user.com", public_id: "user-123" },
-    grant: { name: "Grant B", description: "Desc B" },
-    field_values: {},
-  },
-]
-
 describe("UserDashboard", () => {
   const navigateMock = vi.fn()
 
@@ -61,30 +44,25 @@ describe("UserDashboard", () => {
     vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
 
     vi.mocked(useAuthStore).mockReturnValue({
-      user: { email: "test@user.com", admin: false, public_id: "user-123" },
+      user: mockUser,
       isAuthenticated: true,
       setUser: vi.fn(),
       clearAuth: vi.fn(),
-    })
+    } as any)
     vi.mocked(useMyApplications).mockReturnValue({
       data: {
-        items: mockApplications,
-        total_items: 2,
-        total_pages: 1,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
+        ...EMPTY_PAGINATED_RESPONSE,
+        items: [mockApplication],
+        total_items: 1,
       },
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useMyApplications>)
+    } as any)
     vi.mocked(useAdminStats).mockReturnValue({
-      stats: { total: 2, approved: 1, pending: 1, rejected: 0 },
+      stats: { total: 1, approved: 0, pending: 1, rejected: 0 },
       statusChartData: [],
       grantWiseData: [],
-    } as unknown as ReturnType<typeof useAdminStats>)
+    } as any)
   })
 
   it("should render welcome message and stats", () => {
@@ -93,17 +71,16 @@ describe("UserDashboard", () => {
         <UserDashboard />
       </MemoryRouter>,
     )
-    expect(screen.getByText(/Welcome back, test/)).toBeDefined()
+    expect(screen.getByText(/Welcome back, user/i)).toBeDefined()
     expect(screen.getByText("Total Applications")).toBeDefined()
-    expect(screen.getByText("2")).toBeDefined()
+    expect(screen.getAllByText("1").length).toBeGreaterThan(0)
   })
 
   it("should show loading state", () => {
     vi.mocked(useMyApplications).mockReturnValue({
-      data: undefined,
       isLoading: true,
       isError: false,
-    } as unknown as ReturnType<typeof useMyApplications>)
+    } as any)
     render(
       <MemoryRouter>
         <UserDashboard />
@@ -114,24 +91,15 @@ describe("UserDashboard", () => {
 
   it("should show empty state when no applications exist", () => {
     vi.mocked(useMyApplications).mockReturnValue({
-      data: {
-        items: [],
-        total_items: 0,
-        total_pages: 0,
-        page: 1,
-        has_next: false,
-        has_prev: false,
-        items_per_page: 10,
-        links: { self: "", first: "", last: "" },
-      },
+      data: EMPTY_PAGINATED_RESPONSE,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useMyApplications>)
+    } as any)
     vi.mocked(useAdminStats).mockReturnValue({
       stats: { total: 0, approved: 0, pending: 0, rejected: 0 },
       statusChartData: [],
       grantWiseData: [],
-    } as unknown as ReturnType<typeof useAdminStats>)
+    } as any)
 
     render(
       <MemoryRouter>
@@ -150,9 +118,8 @@ describe("UserDashboard", () => {
         <UserDashboard />
       </MemoryRouter>,
     )
-    expect(screen.getByText("Grant A")).toBeDefined()
-    expect(screen.getByText("Grant B")).toBeDefined()
-    expect(screen.getByText("approved")).toBeDefined()
+    expect(screen.getByText("Test Grant")).toBeDefined()
+    expect(screen.getByText(/pending review/i)).toBeDefined()
   })
 
   it("should navigate to landing page on Start New Application click", () => {

@@ -1,10 +1,13 @@
 import { render, screen, fireEvent } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach, Mock } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { MemoryRouter } from "react-router-dom"
 import { GrantApplicationPage } from "./GrantApplicationPage"
 import { useGrant } from "../hooks/useGrantHooks"
 import { useSubmitApplication } from "../hooks/useApplicationHooks"
 import { useAuthStore } from "../store/authStore"
+
+import { mockUser, mockGrant } from "../test/mock-data"
+import { mockMutationSuccess } from "../test/test-utils"
 
 // Mock dependencies
 vi.mock("../hooks/useGrantHooks")
@@ -38,36 +41,25 @@ vi.mock("../components/grant/GrantApplicationForm", () => ({
 }))
 
 describe("GrantApplicationPage", () => {
-  const mutateMock = vi.fn() as unknown as Mock<
-    ReturnType<typeof useSubmitApplication>["mutate"]
-  >
+  const mutateMock = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(useAuthStore).mockReturnValue({
-      user: { email: "test@test.com", admin: false, public_id: "user-123" },
+      user: mockUser,
       isAuthenticated: true,
       setUser: vi.fn(),
       clearAuth: vi.fn(),
-    })
+    } as any)
     vi.mocked(useGrant).mockReturnValue({
-      data: {
-        name: "Test Grant",
-        deadline: "2026-12-31",
-        deadline_passed: false,
-        time_remaining: "1 year",
-        description: "Test Grant Desc",
-      },
+      data: mockGrant,
       isLoading: false,
       isError: false,
-    } as unknown as ReturnType<typeof useGrant>)
+    } as any)
     vi.mocked(useSubmitApplication).mockReturnValue({
+      ...mockMutationSuccess(),
       mutate: mutateMock,
-      isPending: false,
-      isError: false,
-      error: null,
-      reset: vi.fn(),
-    } as unknown as ReturnType<typeof useSubmitApplication>)
+    } as any)
   })
 
   it("should render the loading view when loading", () => {

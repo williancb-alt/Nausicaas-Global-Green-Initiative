@@ -16,16 +16,18 @@ vi.mock("./client", async importOriginal => {
 const mockedPost = vi.mocked(apiClient.post)
 const mockedGet = vi.mocked(apiClient.get)
 
+const createSuccessResponse = (message: string): BaseResponse => ({
+  status: "success",
+  message,
+})
+
 describe("authApi", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("should call register endpoint and return data", async () => {
-    const mockResponse: BaseResponse = {
-      status: "success",
-      message: "registered",
-    }
+    const mockResponse = createSuccessResponse("registered")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await authApi.register("test@example.com", "password123")
@@ -37,10 +39,7 @@ describe("authApi", () => {
   })
 
   it("should call login endpoint and return data", async () => {
-    const mockResponse: BaseResponse = {
-      status: "success",
-      message: "logged in",
-    }
+    const mockResponse = createSuccessResponse("logged in")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await authApi.login("test@example.com", "password123")
@@ -65,10 +64,7 @@ describe("authApi", () => {
   })
 
   it("should call logout endpoint", async () => {
-    const mockResponse: BaseResponse = {
-      status: "success",
-      message: "logged out",
-    }
+    const mockResponse = createSuccessResponse("logged out")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await authApi.logout()
@@ -77,10 +73,7 @@ describe("authApi", () => {
   })
 
   it("should call forgotPassword endpoint", async () => {
-    const mockResponse: BaseResponse = {
-      status: "success",
-      message: "email sent",
-    }
+    const mockResponse = createSuccessResponse("email sent")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await authApi.forgotPassword("test@example.com")
@@ -92,10 +85,7 @@ describe("authApi", () => {
   })
 
   it("should call resetPassword endpoint", async () => {
-    const mockResponse: BaseResponse = {
-      status: "success",
-      message: "password reset",
-    }
+    const mockResponse = createSuccessResponse("password reset")
     mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
     const result = await authApi.resetPassword("token-123", "newpassword")

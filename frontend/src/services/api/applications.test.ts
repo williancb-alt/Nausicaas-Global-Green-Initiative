@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { applications, ApplicationsResponse } from "./applications"
+import { applications } from "./applications"
 import { apiClient } from "./client"
 import { Application } from "../../types"
+import { EMPTY_PAGINATED_RESPONSE } from "../../test/mock-data"
 
 vi.mock("./client", async importOriginal => {
   const actual = await importOriginal<typeof import("./client")>()
@@ -27,36 +28,20 @@ describe("applicationsApi", () => {
   })
 
   it("should call getMyApplications endpoint", async () => {
-    const mockData: ApplicationsResponse = {
-      items: [],
-      has_next: false,
-      has_prev: false,
-      page: 1,
-      total_pages: 1,
-      total_items: 0,
-    }
-    mockedGet.mockResolvedValueOnce({ data: mockData })
+    mockedGet.mockResolvedValueOnce({ data: EMPTY_PAGINATED_RESPONSE })
 
     const result = await applications.getMyApplications()
-    expect(result).toEqual(mockData)
+    expect(result).toEqual(EMPTY_PAGINATED_RESPONSE)
     expect(mockedGet).toHaveBeenCalledWith(
       "/api/v1/applications/me?page=1&per_page=10",
     )
   })
 
   it("should call getAllApplications endpoint", async () => {
-    const mockData: ApplicationsResponse = {
-      items: [],
-      has_next: false,
-      has_prev: false,
-      page: 1,
-      total_pages: 1,
-      total_items: 0,
-    }
-    mockedGet.mockResolvedValueOnce({ data: mockData })
+    mockedGet.mockResolvedValueOnce({ data: EMPTY_PAGINATED_RESPONSE })
 
     const result = await applications.getAllApplications()
-    expect(result).toEqual(mockData)
+    expect(result).toEqual(EMPTY_PAGINATED_RESPONSE)
     expect(mockedGet).toHaveBeenCalledWith(
       "/api/v1/applications?page=1&per_page=10",
     )
