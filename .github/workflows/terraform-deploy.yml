@@ -51,7 +51,7 @@ env:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment || github.event.inputs.environment }}
 
     env:
       LAYER: ${{ github.event.inputs.layer || 'core' }}

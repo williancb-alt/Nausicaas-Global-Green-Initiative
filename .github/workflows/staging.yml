@@ -18,6 +18,7 @@ jobs:
     secrets:
       SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
   frontend_ci:
     name: Frontend CI
@@ -32,7 +33,7 @@ jobs:
 
   core_staging:
     name: Ensure staging core infra in place
-    needs: [backend_ci, frontend_ci, e2e]
+    needs: [e2e]
     uses: ./.github/workflows/terraform-deploy.yml
     with:
       layer: core
@@ -42,7 +43,7 @@ jobs:
   
   build_and_push_staging:
     name: Build & push staging images
-    needs: [backend_ci, frontend_ci, e2e, core_staging]
+    needs: [core_staging]
     uses: ./.github/workflows/push-to-acr.yml
     with:
       environment: staging

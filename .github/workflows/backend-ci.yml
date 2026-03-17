@@ -17,6 +17,8 @@ on:
         required: true
       SNYK_TOKEN:
         required: true
+      POSTGRES_PASSWORD:
+        required: true
 
 permissions:
   actions: read
