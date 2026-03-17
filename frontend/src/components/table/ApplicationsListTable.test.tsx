@@ -53,7 +53,7 @@ describe("ApplicationsListTable", () => {
                 status: "unknown_status",
                 submitted_date: "2026-01-03"
             }
-        ] as any
+        ] as unknown as Application[]
 
         render(<ApplicationsListTable applications={appsWithUnknown} onViewApplication={onViewMock} />)
         expect(screen.getByText("Pending Review")).toBeDefined()

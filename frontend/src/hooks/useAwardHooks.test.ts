@@ -10,6 +10,7 @@ import {
     useAward,
 } from "./useAwardHooks"
 import { api } from "../services/api"
+import { Award, AwardPage, BaseResponse } from "../services/api/client"
 
 vi.mock("../services/api", () => ({
     api: {
@@ -39,8 +40,17 @@ describe("useAwards", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch awards list", async () => {
-        const mockPage = { items: [{ name: "Green Award" }] }
-        vi.mocked(api.awards.listAwards).mockResolvedValueOnce(mockPage as any)
+        const mockPage: AwardPage = {
+            items: [{ name: "Green Award", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year" }],
+            total_items: 1,
+            total_pages: 1,
+            page: 1,
+            has_next: false,
+            has_prev: false,
+            items_per_page: 10,
+            links: { self: "", first: "", last: "" }
+        }
+        vi.mocked(api.awards.listAwards).mockResolvedValueOnce(mockPage)
 
         const { result } = renderHook(() => useAwards(), { wrapper: createWrapper() })
 
@@ -61,8 +71,8 @@ describe("useAward", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch a single award by name", async () => {
-        const mockAward = { name: "Green Award", deadline: "2026-12-31" }
-        vi.mocked(api.awards.getAward).mockResolvedValueOnce(mockAward as any)
+        const mockAward: Award = { name: "Green Award", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year" }
+        vi.mocked(api.awards.getAward).mockResolvedValueOnce(mockAward)
 
         const { result } = renderHook(() => useAward("Green Award"), { wrapper: createWrapper() })
 
@@ -81,8 +91,8 @@ describe("useCreateAward", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should create an award", async () => {
-        const mockResponse = { status: "success", message: "created" }
-        vi.mocked(api.awards.createAward).mockResolvedValueOnce(mockResponse as any)
+        const mockResponse: BaseResponse = { status: "success", message: "created" }
+        vi.mocked(api.awards.createAward).mockResolvedValueOnce(mockResponse)
 
         const { result } = renderHook(() => useCreateAward(), { wrapper: createWrapper() })
         result.current.mutate({ name: "Green Award", deadline: "2026-12-31", description: "Test" })
@@ -96,8 +106,8 @@ describe("useUpdateAward", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should update an award", async () => {
-        const mockResponse = { status: "success", message: "updated" }
-        vi.mocked(api.awards.updateAward).mockResolvedValueOnce(mockResponse as any)
+        const mockResponse: BaseResponse = { status: "success", message: "updated" }
+        vi.mocked(api.awards.updateAward).mockResolvedValueOnce(mockResponse)
 
         const { result } = renderHook(() => useUpdateAward(), { wrapper: createWrapper() })
         result.current.mutate({ name: "Green Award", deadline: "2027-01-01" })

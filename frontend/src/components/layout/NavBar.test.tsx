@@ -15,7 +15,12 @@ describe("Navbar", () => {
     })
 
     it("should render public links when not authenticated", () => {
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: false, user: null } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: false,
+            user: null,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        })
         render(<MemoryRouter><Navbar /></MemoryRouter>)
 
         expect(screen.getByText("Login")).toBeDefined()
@@ -24,7 +29,12 @@ describe("Navbar", () => {
     })
 
     it("should render user links when authenticated as regular user", () => {
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: true, user: { admin: false } } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: true,
+            user: { email: "user@test.com", admin: false, public_id: "user-1" },
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        })
         render(<MemoryRouter><Navbar /></MemoryRouter>)
 
         expect(screen.getByText("Home")).toBeDefined()
@@ -34,7 +44,12 @@ describe("Navbar", () => {
     })
 
     it("should render admin links when authenticated as admin", () => {
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: true, user: { admin: true } } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: true,
+            user: { email: "admin@test.com", admin: true, public_id: "admin-1" },
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        })
         render(<MemoryRouter><Navbar /></MemoryRouter>)
 
         expect(screen.getByText("Dashboard")).toBeDefined()

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { awardsApi } from "./awards"
-import { apiClient } from "./client"
+import { apiClient, BaseResponse, Award, AwardPage } from "./client"
 
 vi.mock("./client", async importOriginal => {
     const actual = await importOriginal<typeof import("./client")>()
@@ -26,8 +26,8 @@ describe("awardsApi", () => {
     })
 
     it("should call createAward and return data", async () => {
-        const mockResponse = { status: "success", message: "created" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "created" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await awardsApi.createAward({
             name: "Green Award",
@@ -39,8 +39,17 @@ describe("awardsApi", () => {
     })
 
     it("should call listAwards and return page data", async () => {
-        const mockPage = { items: [], links: {}, meta: {} }
-        mockedGet.mockResolvedValueOnce({ data: mockPage } as any)
+        const mockPage: AwardPage = {
+            items: [],
+            links: { self: "", first: "", last: "" },
+            has_next: false,
+            has_prev: false,
+            page: 1,
+            total_pages: 1,
+            total_items: 0,
+            items_per_page: 10
+        }
+        mockedGet.mockResolvedValueOnce({ data: mockPage })
 
         const result = await awardsApi.listAwards(1, 10)
         expect(result).toEqual(mockPage)
@@ -48,8 +57,13 @@ describe("awardsApi", () => {
     })
 
     it("should call getAward with encoded name", async () => {
-        const mockAward = { name: "Green Award", deadline: "2026-12-31" }
-        mockedGet.mockResolvedValueOnce({ data: mockAward } as any)
+        const mockAward: Award = {
+            name: "Green Award",
+            deadline: "2026-12-31",
+            deadline_passed: false,
+            time_remaining: "1 year"
+        }
+        mockedGet.mockResolvedValueOnce({ data: mockAward })
 
         const result = await awardsApi.getAward("Green Award")
         expect(result).toEqual(mockAward)
@@ -57,8 +71,8 @@ describe("awardsApi", () => {
     })
 
     it("should call updateAward with only provided fields", async () => {
-        const mockResponse = { status: "success", message: "updated" }
-        mockedPut.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "updated" }
+        mockedPut.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await awardsApi.updateAward("Green Award", { deadline: "2027-01-01" })
         expect(result).toEqual(mockResponse)
@@ -66,7 +80,7 @@ describe("awardsApi", () => {
     })
 
     it("should call deleteAward", async () => {
-        mockedDelete.mockResolvedValueOnce({ data: undefined } as any)
+        mockedDelete.mockResolvedValueOnce({ data: undefined })
 
         await awardsApi.deleteAward("Green Award")
         expect(mockedDelete).toHaveBeenCalledWith("/api/v1/awards/Green%20Award")

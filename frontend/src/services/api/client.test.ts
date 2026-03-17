@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect } from "vitest"
 import { apiClient } from "./client"
-import axios from "axios"
 
 // We can't easily test the interceptors directly on the exported instance without making requests
 // but we can test the response interceptor logic by mocking axios.create or similar

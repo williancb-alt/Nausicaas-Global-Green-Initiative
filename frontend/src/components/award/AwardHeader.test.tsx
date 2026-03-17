@@ -18,7 +18,7 @@ describe("AwardHeader", () => {
     })
 
     it("should not render deadline if not provided", () => {
-        const awardNoDeadline = { ...mockAward, deadline: "" } as any
+        const awardNoDeadline: Award = { ...mockAward, deadline: "" } as Award
         render(<AwardHeader award={awardNoDeadline} />)
         expect(screen.queryByText(/Deadline:/)).toBeNull()
     })

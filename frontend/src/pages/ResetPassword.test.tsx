@@ -39,7 +39,8 @@ describe("ResetPassword", () => {
             isError: false,
             isSuccess: false,
             error: null,
-        } as any)
+            reset: vi.fn()
+        } as unknown as ReturnType<typeof useResetPassword>)
     })
 
     it("should render the reset password form when token is present", () => {
@@ -64,7 +65,8 @@ describe("ResetPassword", () => {
             isError: false,
             isSuccess: true,
             error: null,
-        } as any)
+            reset: vi.fn()
+        } as unknown as ReturnType<typeof useResetPassword>)
 
         renderInRouter()
         expect(screen.getByText("Your password has been reset successfully.")).toBeDefined()
@@ -78,7 +80,8 @@ describe("ResetPassword", () => {
             isError: false,
             isSuccess: false,
             error: null,
-        } as any)
+            reset: vi.fn()
+        } as unknown as ReturnType<typeof useResetPassword>)
 
         renderInRouter()
         expect(screen.getByText(BUTTON_TEXT.RESETTING_PASSWORD)).toBeDefined()

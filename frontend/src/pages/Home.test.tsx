@@ -21,28 +21,42 @@ vi.mock("@tanstack/react-query", async importOriginal => {
 const defaultGrantsMock = {
     data: undefined,
     isLoading: false,
+    isError: false,
     refetch: vi.fn(),
-}
+} as any
 
 const defaultMutation = {
     mutate: vi.fn(),
     isPending: false,
     isError: false,
     error: null,
-}
+    reset: vi.fn()
+} as any
 
 describe("Home Page", () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: true } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: true,
+            user: { email: "test@test.com", admin: true, public_id: "admin-1" },
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
         vi.mocked(useGrantsStore).mockReturnValue({
             currentPage: 1,
+            itemsPerPage: 10,
             setCurrentPage: vi.fn(),
+            setItemsPerPage: vi.fn(),
+            reset: vi.fn()
         } as any)
-        vi.mocked(useGrants).mockReturnValue(defaultGrantsMock as any)
-        vi.mocked(useCreateGrant).mockReturnValue(defaultMutation as any)
-        vi.mocked(useDeleteGrant).mockReturnValue(defaultMutation as any)
-        vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries: vi.fn() } as any)
+        vi.mocked(useGrants).mockReturnValue(defaultGrantsMock)
+        vi.mocked(useCreateGrant).mockReturnValue(defaultMutation)
+        vi.mocked(useDeleteGrant).mockReturnValue(defaultMutation) // useDeleteGrant is slightly different return type usually but defaultMutation is already any
+        vi.mocked(useQueryClient).mockReturnValue({
+            invalidateQueries: vi.fn(),
+            clear: vi.fn(),
+            removeQueries: vi.fn()
+        } as any)
     })
 
     it("should render the Create Grant form", () => {
@@ -58,13 +72,28 @@ describe("Home Page", () => {
     })
 
     it("should show loading state for grants", () => {
-        vi.mocked(useGrants).mockReturnValue({ ...defaultGrantsMock, isLoading: true } as any)
+        vi.mocked(useGrants).mockReturnValue({
+            ...defaultGrantsMock,
+            isLoading: true
+        })
         render(<Home />)
         expect(screen.getByText(/Loading grants/i)).toBeDefined()
     })
 
     it("should show empty state when no grants exist", () => {
-        vi.mocked(useGrants).mockReturnValue({ ...defaultGrantsMock, data: { items: [] } } as any)
+        vi.mocked(useGrants).mockReturnValue({
+            ...defaultGrantsMock,
+            data: {
+                items: [],
+                total_pages: 0,
+                total_items: 0,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            }
+        })
         render(<Home />)
         expect(screen.getByText(/no grants/i)).toBeDefined()
     })
@@ -73,11 +102,16 @@ describe("Home Page", () => {
         vi.mocked(useGrants).mockReturnValue({
             ...defaultGrantsMock,
             data: {
-                items: [{ name: "Env Grant", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year" }],
+                items: [{ name: "Env Grant", description: "Desc", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year", hidden: false }],
                 total_pages: 1,
                 total_items: 1,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
             },
-        } as any)
+        })
         render(<Home />)
         expect(screen.getByText("Env Grant")).toBeDefined()
     })
@@ -94,7 +128,10 @@ describe("Home Page", () => {
     })
 
     it("should show pending state on create button", () => {
-        vi.mocked(useCreateGrant).mockReturnValue({ ...defaultMutation, isPending: true } as any)
+        vi.mocked(useCreateGrant).mockReturnValue({
+            ...defaultMutation,
+            isPending: true
+        })
         render(<Home />)
         expect(screen.getByText(/Creating.../i)).toBeDefined()
     })

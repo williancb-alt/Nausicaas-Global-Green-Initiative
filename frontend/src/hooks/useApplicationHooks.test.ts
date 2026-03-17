@@ -10,6 +10,8 @@ import {
     useDeleteApplication,
 } from "./useApplicationHooks"
 import { api } from "../services/api"
+import { ApplicationsResponse } from "../services/api/applications"
+import { Application } from "../types"
 
 vi.mock("../services/api", () => ({
     api: {
@@ -36,8 +38,15 @@ describe("useMyApplications", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch current user applications", async () => {
-        const mockData = { items: [{ id: 1, status: "approved" }], total_items: 1 }
-        vi.mocked(api.applications.getMyApplications).mockResolvedValueOnce(mockData as any)
+        const mockData: ApplicationsResponse = {
+            items: [{ id: 1, status: "approved" } as any],
+            total_items: 1,
+            total_pages: 1,
+            page: 1,
+            has_next: false,
+            has_prev: false
+        }
+        vi.mocked(api.applications.getMyApplications).mockResolvedValueOnce(mockData)
 
         const { result } = renderHook(() => useMyApplications(), { wrapper: createWrapper() })
 
@@ -58,8 +67,15 @@ describe("useApplications", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch all applications", async () => {
-        const mockData = { items: [], total_items: 0 }
-        vi.mocked(api.applications.getAllApplications).mockResolvedValueOnce(mockData as any)
+        const mockData: ApplicationsResponse = {
+            items: [],
+            total_items: 0,
+            total_pages: 0,
+            page: 1,
+            has_next: false,
+            has_prev: false
+        }
+        vi.mocked(api.applications.getAllApplications).mockResolvedValueOnce(mockData)
 
         const { result } = renderHook(() => useApplications(), { wrapper: createWrapper() })
 
@@ -72,8 +88,8 @@ describe("useApplication", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch single application by ID", async () => {
-        const mockApp = { id: 42, status: "pending_review" }
-        vi.mocked(api.applications.getApplication).mockResolvedValueOnce(mockApp as any)
+        const mockApp = { id: 42, status: "pending_review" } as Application
+        vi.mocked(api.applications.getApplication).mockResolvedValueOnce(mockApp)
 
         const { result } = renderHook(() => useApplication("42"), { wrapper: createWrapper() })
 
@@ -93,7 +109,7 @@ describe("useSubmitApplication", () => {
 
     it("should submit application successfully", async () => {
         const mockResponse = { status: "success", message: "submitted", application_id: 1 }
-        vi.mocked(api.applications.submitApplication).mockResolvedValueOnce(mockResponse as any)
+        vi.mocked(api.applications.submitApplication).mockResolvedValueOnce(mockResponse)
 
         const { result } = renderHook(() => useSubmitApplication(), { wrapper: createWrapper() })
 

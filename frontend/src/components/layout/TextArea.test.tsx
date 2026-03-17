@@ -5,7 +5,7 @@ import { Textarea } from "./TextArea"
 describe("Textarea", () => {
     it("should render textarea with provided props", () => {
         render(<Textarea placeholder="Enter text" defaultValue="hello" />)
-        const textarea = screen.getByPlaceholderText("Enter text") as HTMLTextAreaElement
+        const textarea = screen.getByPlaceholderText<HTMLTextAreaElement>("Enter text")
         expect(textarea).toBeDefined()
         expect(textarea.value).toBe("hello")
     })

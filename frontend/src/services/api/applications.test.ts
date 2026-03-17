@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { applications } from "./applications"
+import { applications, ApplicationsResponse } from "./applications"
 import { apiClient } from "./client"
+import { Application } from "../../types"
 
 vi.mock("./client", async importOriginal => {
     const actual = await importOriginal<typeof import("./client")>()
@@ -26,8 +27,15 @@ describe("applicationsApi", () => {
     })
 
     it("should call getMyApplications endpoint", async () => {
-        const mockData = { items: [], has_next: false, has_prev: false, page: 1, total_pages: 1, total_items: 0 }
-        mockedGet.mockResolvedValueOnce({ data: mockData } as any)
+        const mockData: ApplicationsResponse = {
+            items: [],
+            has_next: false,
+            has_prev: false,
+            page: 1,
+            total_pages: 1,
+            total_items: 0
+        }
+        mockedGet.mockResolvedValueOnce({ data: mockData })
 
         const result = await applications.getMyApplications()
         expect(result).toEqual(mockData)
@@ -35,8 +43,15 @@ describe("applicationsApi", () => {
     })
 
     it("should call getAllApplications endpoint", async () => {
-        const mockData = { items: [], has_next: false, has_prev: false, page: 1, total_pages: 1, total_items: 0 }
-        mockedGet.mockResolvedValueOnce({ data: mockData } as any)
+        const mockData: ApplicationsResponse = {
+            items: [],
+            has_next: false,
+            has_prev: false,
+            page: 1,
+            total_pages: 1,
+            total_items: 0
+        }
+        mockedGet.mockResolvedValueOnce({ data: mockData })
 
         const result = await applications.getAllApplications()
         expect(result).toEqual(mockData)
@@ -44,8 +59,8 @@ describe("applicationsApi", () => {
     })
 
     it("should call getApplication by ID", async () => {
-        const mockApp = { id: 42, status: "approved" }
-        mockedGet.mockResolvedValueOnce({ data: mockApp } as any)
+        const mockApp: Partial<Application> = { id: 42, status: "approved" }
+        mockedGet.mockResolvedValueOnce({ data: mockApp })
 
         const result = await applications.getApplication("42")
         expect(result).toEqual(mockApp)
@@ -54,7 +69,7 @@ describe("applicationsApi", () => {
 
     it("should call submitApplication", async () => {
         const mockResponse = { status: "success", message: "submitted", application_id: 5 }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await applications.submitApplication("Test Grant", { field1: "value1" })
         expect(result).toEqual(mockResponse)
@@ -67,7 +82,7 @@ describe("applicationsApi", () => {
 
     it("should call updateApplication", async () => {
         const mockResponse = { status: "success", message: "updated" }
-        mockedPut.mockResolvedValueOnce({ data: mockResponse } as any)
+        mockedPut.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await applications.updateApplication("42", { status: "approved" })
         expect(result).toEqual(mockResponse)
@@ -79,7 +94,7 @@ describe("applicationsApi", () => {
     })
 
     it("should call deleteApplication", async () => {
-        mockedDelete.mockResolvedValueOnce({ data: undefined } as any)
+        mockedDelete.mockResolvedValueOnce({ data: undefined })
 
         await applications.deleteApplication("42")
         expect(mockedDelete).toHaveBeenCalledWith("/api/v1/applications/42")

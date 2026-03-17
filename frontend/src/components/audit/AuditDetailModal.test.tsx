@@ -14,13 +14,15 @@ const mockLog: AuditLog = {
     timestamp: "2026-03-01T10:00:00Z",
     ip_address: "127.0.0.1",
     user_agent: "Mozilla",
+    failure_reason: null,
+    user_id: 1,
     details: JSON.stringify({
         grant_name: "Grant A",
         changes: {
             name: { old: "Grant A Old", new: "Grant A New" }
         }
     })
-} as any
+}
 
 describe("AuditDetailModal", () => {
     const onCloseMock = vi.fn()
@@ -48,12 +50,12 @@ describe("AuditDetailModal", () => {
     })
 
     it("should show failed status", () => {
-        const failedLog = {
+        const failedLog: AuditLog = {
             ...mockLog,
             success: false,
             failure_reason: "Unknown error",
             action: "login_attempt" // Avoid "FAILED" in header to prevent duplicate "Failed" text
-        } as any
+        }
         render(<AuditDetailModal log={failedLog} onClose={onCloseMock} />)
         // Find the specifically "Failed" status badge
         const failedBadges = screen.getAllByText("Failed")

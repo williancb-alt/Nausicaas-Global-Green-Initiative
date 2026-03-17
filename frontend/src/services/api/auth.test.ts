@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { authApi } from "./auth"
-import { apiClient } from "./client"
+import { apiClient, BaseResponse, UserInfo } from "./client"
 
 vi.mock("./client", async importOriginal => {
     const actual = await importOriginal<typeof import("./client")>()
@@ -22,8 +22,8 @@ describe("authApi", () => {
     })
 
     it("should call register endpoint and return data", async () => {
-        const mockResponse = { status: "success", message: "registered" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "registered" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await authApi.register("test@example.com", "password123")
         expect(result).toEqual(mockResponse)
@@ -34,8 +34,8 @@ describe("authApi", () => {
     })
 
     it("should call login endpoint and return data", async () => {
-        const mockResponse = { status: "success", message: "logged in" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "logged in" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await authApi.login("test@example.com", "password123")
         expect(result).toEqual(mockResponse)
@@ -46,8 +46,8 @@ describe("authApi", () => {
     })
 
     it("should call getUser endpoint and return user data", async () => {
-        const mockUser = { email: "test@example.com", admin: false }
-        mockedGet.mockResolvedValueOnce({ data: mockUser } as any)
+        const mockUser: UserInfo = { email: "test@example.com", admin: false, public_id: "user-123" }
+        mockedGet.mockResolvedValueOnce({ data: mockUser })
 
         const result = await authApi.getUser()
         expect(result).toEqual(mockUser)
@@ -55,8 +55,8 @@ describe("authApi", () => {
     })
 
     it("should call logout endpoint", async () => {
-        const mockResponse = { status: "success", message: "logged out" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "logged out" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await authApi.logout()
         expect(result).toEqual(mockResponse)
@@ -64,8 +64,8 @@ describe("authApi", () => {
     })
 
     it("should call forgotPassword endpoint", async () => {
-        const mockResponse = { status: "success", message: "email sent" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "email sent" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await authApi.forgotPassword("test@example.com")
         expect(result).toEqual(mockResponse)
@@ -76,8 +76,8 @@ describe("authApi", () => {
     })
 
     it("should call resetPassword endpoint", async () => {
-        const mockResponse = { status: "success", message: "password reset" }
-        mockedPost.mockResolvedValueOnce({ data: mockResponse } as any)
+        const mockResponse: BaseResponse = { status: "success", message: "password reset" }
+        mockedPost.mockResolvedValueOnce({ data: mockResponse })
 
         const result = await authApi.resetPassword("token-123", "newpassword")
         expect(result).toEqual(mockResponse)

@@ -10,13 +10,13 @@ vi.mock("../hooks/useApplicationHooks")
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom")
     return {
-        ...actual as any,
+        ...actual as object,
         useNavigate: vi.fn(),
     }
 })
 
 vi.mock("../components/application/ApplicationList", () => ({
-    ApplicationList: ({ onViewDetails }: any) => (
+    ApplicationList: ({ onViewDetails }: { onViewDetails: (id: number) => void }) => (
         <div data-testid="app-list">
             <button onClick={() => onViewDetails(1)}>View App 1</button>
         </div>
@@ -29,7 +29,20 @@ describe("MyApplications Page", () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
-        vi.mocked(useMyApplications).mockReturnValue({ data: { items: [] }, isLoading: false, isError: false } as any)
+        vi.mocked(useMyApplications).mockReturnValue({
+            data: {
+                items: [],
+                total_items: 0,
+                total_pages: 0,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            },
+            isLoading: false,
+            isError: false
+        } as unknown as ReturnType<typeof useMyApplications>)
     })
 
     it("should render page title and list", () => {

@@ -10,6 +10,7 @@ import {
     useGrant,
 } from "./useGrantHooks"
 import { api } from "../services/api"
+import { Grant, GrantPage, BaseResponse } from "../services/api/client"
 
 vi.mock("../services/api", () => ({
     api: {
@@ -39,8 +40,17 @@ describe("useGrants", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch grants list", async () => {
-        const mockPage = { items: [{ name: "Env Grant" }] }
-        vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockPage as any)
+        const mockPage: GrantPage = {
+            items: [{ name: "Env Grant", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year" }],
+            total_items: 1,
+            total_pages: 1,
+            page: 1,
+            has_next: false,
+            has_prev: false,
+            items_per_page: 10,
+            links: { self: "", first: "", last: "" }
+        }
+        vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockPage)
 
         const { result } = renderHook(() => useGrants(), { wrapper: createWrapper() })
 
@@ -61,8 +71,8 @@ describe("useGrant", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should fetch a single grant by name", async () => {
-        const mockGrant = { name: "Env Grant", deadline: "2026-12-31" }
-        vi.mocked(api.grants.getGrant).mockResolvedValueOnce(mockGrant as any)
+        const mockGrant: Grant = { name: "Env Grant", deadline: "2026-12-31", deadline_passed: false, time_remaining: "1 year" }
+        vi.mocked(api.grants.getGrant).mockResolvedValueOnce(mockGrant)
 
         const { result } = renderHook(() => useGrant("Env Grant"), { wrapper: createWrapper() })
 
@@ -81,8 +91,8 @@ describe("useCreateGrant", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should create a grant", async () => {
-        const mockResponse = { status: "success", message: "created" }
-        vi.mocked(api.grants.createGrant).mockResolvedValueOnce(mockResponse as any)
+        const mockResponse: BaseResponse = { status: "success", message: "created" }
+        vi.mocked(api.grants.createGrant).mockResolvedValueOnce(mockResponse)
 
         const { result } = renderHook(() => useCreateGrant(), { wrapper: createWrapper() })
         result.current.mutate({ name: "Test Grant", deadline: "2026-12-31", description: "A grant" })
@@ -96,8 +106,8 @@ describe("useUpdateGrant", () => {
     beforeEach(() => vi.clearAllMocks())
 
     it("should update a grant", async () => {
-        const mockResponse = { status: "success", message: "updated" }
-        vi.mocked(api.grants.updateGrant).mockResolvedValueOnce(mockResponse as any)
+        const mockResponse: BaseResponse = { status: "success", message: "updated" }
+        vi.mocked(api.grants.updateGrant).mockResolvedValueOnce(mockResponse)
 
         const { result } = renderHook(() => useUpdateGrant(), { wrapper: createWrapper() })
         result.current.mutate({ name: "Test Grant", deadline: "2027-01-01" })

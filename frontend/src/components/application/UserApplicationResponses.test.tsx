@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { UserApplicationResponses } from "./UserApplicationResponses"
+import type { DynamicFieldConfig } from "../../types"
 
 // Mock DynamicFieldInput
 vi.mock("../dynamicFields/DynamicFieldInput", () => ({
-    DynamicFieldInput: ({ value, field }: any) => (
+    DynamicFieldInput: ({ value, field }: { value: string, field: { label: string } }) => (
         <div data-testid="field-input">
             <span data-testid="field-label">{field.label}</span>
             <span data-testid="field-value">{value}</span>
@@ -20,12 +21,12 @@ describe("UserApplicationResponses", () => {
 
     it("should render fields using config if provided", () => {
         const fieldValues = { field_0: "Response 0", field_1: "Response 1" }
-        const configs = [
-            { label: "Label 0", type: "text" },
-            { label: "Label 1", type: "text" }
+        const configs: DynamicFieldConfig[] = [
+            { label: "Label 0", type: "text", required: true, maxLength: 100 },
+            { label: "Label 1", type: "text", required: true, maxLength: 100 }
         ]
 
-        render(<UserApplicationResponses fieldValues={fieldValues} customFieldConfigs={configs as any} />)
+        render(<UserApplicationResponses fieldValues={fieldValues} customFieldConfigs={configs} />)
 
         expect(screen.getAllByTestId("field-input")).toHaveLength(2)
         expect(screen.getByText("Label 0")).toBeDefined()

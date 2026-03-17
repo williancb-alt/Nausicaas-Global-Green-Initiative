@@ -9,7 +9,7 @@ vi.mock("./UserApplicationResponses", () => ({
     UserApplicationResponses: () => <div data-testid="app-responses" />
 }))
 vi.mock("./SubmissionLockedModal", () => ({
-    SubmissionLockedModal: ({ isOpen, onClose }: any) => isOpen ? (
+    SubmissionLockedModal: ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => isOpen ? (
         <div data-testid="locked-modal">
             <button onClick={onClose}>Close Modal</button>
         </div>
@@ -24,9 +24,9 @@ const mockApplication: Application = {
         name: "Green Energy Grant",
         description: "Save the world with energy."
     },
-    applicant: { email: "user@test.com" },
-    field_values: { field_0: "Response 0" }
-} as any
+    applicant: { email: "user@test.com" } as unknown as Application["applicant"],
+    field_values: { field_0: "Response 0" } as unknown as Application["field_values"]
+} as Application
 
 describe("UserApplicationDetails", () => {
     const onBackMock = vi.fn()

@@ -7,7 +7,7 @@ import tsparser from "@typescript-eslint/parser"
 import { defineConfig, globalIgnores } from "eslint/config"
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "coverage"]),
   {
     files: ["*.config.{js,ts}", "vite.config.ts"],
     languageOptions: {
@@ -21,7 +21,8 @@ export default defineConfig([
       },
     },
     plugins: {
-      "@typescript-eslint": tseslint,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      "@typescript-eslint": tseslint as any,
     },
     rules: {
       ...tseslint.configs.recommended.rules,
@@ -51,7 +52,8 @@ export default defineConfig([
       },
     },
     plugins: {
-      "@typescript-eslint": tseslint,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      "@typescript-eslint": tseslint as any,
     },
     rules: {
       ...tseslint.configs.recommended.rules,
@@ -65,6 +67,17 @@ export default defineConfig([
         "warn",
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    files: ["**/*.test.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ])

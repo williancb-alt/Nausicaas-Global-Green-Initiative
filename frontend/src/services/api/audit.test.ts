@@ -14,26 +14,39 @@ describe("auditApi", () => {
     })
 
     it("should get recent logs", async () => {
-        const mockData = {
+        const mockBackendData = {
             status: "success",
             count: 1,
-            items: [{ id: 1, action: "test" }]
+            items: [{
+                id: 1,
+                action: "test",
+                timestamp: "2026-01-01T00:00:00Z",
+                user_email: "test@user.com",
+                is_admin: true,
+                entity_type: "grant",
+                entity_id: 1,
+                details: "{}",
+                ip_address: "127.0.0.1",
+                user_agent: "test",
+                success: true,
+                failure_reason: null
+            }]
         }
-        vi.mocked(apiClient.get).mockResolvedValue({ data: mockData })
+        vi.mocked(apiClient.get).mockResolvedValue({ data: mockBackendData })
 
         const result = await auditApi.getRecentLogs(10)
 
         expect(apiClient.get).toHaveBeenCalledWith("/api/v1/audit", { params: { limit: 10 } })
-        expect(result.logs).toEqual(mockData.items)
+        expect(result.logs).toEqual(mockBackendData.items)
     })
 
     it("should get failed logs", async () => {
-        const mockData = {
+        const mockBackendData = {
             status: "success",
             count: 0,
             items: []
         }
-        vi.mocked(apiClient.get).mockResolvedValue({ data: mockData })
+        vi.mocked(apiClient.get).mockResolvedValue({ data: mockBackendData })
 
         const result = await auditApi.getFailedLogs()
 
@@ -42,16 +55,29 @@ describe("auditApi", () => {
     })
 
     it("should get entity logs", async () => {
-        const mockData = {
+        const mockBackendData = {
             status: "success",
             count: 1,
-            items: [{ id: 2 }]
+            items: [{
+                id: 2,
+                action: "update",
+                timestamp: "2026-01-01T00:00:00Z",
+                user_email: "test@user.com",
+                is_admin: true,
+                entity_type: "grant",
+                entity_id: 123,
+                details: "{}",
+                ip_address: "127.0.0.1",
+                user_agent: "test",
+                success: true,
+                failure_reason: null
+            }]
         }
-        vi.mocked(apiClient.get).mockResolvedValue({ data: mockData })
+        vi.mocked(apiClient.get).mockResolvedValue({ data: mockBackendData })
 
         const result = await auditApi.getEntityLogs("grant", 123)
 
         expect(apiClient.get).toHaveBeenCalledWith("/api/v1/audit/entity/grant/123", { params: { limit: 100 } })
-        expect(result.logs).toEqual(mockData.items)
+        expect(result.logs).toEqual(mockBackendData.items)
     })
 })

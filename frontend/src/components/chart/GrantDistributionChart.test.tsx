@@ -1,3 +1,4 @@
+import React from "react"
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { GrantDistributionChart } from "./GrantDistributionChart"
@@ -6,9 +7,11 @@ import { GrantDistributionChart } from "./GrantDistributionChart"
 vi.mock("recharts", async () => {
     const actual = await vi.importActual("recharts")
     return {
-        ...actual as any,
-        ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-        BarChart: ({ children, data }: any) => <div data-testid="bar-chart">{children} {data.length} bars</div>,
+        ...actual as object,
+        ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        BarChart: ({ children, data }: { children: React.ReactNode, data: unknown[] }) => (
+            <div data-testid="bar-chart">{children} {data.length} bars</div>
+        ),
         Bar: () => <div />,
         XAxis: () => <div />,
         YAxis: () => <div />,

@@ -1,9 +1,16 @@
+import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { AwardActions } from "./AwardActions"
 
+interface MockButtonProps {
+    children: React.ReactNode
+    onClick?: () => void
+    disabled?: boolean
+}
+
 vi.mock("../button/Button", () => ({
-    Button: ({ children, onClick, disabled }: any) => (
+    Button: ({ children, onClick, disabled }: MockButtonProps) => (
         <button onClick={onClick} disabled={disabled}>{children}</button>
     )
 }))

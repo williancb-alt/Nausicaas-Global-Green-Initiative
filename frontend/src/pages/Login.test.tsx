@@ -24,7 +24,11 @@ const defaultLoginMutation = {
     isPending: false,
     isError: false,
     error: null,
-}
+    reset: vi.fn(),
+    isSuccess: false,
+    status: "idle" as const,
+    data: undefined
+} as any
 
 const renderInRouter = () =>
     render(
@@ -36,8 +40,13 @@ const renderInRouter = () =>
 describe("Login Page", () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: false } as any)
-        vi.mocked(useLogin).mockReturnValue(defaultLoginMutation as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: false,
+            user: null,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
+        vi.mocked(useLogin).mockReturnValue(defaultLoginMutation)
     })
 
     it("should render the login form", () => {
@@ -63,7 +72,11 @@ describe("Login Page", () => {
     })
 
     it("should show loading state when logging in", () => {
-        vi.mocked(useLogin).mockReturnValue({ ...defaultLoginMutation, isPending: true } as any)
+        vi.mocked(useLogin).mockReturnValue({
+            ...defaultLoginMutation,
+            isPending: true,
+            status: "loading" as const
+        })
         renderInRouter()
         expect(screen.getByRole("button", { name: /Logging in.../i })).toBeDefined()
     })
@@ -72,17 +85,26 @@ describe("Login Page", () => {
         vi.mocked(useLogin).mockReturnValue({
             ...defaultLoginMutation,
             isError: true,
+            status: "error" as const,
             error: new Error("Invalid credentials"),
-        } as any)
+        })
         renderInRouter()
         expect(screen.getByText(/Invalid credentials/i)).toBeDefined()
     })
 
     it("should redirect when already authenticated (admin to /admin)", () => {
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: true } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: true,
+            user: { email: "admin@test.com", admin: true, public_id: "admin-1" },
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
         // Spy on the static store to return admin user
         vi.spyOn(useAuthStore, "getState").mockReturnValue({
-            user: { email: "admin@test.com", admin: true },
+            user: { email: "admin@test.com", admin: true, public_id: "admin-1" },
+            isAuthenticated: true,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
         } as any)
         const { container } = renderInRouter()
         // When redirected, the login form should not be present

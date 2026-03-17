@@ -17,8 +17,8 @@ vi.mock("lucide-react", () => ({
 }))
 
 const mockAwards = [
-    { name: "Award 1", deadline: "12/31/26", description: "Desc 1", hidden: false },
-    { name: "Award 2", deadline: "01/01/27", description: "Desc 2", hidden: true },
+    { name: "Award 1", deadline: "12/31/26", description: "Desc 1", hidden: false, deadline_passed: false, time_remaining: "1 year" },
+    { name: "Award 2", deadline: "01/01/27", description: "Desc 2", hidden: true, deadline_passed: false, time_remaining: "1.5 years" },
 ]
 
 describe("AwardManagementPage", () => {
@@ -29,11 +29,46 @@ describe("AwardManagementPage", () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(useAwardsStore).mockReturnValue({ setCurrentPage: setCurrentPageMock } as any)
-        vi.mocked(useAwards).mockReturnValue({ data: { items: mockAwards }, isLoading: false } as any)
-        vi.mocked(useCreateAward).mockReturnValue({ mutate: createAwardMutateMock, isPending: false } as any)
-        vi.mocked(useUpdateAward).mockReturnValue({ mutate: updateAwardMutateMock, isPending: false } as any)
-        vi.mocked(useDeleteAward).mockReturnValue({ mutate: deleteAwardMutateMock, isPending: false } as any)
+        vi.mocked(useAwardsStore).mockReturnValue({
+            setCurrentPage: setCurrentPageMock,
+            currentPage: 1,
+            itemsPerPage: 10
+        } as any) // Using as any to satisfy all store fields without defining them all
+        vi.mocked(useAwards).mockReturnValue({
+            data: {
+                items: mockAwards,
+                total_items: 2,
+                total_pages: 1,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            },
+            isLoading: false,
+            isError: false
+        } as any)
+        vi.mocked(useCreateAward).mockReturnValue({
+            mutate: createAwardMutateMock,
+            isPending: false,
+            isError: false,
+            error: null,
+            reset: vi.fn()
+        } as any)
+        vi.mocked(useUpdateAward).mockReturnValue({
+            mutate: updateAwardMutateMock,
+            isPending: false,
+            isError: false,
+            error: null,
+            reset: vi.fn()
+        } as any)
+        vi.mocked(useDeleteAward).mockReturnValue({
+            mutate: deleteAwardMutateMock,
+            isPending: false,
+            isError: false,
+            error: null,
+            reset: vi.fn()
+        } as any)
     })
 
     it("should render the page with awards table", () => {
@@ -46,13 +81,30 @@ describe("AwardManagementPage", () => {
     })
 
     it("should show loading state", () => {
-        vi.mocked(useAwards).mockReturnValue({ data: undefined, isLoading: true } as any)
+        vi.mocked(useAwards).mockReturnValue({
+            data: undefined,
+            isLoading: true,
+            isError: false
+        } as unknown as ReturnType<typeof useAwards>)
         render(<AwardManagementPage />)
         expect(screen.getByText(AWARD_MESSAGES.loadingAwards)).toBeDefined()
     })
 
     it("should show empty state when no awards are found", () => {
-        vi.mocked(useAwards).mockReturnValue({ data: { items: [] }, isLoading: false } as any)
+        vi.mocked(useAwards).mockReturnValue({
+            data: {
+                items: [],
+                total_items: 0,
+                total_pages: 0,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            },
+            isLoading: false,
+            isError: false
+        } as unknown as ReturnType<typeof useAwards>)
         render(<AwardManagementPage />)
         expect(screen.getByText(AWARD_MESSAGES.noAwards)).toBeDefined()
     })

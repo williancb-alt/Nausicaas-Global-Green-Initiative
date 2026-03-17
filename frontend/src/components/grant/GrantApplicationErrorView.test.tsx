@@ -1,9 +1,12 @@
+import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { GrantApplicationErrorView } from "./GrantApplicationErrorView"
 
 vi.mock("../button/Button", () => ({
-    Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>
+    Button: ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) => (
+        <button onClick={onClick}>{children}</button>
+    )
 }))
 
 describe("GrantApplicationErrorView", () => {

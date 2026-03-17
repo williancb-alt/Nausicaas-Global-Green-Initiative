@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, Mock } from "vitest"
 import { MemoryRouter } from "react-router-dom"
 import { ForgotPassword } from "./ForgotPassword"
 import { useForgotPassword } from "../hooks/useAuthHooks"
@@ -15,7 +15,7 @@ const renderInRouter = () =>
     )
 
 describe("ForgotPassword", () => {
-    const mutateMock = vi.fn()
+    const mutateMock = vi.fn() as unknown as Mock<ReturnType<typeof useForgotPassword>["mutate"]>
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -24,7 +24,11 @@ describe("ForgotPassword", () => {
             isPending: false,
             isError: false,
             error: null,
-        } as any)
+            reset: vi.fn(),
+            isSuccess: false,
+            status: "idle",
+            data: undefined
+        } as unknown as ReturnType<typeof useForgotPassword>)
     })
 
     it("should render the forgot password form", () => {
@@ -36,7 +40,7 @@ describe("ForgotPassword", () => {
 
     it("should show success message after successful submission", async () => {
         mutateMock.mockImplementation((_email, options) => {
-            options.onSuccess()
+            options?.onSuccess?.({ status: "success", message: "sent" } as any, _email, undefined, undefined as any)
         })
 
         renderInRouter()
@@ -58,8 +62,12 @@ describe("ForgotPassword", () => {
             mutate: mutateMock,
             isPending: false,
             isError: true,
+            isSuccess: false,
+            status: "error",
+            data: undefined,
             error: new Error("Server error"),
-        } as any)
+            reset: vi.fn()
+        } as unknown as ReturnType<typeof useForgotPassword>)
 
         renderInRouter()
         expect(screen.getByText("Server error")).toBeDefined()
@@ -70,8 +78,12 @@ describe("ForgotPassword", () => {
             mutate: mutateMock,
             isPending: true,
             isError: false,
+            isSuccess: false,
+            status: "loading",
+            data: undefined,
             error: null,
-        } as any)
+            reset: vi.fn()
+        } as unknown as ReturnType<typeof useForgotPassword>)
 
         renderInRouter()
         expect(screen.getByText(BUTTON_TEXT.SENDING_RESET_LINK)).toBeDefined()

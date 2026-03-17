@@ -3,12 +3,14 @@ import { describe, it, expect } from "vitest"
 import { useAdminStats } from "./useAdminStatsHooks"
 import type { Application } from "../types"
 
-const makeApp = (status: string, grantName: string): Application =>
-    ({
-        id: Math.random(),
-        status,
-        grant: { name: grantName },
-    }) as unknown as Application
+const makeApp = (status: string, grantName: string): Application => ({
+    id: Math.random(),
+    status: status as Application["status"],
+    submitted_at: new Date().toISOString(),
+    submitted_date: "2026-03-17",
+    applicant: { email: "user@test.com", public_id: "user-1" },
+    grant: { name: grantName, description: "Test Grant" }
+})
 
 describe("useAdminStats", () => {
     it("should return zeros for empty list", () => {

@@ -2,7 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useDashboardData } from "./useDashboardData"
 import { api } from "../services/api"
-import type { UserInfo } from "../services/api/client"
+import type { UserInfo, GrantPage } from "../services/api/client"
 
 // Mock the API
 vi.mock("../services/api", () => ({
@@ -36,7 +36,7 @@ describe("useDashboardData", () => {
     })
 
     it("should fetch grants when user is provided", async () => {
-        const mockGrants = {
+        const mockGrants: GrantPage = {
             items: [
                 {
                     name: "Grant 1",
@@ -51,9 +51,16 @@ describe("useDashboardData", () => {
                     time_remaining: "Expired",
                 },
             ],
+            total_items: 2,
+            total_pages: 1,
+            page: 1,
+            has_next: false,
+            has_prev: false,
+            items_per_page: 10,
+            links: { self: "", first: "", last: "" }
         }
 
-        vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockGrants as any)
+        vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockGrants)
 
         const { result } = renderHook(() => useDashboardData(mockUser))
 

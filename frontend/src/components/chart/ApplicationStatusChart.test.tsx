@@ -1,3 +1,4 @@
+import React from "react"
 import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { ApplicationStatusChart } from "./ApplicationStatusChart"
@@ -6,10 +7,10 @@ import { ApplicationStatusChart } from "./ApplicationStatusChart"
 vi.mock("recharts", async () => {
     const actual = await vi.importActual("recharts")
     return {
-        ...actual as any,
-        ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-        PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
-        Pie: ({ data }: any) => <div data-testid="pie">{data.length} items</div>,
+        ...actual as object,
+        ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+        PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+        Pie: ({ data }: { data: Array<{ value: number }> }) => <div data-testid="pie">{data.length} items</div>,
         Tooltip: () => <div />,
         Cell: () => <div />,
     }

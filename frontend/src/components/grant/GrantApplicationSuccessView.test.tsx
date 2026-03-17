@@ -1,3 +1,4 @@
+import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { MemoryRouter } from "react-router-dom"
@@ -8,13 +9,15 @@ import * as router from "react-router-dom"
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom")
     return {
-        ...actual as any,
+        ...actual as object,
         useNavigate: vi.fn(),
     }
 })
 
 vi.mock("../button/Button", () => ({
-    Button: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>
+    Button: ({ children, onClick }: { children: React.ReactNode, onClick?: () => void }) => (
+        <button onClick={onClick}>{children}</button>
+    )
 }))
 
 describe("GrantApplicationSuccessView", () => {

@@ -1,9 +1,10 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
+import { render, screen, fireEvent, act } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { BrowserRouter } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { GrantManagementPage } from "./GrantManagementPage"
 import type { GrantPage } from "../services/api/client"
+import { useGrantsStore } from "../store/grantsStore"
 
 // Mock the hooks
 vi.mock("../hooks/useGrantHooks", () => ({
@@ -14,9 +15,7 @@ vi.mock("../hooks/useGrantHooks", () => ({
 }))
 
 vi.mock("../store/grantsStore", () => ({
-  useGrantsStore: () => ({
-    setCurrentPage: vi.fn(),
-  }),
+  useGrantsStore: vi.fn(),
 }))
 
 // Import mocked hooks
@@ -63,16 +62,28 @@ function mockAllHooks() {
   vi.mocked(useGrants).mockReturnValue({
     data: mockGrants,
     isLoading: false,
+    isError: false
   } as any)
   vi.mocked(useCreateGrant).mockReturnValue({
     mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn()
   } as any)
   vi.mocked(useUpdateGrant).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn()
   } as any)
   vi.mocked(useDeleteGrant).mockReturnValue({
     mutate: vi.fn(),
+    isPending: false,
+    isError: false,
+    error: null,
+    reset: vi.fn()
   } as any)
 }
 
@@ -87,6 +98,14 @@ describe("GrantManagementPage", () => {
       },
     })
     vi.clearAllMocks()
+
+    vi.mocked(useGrantsStore).mockReturnValue({
+      currentPage: 1,
+      itemsPerPage: 10,
+      setCurrentPage: vi.fn(),
+      setItemsPerPage: vi.fn(),
+      reset: vi.fn()
+    } as any)
     mockAllHooks()
   })
 
@@ -112,14 +131,20 @@ describe("GrantManagementPage", () => {
     expect(screen.getByText("Hidden")).toBeDefined()
   })
 
-  it("should toggle visibility when hide button is clicked", async () => {
+  it("should toggle visibility when hide button is clicked", () => {
     const updateMutate = vi.fn()
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateMutate, isPending: false } as any)
+    vi.mocked(useUpdateGrant).mockReturnValue({
+      mutate: updateMutate,
+      isPending: false,
+      isError: false,
+      error: null,
+      reset: vi.fn()
+    } as any)
 
     renderComponent()
 
     const hideButton = screen.getByTitle("Hide grant")
-    await act(async () => {
+    act(() => {
       fireEvent.click(hideButton)
     })
 
@@ -129,32 +154,44 @@ describe("GrantManagementPage", () => {
     )
   })
 
-  it("should show loading indicator while toggling", async () => {
+  it("should show loading indicator while toggling", () => {
     // We mock mutate to do nothing (stay pending)
     const updateMutate = vi.fn()
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateMutate, isPending: true } as any)
+    vi.mocked(useUpdateGrant).mockReturnValue({
+      mutate: updateMutate,
+      isPending: true,
+      isError: false,
+      error: null,
+      reset: vi.fn()
+    } as any)
 
     renderComponent()
 
     const hideButton = screen.getByTitle("Hide grant")
-    await act(async () => {
+    act(() => {
       fireEvent.click(hideButton)
     })
 
     expect(screen.getByText("...")).toBeDefined()
   })
 
-  it("should show error alert when toggle fails", async () => {
-    const updateMutate = vi.fn((_, options) => {
-      options.onError(new Error("Network Error"))
+  it("should show error alert when toggle fails", () => {
+    const updateMutate = vi.fn((_data: { name: string; hidden: boolean }, options?: { onError?: (err: Error) => void }) => {
+      options?.onError?.(new Error("Network Error"))
     })
-    vi.mocked(useUpdateGrant).mockReturnValue({ mutate: updateMutate, isPending: false } as any)
+    vi.mocked(useUpdateGrant).mockReturnValue({
+      mutate: updateMutate as any,
+      isPending: false,
+      isError: false,
+      error: null,
+      reset: vi.fn()
+    } as any)
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => { })
 
     renderComponent()
 
     const hideButton = screen.getByTitle("Hide grant")
-    await act(async () => {
+    act(() => {
       fireEvent.click(hideButton)
     })
 

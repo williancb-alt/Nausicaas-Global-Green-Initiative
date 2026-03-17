@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { AuditLogs } from "./AuditLogs"
 import { useQuery } from "@tanstack/react-query"
+import { AuditLogsResponse } from "../services/api/audit"
 
 // Mock dependencies
 vi.mock("@tanstack/react-query", async (importOriginal) => {
@@ -20,23 +21,25 @@ vi.mock("../components/audit/AuditFilters", () => ({
     AuditFilters: () => <div data-testid="audit-filters" />,
 }))
 vi.mock("../components/audit/AuditTable", () => ({
-    AuditTable: ({ logs }: any) => (
+    AuditTable: ({ logs }: { logs: { action: string }[] }) => (
         <div data-testid="audit-table">
-            {logs.map((log: any, i: number) => (
+            {logs.map((log, i: number) => (
                 <div key={i} data-testid="log-row">{log.action}</div>
             ))}
         </div>
     ),
 }))
 vi.mock("../components/audit/AuditDetailModal", () => ({
-    AuditDetailModal: ({ log }: any) => log ? <div data-testid="detail-modal">{log.action}</div> : null,
+    AuditDetailModal: ({ log }: { log: { action: string } | null }) => log ? <div data-testid="detail-modal">{log.action}</div> : null,
 }))
 
-const mockLogs = {
+const mockLogs: AuditLogsResponse = {
+    status: "success",
+    count: 3,
     logs: [
-        { entity_type: "grant", action: "grant_created", user_email: "admin@test.com", is_admin: true, success: true },
-        { entity_type: "application", action: "app_submitted", user_email: "user@test.com", is_admin: false, success: true },
-        { entity_type: "security", action: "login_failed", user_email: null, is_admin: false, success: false },
+        { id: 1, timestamp: "2026-03-16T10:00:00Z", entity_type: "grant", action: "grant_created", user_email: "admin@test.com", is_admin: true, success: true, entity_id: 1, details: null, ip_address: null, user_agent: null, failure_reason: null },
+        { id: 2, timestamp: "2026-03-16T11:00:00Z", entity_type: "application", action: "app_submitted", user_email: "user@test.com", is_admin: false, success: true, entity_id: 1, details: null, ip_address: null, user_agent: null, failure_reason: null },
+        { id: 3, timestamp: "2026-03-16T12:00:00Z", entity_type: "security", action: "login_failed", user_email: null, is_admin: false, success: false, entity_id: null, details: null, ip_address: null, user_agent: null, failure_reason: "Wrong password" },
     ]
 }
 
@@ -49,6 +52,9 @@ describe("AuditLogs", () => {
             data: mockLogs,
             isLoading: false,
             error: null,
+            isError: false,
+            status: "success",
+            fetchStatus: "idle",
             refetch: refetchMock,
         } as any)
     })
@@ -65,6 +71,9 @@ describe("AuditLogs", () => {
             data: undefined,
             isLoading: true,
             error: null,
+            isError: false,
+            status: "loading",
+            fetchStatus: "fetching",
             refetch: vi.fn(),
         } as any)
 
@@ -78,6 +87,9 @@ describe("AuditLogs", () => {
             data: undefined,
             isLoading: false,
             error: new Error("Fetch failed"),
+            isError: true,
+            status: "error",
+            fetchStatus: "idle",
             refetch: vi.fn(),
         } as any)
 
@@ -86,7 +98,7 @@ describe("AuditLogs", () => {
         expect(screen.getByText("Fetch failed")).toBeDefined()
     })
 
-    it("should filter logs by tab (Grants)", async () => {
+    it("should filter logs by tab (Grants)", () => {
         render(<AuditLogs />)
 
         // Default tab is 'grants'
@@ -108,9 +120,12 @@ describe("AuditLogs", () => {
     it("should show 'Coming Soon' for disabled tabs", () => {
         // Modify mock data to not have applications
         vi.mocked(useQuery).mockReturnValue({
-            data: { logs: [mockLogs.logs[0]] },
+            data: { status: "success", count: 1, logs: [mockLogs.logs[0]] },
             isLoading: false,
             error: null,
+            isError: false,
+            status: "success",
+            fetchStatus: "idle",
             refetch: vi.fn(),
         } as any)
 

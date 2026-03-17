@@ -15,14 +15,14 @@ vi.mock("../hooks/useAdminStatsHooks")
 vi.mock("react-router-dom", async () => {
     const actual = await vi.importActual("react-router-dom")
     return {
-        ...actual as any,
+        ...actual as object,
         useNavigate: vi.fn(),
     }
 })
 
 // Mock StatCard to simplify text matching
 vi.mock("../components/card/StatsCard", () => ({
-    StatCard: ({ label, value }: any) => (
+    StatCard: ({ label, value }: { label: string, value: number }) => (
         <div data-testid="stat-card">
             <span>{label}</span>
             <span>{value}</span>
@@ -30,9 +30,27 @@ vi.mock("../components/card/StatsCard", () => ({
     )
 }))
 
-const mockApplications = [
-    { id: 1, status: "approved", submitted_date: "2026-01-01", grant: { name: "Grant A" } },
-    { id: 2, status: "pending_review", submitted_date: "2026-01-02", grant: { name: "Grant B" } }
+import type { Application } from "../types"
+
+const mockApplications: Application[] = [
+    {
+        id: 1,
+        status: "approved",
+        submitted_at: "2026-01-01T00:00:00Z",
+        submitted_date: "2026-01-01",
+        applicant: { email: "test@user.com", public_id: "user-123" },
+        grant: { name: "Grant A", description: "Desc A" },
+        field_values: {}
+    },
+    {
+        id: 2,
+        status: "pending_review",
+        submitted_at: "2026-01-02T00:00:00Z",
+        submitted_date: "2026-01-02",
+        applicant: { email: "test@user.com", public_id: "user-123" },
+        grant: { name: "Grant B", description: "Desc B" },
+        field_values: {}
+    }
 ]
 
 describe("UserDashboard", () => {
@@ -42,11 +60,31 @@ describe("UserDashboard", () => {
         vi.clearAllMocks()
         vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
 
-        vi.mocked(useAuthStore).mockReturnValue({ user: { email: "test@user.com" } } as any)
-        vi.mocked(useMyApplications).mockReturnValue({ data: { items: mockApplications }, isLoading: false } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            user: { email: "test@user.com", admin: false, public_id: "user-123" },
+            isAuthenticated: true,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        })
+        vi.mocked(useMyApplications).mockReturnValue({
+            data: {
+                items: mockApplications,
+                total_items: 2,
+                total_pages: 1,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            },
+            isLoading: false,
+            isError: false,
+        } as unknown as ReturnType<typeof useMyApplications>)
         vi.mocked(useAdminStats).mockReturnValue({
-            stats: { total: 2, approved: 1, pending: 1, rejected: 0 }
-        } as any)
+            stats: { total: 2, approved: 1, pending: 1, rejected: 0 },
+            statusChartData: [],
+            grantWiseData: []
+        } as unknown as ReturnType<typeof useAdminStats>)
     })
 
     it("should render welcome message and stats", () => {
@@ -57,16 +95,35 @@ describe("UserDashboard", () => {
     })
 
     it("should show loading state", () => {
-        vi.mocked(useMyApplications).mockReturnValue({ data: undefined, isLoading: true } as any)
+        vi.mocked(useMyApplications).mockReturnValue({
+            data: undefined,
+            isLoading: true,
+            isError: false
+        } as unknown as ReturnType<typeof useMyApplications>)
         render(<MemoryRouter><UserDashboard /></MemoryRouter>)
         expect(screen.getByRole("status")).toBeDefined()
     })
 
     it("should show empty state when no applications exist", () => {
-        vi.mocked(useMyApplications).mockReturnValue({ data: { items: [] }, isLoading: false } as any)
+        vi.mocked(useMyApplications).mockReturnValue({
+            data: {
+                items: [],
+                total_items: 0,
+                total_pages: 0,
+                page: 1,
+                has_next: false,
+                has_prev: false,
+                items_per_page: 10,
+                links: { self: "", first: "", last: "" }
+            },
+            isLoading: false,
+            isError: false
+        } as unknown as ReturnType<typeof useMyApplications>)
         vi.mocked(useAdminStats).mockReturnValue({
-            stats: { total: 0, approved: 0, pending: 0, rejected: 0 }
-        } as any)
+            stats: { total: 0, approved: 0, pending: 0, rejected: 0 },
+            statusChartData: [],
+            grantWiseData: []
+        } as unknown as ReturnType<typeof useAdminStats>)
 
         render(<MemoryRouter><UserDashboard /></MemoryRouter>)
         expect(screen.getByText(/You haven't submitted any applications yet/)).toBeDefined()

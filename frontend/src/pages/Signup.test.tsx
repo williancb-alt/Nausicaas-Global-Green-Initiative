@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { MemoryRouter } from "react-router-dom"
 import { Signup } from "./Signup"
@@ -28,12 +28,21 @@ describe("Signup Page", () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: false } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: false,
+            user: null,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
         vi.mocked(useRegister).mockReturnValue({
             mutate: mutateMock,
             isPending: false,
             isError: false,
             error: null,
+            reset: vi.fn(),
+            isSuccess: false,
+            status: "idle",
+            data: undefined
         } as any)
     })
 
@@ -51,6 +60,10 @@ describe("Signup Page", () => {
             isPending: true,
             isError: false,
             error: null,
+            reset: vi.fn(),
+            isSuccess: false,
+            status: "pending",
+            data: undefined
         } as any)
 
         renderInRouter()
@@ -63,6 +76,10 @@ describe("Signup Page", () => {
             isPending: false,
             isError: true,
             error: new Error("Email already exists"),
+            reset: vi.fn(),
+            isSuccess: false,
+            status: "error",
+            data: undefined
         } as any)
 
         renderInRouter()
@@ -70,7 +87,12 @@ describe("Signup Page", () => {
     })
 
     it("should redirect if already authenticated", () => {
-        vi.mocked(useAuthStore).mockReturnValue({ isAuthenticated: true } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            isAuthenticated: true,
+            user: { email: "test@test.com", admin: false, public_id: "user-1" },
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
         const { container } = renderInRouter()
         expect(container.querySelector("form")).toBeNull()
     })

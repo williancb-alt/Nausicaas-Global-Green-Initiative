@@ -31,7 +31,12 @@ describe("Dashboard Page", () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.mocked(useAuthStore).mockReturnValue({ user: mockUser } as any)
+        vi.mocked(useAuthStore).mockReturnValue({
+            user: { ...mockUser, admin: false },
+            isAuthenticated: true,
+            setUser: vi.fn(),
+            clearAuth: vi.fn()
+        } as any)
         // Suppress jsdom navigation warnings
         vi.spyOn(console, "error").mockImplementation(() => { })
     })

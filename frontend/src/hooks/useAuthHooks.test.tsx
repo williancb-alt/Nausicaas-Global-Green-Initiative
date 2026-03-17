@@ -5,6 +5,7 @@ import { api } from "../services/api"
 import { useAuthStore } from "../store/authStore"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
+import { UserInfo } from "../services/api/client"
 
 // Mock dependencies
 vi.mock("../services/api")
@@ -18,8 +19,8 @@ const createWrapper = () => {
         },
     })
     return ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client= { queryClient } > { children } </QueryClientProvider>
-  )
+        <QueryClientProvider client={queryClient} > {children} </QueryClientProvider>
+    )
 }
 
 describe("useAuthHooks", () => {
@@ -37,9 +38,9 @@ describe("useAuthHooks", () => {
 
     describe("useLogin", () => {
         it("should login and set user on success", async () => {
-            const mockUser = { email: "test@test.com", admin: false }
+            const mockUser: UserInfo = { email: "test@test.com", admin: false, public_id: "user-1" }
             vi.mocked(api.auth.login).mockResolvedValue({ status: "success", message: "ok" } as any)
-            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
+            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
 
             const { result } = renderHook(() => useLogin(), { wrapper: createWrapper() })
 
@@ -80,9 +81,9 @@ describe("useAuthHooks", () => {
 
     describe("useRegister", () => {
         it("should register and set user on success", async () => {
-            const mockUser = { email: "new@test.com", admin: false }
+            const mockUser: UserInfo = { email: "new@test.com", admin: false, public_id: "user-2" }
             vi.mocked(api.auth.register).mockResolvedValue({ status: "success", message: "ok" } as any)
-            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
+            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
 
             const { result } = renderHook(() => useRegister(), { wrapper: createWrapper() })
             result.current.mutate({ email: "new@test.com", password: "password" })
@@ -95,8 +96,8 @@ describe("useAuthHooks", () => {
 
     describe("useUser", () => {
         it("should fetch user and set it in store", async () => {
-            const mockUser = { email: "cached@test.com", admin: true }
-            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
+            const mockUser: UserInfo = { email: "cached@test.com", admin: true, public_id: "admin-1" }
+            vi.mocked(api.auth.getUser).mockResolvedValue(mockUser)
 
             const { result } = renderHook(() => useUser(), { wrapper: createWrapper() })
 
