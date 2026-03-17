@@ -4,20 +4,28 @@ import { MemoryRouter } from "react-router-dom"
 import { Header } from "./Header"
 
 vi.mock("../layout/NavBar", () => ({
-    default: () => <div data-testid="nav-bar" />
+  default: () => <div data-testid="nav-bar" />,
 }))
 
 describe("Header", () => {
-    it("should render logo and navbar", () => {
-        render(<MemoryRouter><Header /></MemoryRouter>)
-        expect(screen.getByText("NG")).toBeDefined()
-        expect(screen.getByTestId("nav-bar")).toBeDefined()
-    })
+  it("should render logo and navbar", () => {
+    render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText("NG")).toBeDefined()
+    expect(screen.getByTestId("nav-bar")).toBeDefined()
+  })
 
-    it("should have a link to home", () => {
-        render(<MemoryRouter><Header /></MemoryRouter>)
-        const link = screen.getByLabelText("Go to home page")
-        expect(link).toBeDefined()
-        expect(link.getAttribute("href")).toBe("/")
-    })
+  it("should have a link to home", () => {
+    render(
+      <MemoryRouter>
+        <Header />
+      </MemoryRouter>,
+    )
+    const link = screen.getByLabelText("Go to home page")
+    expect(link).toBeDefined()
+    expect(link.getAttribute("href")).toBe("/")
+  })
 })

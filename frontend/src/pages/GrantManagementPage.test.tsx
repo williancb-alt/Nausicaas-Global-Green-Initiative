@@ -62,28 +62,28 @@ function mockAllHooks() {
   vi.mocked(useGrants).mockReturnValue({
     data: mockGrants,
     isLoading: false,
-    isError: false
+    isError: false,
   } as any)
   vi.mocked(useCreateGrant).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
     isError: false,
     error: null,
-    reset: vi.fn()
+    reset: vi.fn(),
   } as any)
   vi.mocked(useUpdateGrant).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
     isError: false,
     error: null,
-    reset: vi.fn()
+    reset: vi.fn(),
   } as any)
   vi.mocked(useDeleteGrant).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
     isError: false,
     error: null,
-    reset: vi.fn()
+    reset: vi.fn(),
   } as any)
 }
 
@@ -104,7 +104,7 @@ describe("GrantManagementPage", () => {
       itemsPerPage: 10,
       setCurrentPage: vi.fn(),
       setItemsPerPage: vi.fn(),
-      reset: vi.fn()
+      reset: vi.fn(),
     } as any)
     mockAllHooks()
   })
@@ -138,7 +138,7 @@ describe("GrantManagementPage", () => {
       isPending: false,
       isError: false,
       error: null,
-      reset: vi.fn()
+      reset: vi.fn(),
     } as any)
 
     renderComponent()
@@ -150,7 +150,7 @@ describe("GrantManagementPage", () => {
 
     expect(updateMutate).toHaveBeenCalledWith(
       expect.objectContaining({ name: "visible-grant", hidden: true }),
-      expect.any(Object)
+      expect.any(Object),
     )
   })
 
@@ -162,7 +162,7 @@ describe("GrantManagementPage", () => {
       isPending: true,
       isError: false,
       error: null,
-      reset: vi.fn()
+      reset: vi.fn(),
     } as any)
 
     renderComponent()
@@ -176,17 +176,22 @@ describe("GrantManagementPage", () => {
   })
 
   it("should show error alert when toggle fails", () => {
-    const updateMutate = vi.fn((_data: { name: string; hidden: boolean }, options?: { onError?: (err: Error) => void }) => {
-      options?.onError?.(new Error("Network Error"))
-    })
+    const updateMutate = vi.fn(
+      (
+        _data: { name: string; hidden: boolean },
+        options?: { onError?: (err: Error) => void },
+      ) => {
+        options?.onError?.(new Error("Network Error"))
+      },
+    )
     vi.mocked(useUpdateGrant).mockReturnValue({
       mutate: updateMutate as any,
       isPending: false,
       isError: false,
       error: null,
-      reset: vi.fn()
+      reset: vi.fn(),
     } as any)
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => { })
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {})
 
     renderComponent()
 
@@ -195,7 +200,9 @@ describe("GrantManagementPage", () => {
       fireEvent.click(hideButton)
     })
 
-    expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to toggle visibility: Network Error"))
+    expect(alertSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Failed to toggle visibility: Network Error"),
+    )
     alertSpy.mockRestore()
   })
 })
