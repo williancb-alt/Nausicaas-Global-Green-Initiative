@@ -2,19 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { authApi } from "./auth"
 import { apiClient, BaseResponse, UserInfo } from "./client"
 
-vi.mock("./client", async importOriginal => {
-  const actual = await importOriginal<typeof import("./client")>()
-  return {
-    ...actual,
-    apiClient: {
-      post: vi.fn(),
-      get: vi.fn(),
-    },
-  }
-})
-
-const mockedPost = vi.mocked(apiClient.post)
-const mockedGet = vi.mocked(apiClient.get)
+const mockedPost = vi.spyOn(apiClient, "post")
+const mockedGet = vi.spyOn(apiClient, "get")
 
 const createSuccessResponse = (message: string): BaseResponse => ({
   status: "success",

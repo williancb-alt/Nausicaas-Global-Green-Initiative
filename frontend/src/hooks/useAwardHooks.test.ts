@@ -1,7 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import React from "react"
 import {
   useAwards,
   useCreateAward,
@@ -12,6 +10,7 @@ import {
 import { api } from "../services/api"
 import { BaseResponse } from "../services/api/client"
 import { EMPTY_PAGINATED_RESPONSE, mockAward } from "../test/mock-data"
+import { TestWrapper } from "../test/test-utils"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -29,13 +28,7 @@ vi.mock("../store/awardsStore", () => ({
   useAwardsStore: vi.fn(() => ({ currentPage: 1, itemsPerPage: 10 })),
 }))
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-}
+
 
 describe("useAwards", () => {
   beforeEach(() => vi.clearAllMocks())
@@ -49,7 +42,7 @@ describe("useAwards", () => {
     vi.mocked(api.awards.listAwards).mockResolvedValueOnce(mockPage as any)
 
     const { result } = renderHook(() => useAwards(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -62,7 +55,7 @@ describe("useAwards", () => {
     )
 
     const { result } = renderHook(() => useAwards(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
@@ -76,7 +69,7 @@ describe("useAward", () => {
     vi.mocked(api.awards.getAward).mockResolvedValueOnce(mockAward as any)
 
     const { result } = renderHook(() => useAward("Green Award"), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -85,7 +78,7 @@ describe("useAward", () => {
 
   it("should not fetch when name is empty", () => {
     const { result } = renderHook(() => useAward(""), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     expect(result.current.fetchStatus).toBe("idle")
     expect(api.awards.getAward).not.toHaveBeenCalled()
@@ -100,7 +93,7 @@ describe("useCreateAward", () => {
     vi.mocked(api.awards.createAward).mockResolvedValueOnce(mockResponse)
 
     const { result } = renderHook(() => useCreateAward(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate({
       name: "Green Award",
@@ -121,7 +114,7 @@ describe("useUpdateAward", () => {
     vi.mocked(api.awards.updateAward).mockResolvedValueOnce(mockResponse)
 
     const { result } = renderHook(() => useUpdateAward(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate({ name: "Green Award", deadline: "2027-01-01" })
 
@@ -136,7 +129,7 @@ describe("useDeleteAward", () => {
     vi.mocked(api.awards.deleteAward).mockResolvedValueOnce(undefined)
 
     const { result } = renderHook(() => useDeleteAward(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate("Green Award")
 

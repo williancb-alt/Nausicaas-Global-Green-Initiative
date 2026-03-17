@@ -1,7 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import React from "react"
 import {
   useMyApplications,
   useApplications,
@@ -12,6 +10,7 @@ import {
 import { api } from "../services/api"
 import { Application } from "../types"
 import { EMPTY_PAGINATED_RESPONSE } from "../test/mock-data"
+import { TestWrapper } from "../test/test-utils"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -26,13 +25,7 @@ vi.mock("../services/api", () => ({
   },
 }))
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-}
+
 
 describe("useMyApplications", () => {
   beforeEach(() => vi.clearAllMocks())
@@ -48,7 +41,7 @@ describe("useMyApplications", () => {
     )
 
     const { result } = renderHook(() => useMyApplications(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -61,7 +54,7 @@ describe("useMyApplications", () => {
     )
 
     const { result } = renderHook(() => useMyApplications(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
@@ -77,7 +70,7 @@ describe("useApplications", () => {
     )
 
     const { result } = renderHook(() => useApplications(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -93,7 +86,7 @@ describe("useApplication", () => {
     vi.mocked(api.applications.getApplication).mockResolvedValueOnce(mockApp)
 
     const { result } = renderHook(() => useApplication("42"), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -102,7 +95,7 @@ describe("useApplication", () => {
 
   it("should not fetch when id is undefined", () => {
     const { result } = renderHook(() => useApplication(undefined), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     expect(result.current.fetchStatus).toBe("idle")
     expect(api.applications.getApplication).not.toHaveBeenCalled()
@@ -123,7 +116,7 @@ describe("useSubmitApplication", () => {
     )
 
     const { result } = renderHook(() => useSubmitApplication(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     result.current.mutate({ grantName: "Test Grant", fieldValues: {} })
@@ -142,7 +135,7 @@ describe("useDeleteApplication", () => {
     )
 
     const { result } = renderHook(() => useDeleteApplication(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     result.current.mutate("42")

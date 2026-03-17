@@ -3,23 +3,10 @@ import { awardsApi } from "./awards"
 import { apiClient, BaseResponse, Award } from "./client"
 import { EMPTY_PAGINATED_RESPONSE } from "../../test/mock-data"
 
-vi.mock("./client", async importOriginal => {
-  const actual = await importOriginal<typeof import("./client")>()
-  return {
-    ...actual,
-    apiClient: {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-    },
-  }
-})
-
-const mockedGet = vi.mocked(apiClient.get)
-const mockedPost = vi.mocked(apiClient.post)
-const mockedPut = vi.mocked(apiClient.put)
-const mockedDelete = vi.mocked(apiClient.delete)
+const mockedGet = vi.spyOn(apiClient, "get")
+const mockedPost = vi.spyOn(apiClient, "post")
+const mockedPut = vi.spyOn(apiClient, "put")
+const mockedDelete = vi.spyOn(apiClient, "delete")
 
 const createSuccessResponse = (message: string): BaseResponse => ({
   status: "success",

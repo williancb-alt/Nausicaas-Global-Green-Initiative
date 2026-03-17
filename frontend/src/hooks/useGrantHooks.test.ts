@@ -1,7 +1,5 @@
 import { renderHook, waitFor } from "@testing-library/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import React from "react"
 import {
   useGrants,
   useCreateGrant,
@@ -12,6 +10,7 @@ import {
 import { api } from "../services/api"
 import { BaseResponse } from "../services/api/client"
 import { EMPTY_PAGINATED_RESPONSE, mockGrant } from "../test/mock-data"
+import { TestWrapper } from "../test/test-utils"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -29,13 +28,7 @@ vi.mock("../store/grantsStore", () => ({
   useGrantsStore: vi.fn(() => ({ currentPage: 1, itemsPerPage: 10 })),
 }))
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  })
-  return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
-}
+
 
 describe("useGrants", () => {
   beforeEach(() => vi.clearAllMocks())
@@ -49,7 +42,7 @@ describe("useGrants", () => {
     vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockPage as any)
 
     const { result } = renderHook(() => useGrants(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -62,7 +55,7 @@ describe("useGrants", () => {
     )
 
     const { result } = renderHook(() => useGrants(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isError).toBe(true))
@@ -76,7 +69,7 @@ describe("useGrant", () => {
     vi.mocked(api.grants.getGrant).mockResolvedValueOnce(mockGrant)
 
     const { result } = renderHook(() => useGrant("Env Grant"), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -85,7 +78,7 @@ describe("useGrant", () => {
 
   it("should not fetch when name is empty", () => {
     const { result } = renderHook(() => useGrant(""), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     expect(result.current.fetchStatus).toBe("idle")
     expect(api.grants.getGrant).not.toHaveBeenCalled()
@@ -100,7 +93,7 @@ describe("useCreateGrant", () => {
     vi.mocked(api.grants.createGrant).mockResolvedValueOnce(mockResponse)
 
     const { result } = renderHook(() => useCreateGrant(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate({
       name: "Test Grant",
@@ -121,7 +114,7 @@ describe("useUpdateGrant", () => {
     vi.mocked(api.grants.updateGrant).mockResolvedValueOnce(mockResponse)
 
     const { result } = renderHook(() => useUpdateGrant(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate({ name: "Test Grant", deadline: "2027-01-01" })
 
@@ -136,7 +129,7 @@ describe("useDeleteGrant", () => {
     vi.mocked(api.grants.deleteGrant).mockResolvedValueOnce(undefined)
 
     const { result } = renderHook(() => useDeleteGrant(), {
-      wrapper: createWrapper(),
+      wrapper: TestWrapper,
     })
     result.current.mutate("Test Grant")
 

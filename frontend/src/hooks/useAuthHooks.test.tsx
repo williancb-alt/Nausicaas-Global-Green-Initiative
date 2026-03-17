@@ -3,25 +3,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useLogin, useLogout, useRegister, useUser } from "./useAuthHooks"
 import { api } from "../services/api"
 import { useAuthStore } from "../store/authStore"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import React from "react"
 import { mockUser, mockAdminUser } from "../test/mock-data"
+import { TestWrapper } from "../test/test-utils"
 
 // Mock dependencies
 vi.mock("../services/api")
 vi.mock("../store/authStore")
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  })
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}> {children} </QueryClientProvider>
-  )
-}
 
 describe("useAuthHooks", () => {
   const setUserMock = vi.fn()
@@ -45,7 +33,7 @@ describe("useAuthHooks", () => {
       vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
 
       const { result } = renderHook(() => useLogin(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
 
       result.current.mutate({ email: "test@test.com", password: "password" })
@@ -65,7 +53,7 @@ describe("useAuthHooks", () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
       const { result } = renderHook(() => useLogin(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
       result.current.mutate({ email: "test@test.com", password: "password" })
 
@@ -83,7 +71,7 @@ describe("useAuthHooks", () => {
       } as any)
 
       const { result } = renderHook(() => useLogout(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
       result.current.mutate()
 
@@ -102,7 +90,7 @@ describe("useAuthHooks", () => {
       vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
 
       const { result } = renderHook(() => useRegister(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
       result.current.mutate({ email: "new@test.com", password: "password" })
 
@@ -117,7 +105,7 @@ describe("useAuthHooks", () => {
       vi.mocked(api.auth.getUser).mockResolvedValue(mockAdminUser as any)
 
       const { result } = renderHook(() => useUser(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
@@ -128,7 +116,7 @@ describe("useAuthHooks", () => {
       vi.mocked(api.auth.getUser).mockRejectedValue(new Error("No user"))
 
       const { result } = renderHook(() => useUser(), {
-        wrapper: createWrapper(),
+        wrapper: TestWrapper,
       })
 
       await waitFor(() => expect(result.current.isError).toBe(true))
