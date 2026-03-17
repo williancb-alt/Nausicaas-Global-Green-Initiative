@@ -1,0 +1,31 @@
+name: Staging scheduled destroy
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "20 10 * * *"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  destroy_app:
+    name: Destroy staging app layer (envs/staging)
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: destroy
+    secrets: inherit
+
+  destroy_core:
+    name: Destroy staging core layer (cores/staging)
+    needs: [destroy_app]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: destroy
+    secrets: inherit
