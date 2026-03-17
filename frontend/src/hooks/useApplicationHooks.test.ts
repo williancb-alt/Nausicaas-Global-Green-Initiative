@@ -25,8 +25,6 @@ vi.mock("../services/api", () => ({
   },
 }))
 
-
-
 describe("useMyApplications", () => {
   beforeEach(() => vi.clearAllMocks())
 

@@ -10,7 +10,6 @@ import { TestWrapper } from "../test/test-utils"
 vi.mock("../services/api")
 vi.mock("../store/authStore")
 
-
 describe("useAuthHooks", () => {
   const setUserMock = vi.fn()
   const clearAuthMock = vi.fn()

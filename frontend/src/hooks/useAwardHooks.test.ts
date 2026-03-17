@@ -28,8 +28,6 @@ vi.mock("../store/awardsStore", () => ({
   useAwardsStore: vi.fn(() => ({ currentPage: 1, itemsPerPage: 10 })),
 }))
 
-
-
 describe("useAwards", () => {
   beforeEach(() => vi.clearAllMocks())
 
