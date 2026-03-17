@@ -3,7 +3,8 @@ name: Staging scheduled destroy
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "20 10 * * *"
+    - cron: "22 10 * * *"
+  push:
 
 permissions:
   contents: read
