@@ -3,6 +3,6 @@ terraform {
     resource_group_name  = "tfstate-rg"
     storage_account_name = "nausicaastate"
     container_name       = "tfstate"
-    key                  = "infra/terraform.tfstate"
+    key                  = "infra/production.tfstate"
   }
 }

@@ -1,4 +1,4 @@
-from flask import Response, url_for
+from flask import Response, url_for, current_app
 
 from nausicass_global_green_initiative_api.services.oauth.core import oauth, logger
 
@@ -31,9 +31,20 @@ class GitHubOAuthProvider:
     name = "github"
 
     def start_login(self) -> Response:
-        redirect_uri = url_for(
-            "api.auth_oauth_callback", provider=self.name, _external=True
-        )
+        env_name = current_app.config.get("ENV", "production")
+        is_local = current_app.debug or env_name == "development"
+
+        if is_local:
+            redirect_uri = url_for(
+                "api.auth_oauth_callback", provider=self.name, _external=True
+            )
+        else:
+            redirect_uri = url_for(
+                "api.auth_oauth_callback",
+                provider=self.name,
+                _external=True,
+                _scheme="https",
+            )
         return oauth.github.authorize_redirect(redirect_uri)
 
     def handle_callback(self) -> Response:

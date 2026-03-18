@@ -1,0 +1,91 @@
+name: Production Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to deploy (e.g. v1.2.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  prepare:
+    name: Validate tag exists and extract version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: parse
+        run: |
+          RAW="${{ inputs.tag }}"
+          VERSION="${RAW#v}"
+          if [ -z "$VERSION" ]; then
+            echo "Tag input is empty after parsing" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve tag to commit (to ensure existence)
+        id: resolve
+        run: |
+          TAG="${{ inputs.tag }}"
+          git fetch --tags --force
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag not found: $TAG" >&2
+            exit 1
+          fi
+          SHA="$(git rev-list -n 1 "refs/tags/$TAG")"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "Tag $TAG -> $SHA"
+
+      - name: Ensure tag commit is present on main branch (security check)
+        run: |
+          SHA="${{ steps.resolve.outputs.sha }}"
+          git fetch origin main --force
+          if git merge-base --is-ancestor "$SHA" "origin/main"; then
+            echo "OK: tag commit is contained in main"
+          else
+            echo "Refusing to deploy: tag commit is not contained in main" >&2
+            exit 1
+          fi
+
+  core_production:
+    name: Ensure production core infra in place
+    needs: prepare
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: production
+      action: apply
+    secrets: inherit
+
+  build_and_push_release_images:
+    name: Build & push release images to ACR
+    needs: [prepare, core_production]
+    uses: ./.github/workflows/push-to-acr.yml
+    with:
+      environment: production
+      tag: ${{ needs.prepare.outputs.version }}
+    secrets: inherit
+
+  deploy_app_production:
+    name: Deploy app to production
+    needs: [prepare, build_and_push_release_images]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: production
+      action: apply
+      image_tag: ${{ needs.prepare.outputs.version }}
+    secrets: inherit

@@ -8,6 +8,8 @@ from nausicass_global_green_initiative_api.models.user_oauth_account import (
 )
 from tests.util import PASSWORD
 
+from urllib.parse import urlparse, parse_qs
+
 
 def _oauth_helpers():
     """Lazy-load oauth helpers to avoid circular import at collection time."""
@@ -24,6 +26,22 @@ def _oauth_registry():
     )
 
     return PROVIDERS, init_oauth
+
+
+def _assert_oauth_redirect_scheme(
+    app, client, provider: str, expected_prefix: str
+) -> None:
+    """Helper to assert redirect_uri scheme for a given provider."""
+    with app.app_context():
+        resp = client.get(url_for("api.auth_oauth_login", provider=provider))
+        assert resp.status_code in (HTTPStatus.FOUND, HTTPStatus.SEE_OTHER)
+
+        location = resp.headers["Location"]
+        parsed = urlparse(location)
+        qs = parse_qs(parsed.query)
+        redirect_uri = qs.get("redirect_uri", [""])[0]
+
+        assert redirect_uri.startswith(expected_prefix)
 
 
 def test_oauth_start_login_unknown_provider_returns_404(client, app):
@@ -183,3 +201,30 @@ def test_init_oauth_skips_provider_without_handler(app):
     assert "fake" not in PROVIDERS
     assert "google" in PROVIDERS
     assert "github" in PROVIDERS
+
+
+def test_oauth_start_login_google_uses_http_in_dev(client, app):
+    """In development (debug), Google redirect_uri uses http scheme."""
+    app.debug = True
+    app.env = "development"
+    _assert_oauth_redirect_scheme(
+        app=app, client=client, provider="google", expected_prefix="http://"
+    )
+
+
+def test_oauth_start_login_google_uses_https_in_prod(client, app):
+    """In non-dev env, Google redirect_uri uses https scheme."""
+    app.debug = False
+    app.env = "production"
+    _assert_oauth_redirect_scheme(
+        app=app, client=client, provider="google", expected_prefix="https://"
+    )
+
+
+def test_oauth_start_login_github_uses_https_in_prod(client, app):
+    """In non-dev env, GitHub redirect_uri uses https scheme."""
+    app.debug = False
+    app.env = "production"
+    _assert_oauth_redirect_scheme(
+        app=app, client=client, provider="github", expected_prefix="https://"
+    )

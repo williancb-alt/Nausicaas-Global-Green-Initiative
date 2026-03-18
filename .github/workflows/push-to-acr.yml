@@ -1,34 +1,70 @@
 name: Build and Push Images to ACR
 
 on:
-  push:
-    # Disabling for main for now until credentials are resolved
-    branches: [ "infra-actions" ]
   workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [staging, production]
+        required: true
+      tag:
+        description: "Optional image tag override (e.g. 1.2.3). If empty, uses env name."
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      environment:
+        description: "staging or production"
+        required: true
+        type: string
+      tag:
+        description: "Optional image tag override (e.g. 1.2.3). If empty, uses env name."
+        required: false
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || github.event.inputs.environment }}
+    env:
+      ENVIRONMENT: ${{ inputs.environment || github.event.inputs.environment }}
+      IMAGE_TAG: ${{ inputs.tag || github.event.inputs.tag || inputs.environment || github.event.inputs.environment }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-      - name: Docker Login to ACR
-        run: |
-          echo "${{ secrets.ACR_PASSWORD }}" | docker login ${{ secrets.ACR_LOGIN_SERVER }} -u ${{ secrets.ACR_USERNAME }} --password-stdin
+      - name: Azure login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-      - name: Build backend image
+      - name: ACR login
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest ./backend
+          az acr login --name ${{ vars.ACR_NAME }}
 
-      - name: Push backend image
+      - name: Build & push backend
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/backend:latest
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          docker build -t "$ACR/backend:${IMAGE_TAG}" ./backend
+          docker push "$ACR/backend:${IMAGE_TAG}"
 
-      - name: Build frontend image
+      - name: Build & push frontend
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest ./frontend
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
 
-      - name: Push frontend image
-        run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/frontend:latest
+          docker build \
+            --build-arg VITE_API_BASE_URL="${{ secrets.BACKEND_BASE_URL }}" \
+            --build-arg SERVER_NAME="${{ secrets.FRONTEND_BASE_URL }}" \
+            -t "$ACR/frontend:${IMAGE_TAG}" ./frontend
+
+          docker push "$ACR/frontend:${IMAGE_TAG}"

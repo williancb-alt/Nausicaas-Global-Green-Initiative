@@ -36,7 +36,7 @@ INSTALL_REQUIRES = [
     "python-dotenv",
     "requests",
     "urllib3>=2.6.3",
-    "werkzeug==3.1.5",
+    "werkzeug==3.1.6",
 ]
 EXTRAS_REQUIRE = {
     "dev": [
