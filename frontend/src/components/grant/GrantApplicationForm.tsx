@@ -1,7 +1,7 @@
 import { type FormEvent, type JSX, useState, useCallback, useMemo } from "react"
 import { DynamicFieldInput } from "../dynamicFields/DynamicFieldInput"
 import { Button } from "../button/Button"
-import { Grant } from "../../services/api"
+import { Award, Grant } from "../../services/api"
 import type { DynamicFieldConfig } from "../../types"
 
 function GrantInfoHeader({ grant }: { grant: Grant }): JSX.Element {
@@ -62,10 +62,111 @@ function ApplicationFields({
   )
 }
 
+function validateApplicationSubmission(
+  customFields: DynamicFieldConfig[],
+  fieldValues: Record<string, string>,
+  selectedAwardName: string,
+  awardJustification: string,
+): string | null {
+  const missingFields = customFields
+    .filter(
+      (field, index) =>
+        field.required && !(fieldValues[`field_${index}`] ?? "").trim(),
+    )
+    .map(field => field.label)
+
+  if (missingFields.length > 0) {
+    return `Please fill in the following required fields: ${missingFields.join(", ")}`
+  }
+
+  if (selectedAwardName && !awardJustification.trim()) {
+    return "Please explain why your application should be considered for the selected award."
+  }
+
+  return null
+}
+
+function AwardConsiderationSection({
+  awards,
+  isAwardsLoading,
+  awardsError,
+  selectedAwardName,
+  awardJustification,
+  onAwardChange,
+  onAwardJustificationChange,
+}: {
+  awards: Award[]
+  isAwardsLoading: boolean
+  awardsError: string | null
+  selectedAwardName: string
+  awardJustification: string
+  onAwardChange: (awardName: string) => void
+  onAwardJustificationChange: (value: string) => void
+}): JSX.Element {
+  return (
+    <div className="mt-4">
+      <h5 className="mb-3 pb-2 border-bottom" style={{ color: "#2f6f44" }}>
+        Award Consideration
+      </h5>
+
+      <label className="form-label" htmlFor="award-selection">
+        Select an award to be considered for
+      </label>
+      <select
+        id="award-selection"
+        className="form-select"
+        value={selectedAwardName}
+        onChange={e => onAwardChange(e.target.value)}
+        disabled={isAwardsLoading}
+      >
+        <option value="">No award selection</option>
+        {awards.map(award => (
+          <option key={award.name} value={award.name}>
+            {award.name}
+          </option>
+        ))}
+      </select>
+      <div className="form-text">
+        This is optional. If you select an award, include a short justification
+        below.
+      </div>
+
+      {awardsError && (
+        <div className="alert alert-warning mt-3 mb-0" role="alert">
+          {awardsError}
+        </div>
+      )}
+
+      {selectedAwardName && (
+        <div className="mt-3">
+          <label className="form-label" htmlFor="award-justification">
+            Why should your application be considered for this award?
+          </label>
+          <textarea
+            id="award-justification"
+            className="form-control"
+            rows={4}
+            value={awardJustification}
+            onChange={e => onAwardJustificationChange(e.target.value)}
+            placeholder="Describe how your application aligns with this award."
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface GrantApplicationFormProps {
   grant: Grant
+  awards: Award[]
+  isAwardsLoading: boolean
+  awardsError: string | null
   fieldValues: Record<string, string>
+  selectedAwardName: string
+  awardJustification: string
   onFieldChange: (fieldKey: string, value: string) => void
+  onAwardChange: (awardName: string) => void
+  onAwardJustificationChange: (value: string) => void
   onSubmit: (e: FormEvent<HTMLFormElement>) => void
   submitError: string | null
   isSubmitting: boolean
@@ -74,8 +175,15 @@ interface GrantApplicationFormProps {
 
 export function GrantApplicationForm({
   grant,
+  awards,
+  isAwardsLoading,
+  awardsError,
   fieldValues,
+  selectedAwardName,
+  awardJustification,
   onFieldChange,
+  onAwardChange,
+  onAwardJustificationChange,
   onSubmit,
   submitError,
   isSubmitting,
@@ -91,24 +199,27 @@ export function GrantApplicationForm({
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault()
 
-      const missingFields = customFields
-        .filter(
-          (field, index) =>
-            field.required && !(fieldValues[`field_${index}`] ?? "").trim(),
-        )
-        .map(field => field.label)
-
-      if (missingFields.length > 0) {
-        setRequiredError(
-          `Please fill in the following required fields: ${missingFields.join(", ")}`,
-        )
+      const validationError = validateApplicationSubmission(
+        customFields,
+        fieldValues,
+        selectedAwardName,
+        awardJustification,
+      )
+      if (validationError) {
+        setRequiredError(validationError)
         return
       }
 
       setRequiredError(null)
       onSubmit(e)
     },
-    [customFields, fieldValues, onSubmit],
+    [
+      awardJustification,
+      customFields,
+      fieldValues,
+      onSubmit,
+      selectedAwardName,
+    ],
   )
 
   return (
@@ -135,6 +246,16 @@ export function GrantApplicationForm({
                     fields={customFields}
                     fieldValues={fieldValues}
                     onFieldChange={onFieldChange}
+                  />
+
+                  <AwardConsiderationSection
+                    awards={awards}
+                    isAwardsLoading={isAwardsLoading}
+                    awardsError={awardsError}
+                    selectedAwardName={selectedAwardName}
+                    awardJustification={awardJustification}
+                    onAwardChange={onAwardChange}
+                    onAwardJustificationChange={onAwardJustificationChange}
                   />
 
                   {requiredError && (
