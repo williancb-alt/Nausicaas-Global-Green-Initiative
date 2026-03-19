@@ -257,6 +257,62 @@ function ApplicationGrantOverview({
   )
 }
 
+function ApplicationAwardOverview({
+  award,
+  awardJustification,
+}: {
+  award: NonNullable<Application["award"]>
+  awardJustification: string | undefined
+}) {
+  return (
+    <div
+      className="card border-0 shadow-sm mb-4"
+      style={{ borderRadius: "16px" }}
+    >
+      <div className="card-body p-4">
+        <div className="d-flex align-items-center gap-2 mb-4">
+          <Info className="text-primary" size={24} />
+          <h2 className="h5 mb-0 fw-bold" style={{ color: "#2d5a41" }}>
+            Award Details
+          </h2>
+        </div>
+
+        <div className="mb-4">
+          <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
+            Award
+          </label>
+          <div className="fw-semibold">{award.name}</div>
+        </div>
+
+        {award.description && (
+          <div className="mb-4">
+            <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
+              Description
+            </label>
+            <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
+              {award.description}
+            </p>
+          </div>
+        )}
+
+        {awardJustification && (
+          <div
+            className="p-3 bg-light rounded"
+            style={{ border: "1px solid #e2e8f0" }}
+          >
+            <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
+              Justification
+            </label>
+            <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
+              {awardJustification}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function ApplicationNeedHelpCard() {
   return (
     <div
@@ -359,6 +415,12 @@ export function UserApplicationDetails({
               grant={application.grant}
               submittedDate={application.submitted_date}
             />
+            {application.award && (
+              <ApplicationAwardOverview
+                award={application.award}
+                awardJustification={application.award_justification}
+              />
+            )}
             <ApplicationNeedHelpCard />
           </div>
         </div>
