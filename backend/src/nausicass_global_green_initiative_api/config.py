@@ -39,6 +39,7 @@ class Config:
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     SWAGGER_UI_DOC_EXPANSION = "list"
     RESTX_MASK_SWAGGER = False
+    RESTX_ERROR_404_HELP = False
     JSON_SORT_KEYS = False
 
 

@@ -15,6 +15,7 @@ from nausicass_global_green_initiative_api.api.applications.dto import (
 )
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.grant import Grant
+from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 
@@ -24,6 +25,8 @@ class ApplicationCreateDict(TypedDict, total=False):
 
     grant_name: str
     field_values: dict | None
+    award_name: str | None
+    award_justification: str | None
 
 
 class ApplicationUpdateDict(TypedDict, total=False):
@@ -31,6 +34,8 @@ class ApplicationUpdateDict(TypedDict, total=False):
 
     status: str | None
     feedback: str | None
+    award_name: str | None
+    award_justification: str | None
     field_values: dict | None
 
 
@@ -39,6 +44,8 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     """Create a new application for a grant."""
     grant_name = application_dict["grant_name"]
     field_values = application_dict.get("field_values")
+    award_name = application_dict.get("award_name")
+    award_justification = application_dict.get("award_justification")
 
     # Find the grant
     grant = Grant.find_by_name(grant_name)
@@ -76,10 +83,15 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
             status="fail",
         )
 
+    award = _get_optional_award(award_name)
+    _validate_award_justification(award_name, award_justification)
+
     # Create application
     application = Application(
         user_id=user.id,
         grant_id=grant.id,
+        award=award,
+        award_justification=award_justification,
         field_values=field_values,
         status="pending_review",
     )
@@ -177,10 +189,7 @@ def update_application(
         status_changed = application.status != new_status
         application.status = new_status
 
-    if application_dict.get("feedback") is not None:
-        application.feedback = application_dict["feedback"]
-    if application_dict.get("field_values"):
-        application.field_values = application_dict["field_values"]
+    _apply_application_updates(application, application_dict)
 
     db.session.commit()
 
@@ -232,6 +241,78 @@ def delete_application(application_id: int) -> tuple[str, HTTPStatus]:
     db.session.delete(application)
     db.session.commit()
     return "", HTTPStatus.NO_CONTENT
+
+
+def _apply_application_updates(
+    application: Application, application_dict: ApplicationUpdateDict
+) -> None:
+    if application_dict.get("feedback") is not None:
+        application.feedback = application_dict["feedback"]
+    if "field_values" in application_dict:
+        application.field_values = application_dict["field_values"]
+
+    _apply_award_updates(application, application_dict)
+
+
+def _apply_award_updates(
+    application: Application, application_dict: ApplicationUpdateDict
+) -> None:
+    if "award_name" in application_dict:
+        _set_application_award(application, application_dict)
+    if "award_justification" in application_dict:
+        application.award_justification = application_dict["award_justification"]
+
+    _validate_award_justification(
+        application.award.name if application.award else None,
+        application.award_justification,
+    )
+
+
+def _set_application_award(
+    application: Application, application_dict: ApplicationUpdateDict
+) -> None:
+    award_name = application_dict["award_name"]
+    if award_name is None:
+        application.award = None
+        if "award_justification" not in application_dict:
+            application.award_justification = None
+        return
+
+    application.award = _get_optional_award(award_name)
+
+
+def _get_optional_award(award_name: str | None) -> Award | None:
+    if award_name is None:
+        return None
+
+    award = Award.find_by_name(award_name)
+    if not award:
+        abort(
+            HTTPStatus.NOT_FOUND,
+            f"Award '{award_name}' not found.",
+            status="fail",
+        )
+    return award
+
+
+def _validate_award_justification(
+    award_name: str | None, award_justification: str | None
+) -> None:
+    has_justification = (
+        award_justification is not None and award_justification.strip() != ""
+    )
+    if award_name and not has_justification:
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            "Award justification is required when an award is selected.",
+            status="fail",
+        )
+    if not award_name and has_justification:
+        abort(
+            HTTPStatus.BAD_REQUEST,
+            "Award justification cannot be provided without selecting an award.",
+            status="fail",
+        )
 
 
 def _pagination_nav_links(pagination: Pagination, endpoint: str) -> dict[str, str]:

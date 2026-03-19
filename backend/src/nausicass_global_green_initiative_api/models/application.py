@@ -41,8 +41,8 @@ class Application(db.Model):
     def __repr__(self) -> str:
         return (
             f"<Application id={self.id}, "
-            f"user_id={self.user_id}, grant_id={self.grant_id}, award_id={self.award_id}, "
-            f"status={self.status}>"
+            f"user_id={self.user_id}, grant_id={self.grant_id}, "
+            f"award_id={self.award_id}, status={self.status}>"
         )
 
     @hybrid_property
