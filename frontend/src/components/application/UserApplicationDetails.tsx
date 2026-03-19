@@ -1,4 +1,4 @@
-import { JSX, useState } from "react"
+import { JSX, ReactNode, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import type { Application } from "../../types"
 import { UserApplicationResponses } from "./UserApplicationResponses"
@@ -202,12 +202,12 @@ function ApplicationReviewerFeedback({ feedback }: { feedback: string }) {
   )
 }
 
-function ApplicationGrantOverview({
-  grant,
-  submittedDate,
+function ApplicationOverviewCard({
+  title,
+  children,
 }: {
-  grant: Application["grant"]
-  submittedDate: string
+  title: string
+  children: ReactNode
 }) {
   return (
     <div
@@ -218,98 +218,100 @@ function ApplicationGrantOverview({
         <div className="d-flex align-items-center gap-2 mb-4">
           <Info className="text-primary" size={24} />
           <h2 className="h5 mb-0 fw-bold" style={{ color: "#2d5a41" }}>
-            Grant Overview
+            {title}
           </h2>
         </div>
-
-        <div className="mb-4">
-          <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
-            Program Name
-          </label>
-          <div className="fw-semibold">{grant.name}</div>
-        </div>
-
-        {grant.description && (
-          <div className="mb-4">
-            <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
-              Description
-            </label>
-            <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
-              {grant.description}
-            </p>
-          </div>
-        )}
-
-        <div
-          className="d-flex align-items-center gap-3 p-3 bg-light rounded"
-          style={{ border: "1px solid #e2e8f0" }}
-        >
-          <div className="bg-white p-2 rounded shadow-sm">
-            <Calendar className="text-success" size={20} />
-          </div>
-          <div>
-            <label className="text-muted small d-block">Submission Date</label>
-            <span className="fw-bold">{submittedDate}</span>
-          </div>
-        </div>
+        {children}
       </div>
     </div>
   )
 }
 
-function ApplicationAwardOverview({
-  award,
-  awardJustification,
+function ApplicationOverviewField({
+  label,
+  children,
 }: {
-  award: NonNullable<Application["award"]>
-  awardJustification: string | undefined
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <div className="mb-4">
+      <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+function ApplicationOverviewText({ text }: { text: string }) {
+  return (
+    <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
+      {text}
+    </p>
+  )
+}
+
+function ApplicationOverviewHighlight({
+  label,
+  value,
+  icon,
+}: {
+  label: string
+  value: string
+  icon: ReactNode
 }) {
   return (
     <div
-      className="card border-0 shadow-sm mb-4"
-      style={{ borderRadius: "16px" }}
+      className="d-flex align-items-center gap-3 p-3 bg-light rounded"
+      style={{ border: "1px solid #e2e8f0" }}
     >
-      <div className="card-body p-4">
-        <div className="d-flex align-items-center gap-2 mb-4">
-          <Info className="text-primary" size={24} />
-          <h2 className="h5 mb-0 fw-bold" style={{ color: "#2d5a41" }}>
-            Award Details
-          </h2>
-        </div>
-
-        <div className="mb-4">
-          <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
-            Award
-          </label>
-          <div className="fw-semibold">{award.name}</div>
-        </div>
-
-        {award.description && (
-          <div className="mb-4">
-            <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
-              Description
-            </label>
-            <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
-              {award.description}
-            </p>
-          </div>
-        )}
-
-        {awardJustification && (
-          <div
-            className="p-3 bg-light rounded"
-            style={{ border: "1px solid #e2e8f0" }}
-          >
-            <label className="text-muted small text-uppercase fw-bold mb-1 d-block">
-              Justification
-            </label>
-            <p className="mb-0 text-muted" style={{ lineHeight: "1.6" }}>
-              {awardJustification}
-            </p>
-          </div>
-        )}
+      <div className="bg-white p-2 rounded shadow-sm">{icon}</div>
+      <div>
+        <label className="text-muted small d-block">{label}</label>
+        <span className="fw-bold">{value}</span>
       </div>
     </div>
+  )
+}
+
+function ApplicationEntityOverview({
+  title,
+  primaryLabel,
+  primaryValue,
+  description,
+  highlightLabel,
+  highlightValue,
+  highlightIcon,
+}: {
+  title: string
+  primaryLabel: string
+  primaryValue: string
+  description: string | undefined
+  highlightLabel: string | undefined
+  highlightValue: string | undefined
+  highlightIcon: ReactNode | undefined
+}) {
+  return (
+    <ApplicationOverviewCard title={title}>
+      <ApplicationOverviewField label={primaryLabel}>
+        <div className="fw-semibold">{primaryValue}</div>
+      </ApplicationOverviewField>
+
+      {description && (
+        <ApplicationOverviewField label="Description">
+          <ApplicationOverviewText text={description} />
+        </ApplicationOverviewField>
+      )}
+
+      {highlightLabel && highlightValue && highlightIcon && (
+        <ApplicationOverviewHighlight
+          label={highlightLabel}
+          value={highlightValue}
+          icon={highlightIcon}
+        />
+      )}
+    </ApplicationOverviewCard>
   )
 }
 
@@ -411,14 +413,30 @@ export function UserApplicationDetails({
           </div>
 
           <div className="col-lg-4">
-            <ApplicationGrantOverview
-              grant={application.grant}
-              submittedDate={application.submitted_date}
+            <ApplicationEntityOverview
+              title="Grant Overview"
+              primaryLabel="Program Name"
+              primaryValue={application.grant.name}
+              description={application.grant.description}
+              highlightLabel="Submission Date"
+              highlightValue={application.submitted_date}
+              highlightIcon={<Calendar className="text-success" size={20} />}
             />
             {application.award && (
-              <ApplicationAwardOverview
-                award={application.award}
-                awardJustification={application.award_justification}
+              <ApplicationEntityOverview
+                title="Award Details"
+                primaryLabel="Award"
+                primaryValue={application.award.name}
+                description={application.award.description}
+                highlightLabel={
+                  application.award_justification ? "Justification" : undefined
+                }
+                highlightValue={application.award_justification}
+                highlightIcon={
+                  application.award_justification ? (
+                    <FileText className="text-success" size={20} />
+                  ) : undefined
+                }
               />
             )}
             <ApplicationNeedHelpCard />
