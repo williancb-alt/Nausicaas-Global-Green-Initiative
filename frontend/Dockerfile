@@ -12,8 +12,6 @@ ENV SERVER_NAME=$SERVER_NAME
 
 COPY package.json package-lock.json ./
 
-RUN npm install
-
 RUN npm ci
 
 COPY . .
