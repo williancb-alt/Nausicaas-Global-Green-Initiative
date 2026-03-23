@@ -34,93 +34,74 @@ vi.mock("../components/table/ApplicationsListTable", () => ({
 describe("Applications Page (Admin)", () => {
   const navigateMock = vi.fn()
 
+  const mockUseApplications = (overrides: Record<string, unknown> = {}) => {
+    vi.mocked(useApplications).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      ...overrides,
+    } as any)
+  }
+
+  const renderComponent = () =>
+    render(
+      <MemoryRouter>
+        <Applications />
+      </MemoryRouter>,
+    )
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
   })
 
-  it("should show loading state", () => {
-    vi.mocked(useApplications).mockReturnValue({
-      isLoading: true,
-      isError: false,
-      data: undefined,
-    } as any)
-    render(
-      <MemoryRouter>
-        <Applications />
-      </MemoryRouter>,
-    )
-    expect(screen.getByText("Loading applications...")).toBeDefined()
-  })
-
-  it("should show error state", () => {
-    vi.mocked(useApplications).mockReturnValue({
-      isLoading: false,
-      isError: true,
-      data: undefined,
-    } as any)
-    render(
-      <MemoryRouter>
-        <Applications />
-      </MemoryRouter>,
-    )
-    expect(screen.getByText("Failed to load applications")).toBeDefined()
-  })
-
-  it("should show empty state", () => {
-    vi.mocked(useApplications).mockReturnValue({
-      data: EMPTY_PAGINATED_RESPONSE,
-      isLoading: false,
-      isError: false,
-    } as any)
-    render(
-      <MemoryRouter>
-        <Applications />
-      </MemoryRouter>,
-    )
-    expect(screen.getByText("No applications submitted yet.")).toBeDefined()
+  it.each([
+    {
+      desc: "show loading state",
+      overrides: { isLoading: true },
+      expectedText: "Loading applications...",
+    },
+    {
+      desc: "show error state",
+      overrides: { isError: true },
+      expectedText: "Failed to load applications",
+    },
+    {
+      desc: "show empty state",
+      overrides: { data: EMPTY_PAGINATED_RESPONSE },
+      expectedText: "No applications submitted yet.",
+    },
+  ])("should $desc", ({ overrides, expectedText }) => {
+    mockUseApplications(overrides)
+    renderComponent()
+    expect(screen.getByText(expectedText)).toBeDefined()
   })
 
   it("should render table with applications", () => {
-    const mockApps = [{ id: 1 }, { id: 2 }]
-    vi.mocked(useApplications).mockReturnValue({
+    mockUseApplications({
       data: {
         ...EMPTY_PAGINATED_RESPONSE,
-        items: mockApps as any,
+        items: [{ id: 1 }, { id: 2 }],
         total_items: 2,
         total_pages: 1,
       },
-      isLoading: false,
-      isError: false,
-    } as any)
-
-    render(
-      <MemoryRouter>
-        <Applications />
-      </MemoryRouter>,
-    )
+    })
+    renderComponent()
     expect(screen.getByTestId("apps-table")).toBeDefined()
     expect(screen.getByText("Table with 2 apps")).toBeDefined()
     expect(screen.getByText("2 total")).toBeDefined()
   })
 
   it("should navigate to details on view application", () => {
-    vi.mocked(useApplications).mockReturnValue({
+    mockUseApplications({
       data: {
         ...EMPTY_PAGINATED_RESPONSE,
-        items: [{ id: 1 }] as any,
+        items: [{ id: 1 }],
         total_items: 1,
         total_pages: 1,
       },
-      isLoading: false,
-      isError: false,
-    } as any)
-
-    render(
-      <MemoryRouter>
-        <Applications />
-      </MemoryRouter>,
-    )
+    })
+    renderComponent()
     fireEvent.click(screen.getByText("View App 1"))
     expect(navigateMock).toHaveBeenCalledWith("/admin/applications/1")
   })

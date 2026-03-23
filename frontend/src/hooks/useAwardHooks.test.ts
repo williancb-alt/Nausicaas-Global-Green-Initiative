@@ -83,54 +83,47 @@ describe("useAward", () => {
   })
 })
 
-describe("useCreateAward", () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it("should create an award", async () => {
-    const mockResponse: BaseResponse = { status: "success", message: "created" }
-    vi.mocked(api.awards.createAward).mockResolvedValueOnce(mockResponse)
-
-    const { result } = renderHook(() => useCreateAward(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate({
+describe.each([
+  {
+    name: "useCreateAward",
+    hook: useCreateAward,
+    mockFn: () => vi.mocked(api.awards.createAward),
+    mockResponse: { status: "success", message: "created" } as BaseResponse,
+    mutateArg: {
       name: "Green Award",
       deadline: "2026-12-31",
       description: "Test",
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toEqual(mockResponse)
-  })
-})
-
-describe("useUpdateAward", () => {
+    },
+    checkData: true,
+  },
+  {
+    name: "useUpdateAward",
+    hook: useUpdateAward,
+    mockFn: () => vi.mocked(api.awards.updateAward),
+    mockResponse: { status: "success", message: "updated" } as BaseResponse,
+    mutateArg: { name: "Green Award", deadline: "2027-01-01" },
+    checkData: false,
+  },
+  {
+    name: "useDeleteAward",
+    hook: useDeleteAward,
+    mockFn: () => vi.mocked(api.awards.deleteAward),
+    mockResponse: undefined as unknown as BaseResponse,
+    mutateArg: "Green Award",
+    checkData: false,
+  },
+])("$name", ({ hook, mockFn, mockResponse, mutateArg, checkData }) => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("should update an award", async () => {
-    const mockResponse: BaseResponse = { status: "success", message: "updated" }
-    vi.mocked(api.awards.updateAward).mockResolvedValueOnce(mockResponse)
+  it("should succeed", async () => {
+    mockFn().mockResolvedValueOnce(mockResponse as any)
 
-    const { result } = renderHook(() => useUpdateAward(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate({ name: "Green Award", deadline: "2027-01-01" })
+    const { result } = renderHook(() => hook(), { wrapper: TestWrapper })
+    result.current.mutate(mutateArg as any)
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-})
-
-describe("useDeleteAward", () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it("should delete an award", async () => {
-    vi.mocked(api.awards.deleteAward).mockResolvedValueOnce(undefined)
-
-    const { result } = renderHook(() => useDeleteAward(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate("Green Award")
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    if (checkData) {
+      expect(result.current.data).toEqual(mockResponse)
+    }
   })
 })

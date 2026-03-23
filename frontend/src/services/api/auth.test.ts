@@ -15,73 +15,67 @@ describe("authApi", () => {
     vi.clearAllMocks()
   })
 
-  it("should call register endpoint and return data", async () => {
-    const mockResponse = createSuccessResponse("registered")
-    mockedPost.mockResolvedValueOnce({ data: mockResponse })
+  it.each([
+    {
+      name: "register",
+      mock: () => mockedPost,
+      response: createSuccessResponse("registered"),
+      execute: () => authApi.register("test@example.com", "password123"),
+      expectedArgs: ["/api/v1/auth/register", expect.any(URLSearchParams)],
+    },
+    {
+      name: "login",
+      mock: () => mockedPost,
+      response: createSuccessResponse("logged in"),
+      execute: () => authApi.login("test@example.com", "password123"),
+      expectedArgs: ["/api/v1/auth/login", expect.any(URLSearchParams)],
+    },
+    {
+      name: "getUser",
+      mock: () => mockedGet,
+      response: {
+        email: "test@example.com",
+        admin: false,
+        public_id: "user-123",
+      } as UserInfo,
+      execute: () => authApi.getUser(),
+      expectedArgs: ["/api/v1/auth/user"],
+    },
+    {
+      name: "logout",
+      mock: () => mockedPost,
+      response: createSuccessResponse("logged out"),
+      execute: () => authApi.logout(),
+      expectedArgs: ["/api/v1/auth/logout"],
+    },
+    {
+      name: "forgotPassword",
+      mock: () => mockedPost,
+      response: createSuccessResponse("email sent"),
+      execute: () => authApi.forgotPassword("test@example.com"),
+      expectedArgs: [
+        "/api/v1/auth/forgot-password",
+        expect.any(URLSearchParams),
+      ],
+    },
+    {
+      name: "resetPassword",
+      mock: () => mockedPost,
+      response: createSuccessResponse("password reset"),
+      execute: () => authApi.resetPassword("token-123", "newpassword"),
+      expectedArgs: [
+        "/api/v1/auth/reset-password",
+        expect.any(URLSearchParams),
+      ],
+    },
+  ])(
+    "should call $name endpoint",
+    async ({ mock, response, execute, expectedArgs }) => {
+      mock().mockResolvedValueOnce({ data: response })
 
-    const result = await authApi.register("test@example.com", "password123")
-    expect(result).toEqual(mockResponse)
-    expect(mockedPost).toHaveBeenCalledWith(
-      "/api/v1/auth/register",
-      expect.any(URLSearchParams),
-    )
-  })
-
-  it("should call login endpoint and return data", async () => {
-    const mockResponse = createSuccessResponse("logged in")
-    mockedPost.mockResolvedValueOnce({ data: mockResponse })
-
-    const result = await authApi.login("test@example.com", "password123")
-    expect(result).toEqual(mockResponse)
-    expect(mockedPost).toHaveBeenCalledWith(
-      "/api/v1/auth/login",
-      expect.any(URLSearchParams),
-    )
-  })
-
-  it("should call getUser endpoint and return user data", async () => {
-    const mockUser: UserInfo = {
-      email: "test@example.com",
-      admin: false,
-      public_id: "user-123",
-    }
-    mockedGet.mockResolvedValueOnce({ data: mockUser })
-
-    const result = await authApi.getUser()
-    expect(result).toEqual(mockUser)
-    expect(mockedGet).toHaveBeenCalledWith("/api/v1/auth/user")
-  })
-
-  it("should call logout endpoint", async () => {
-    const mockResponse = createSuccessResponse("logged out")
-    mockedPost.mockResolvedValueOnce({ data: mockResponse })
-
-    const result = await authApi.logout()
-    expect(result).toEqual(mockResponse)
-    expect(mockedPost).toHaveBeenCalledWith("/api/v1/auth/logout")
-  })
-
-  it("should call forgotPassword endpoint", async () => {
-    const mockResponse = createSuccessResponse("email sent")
-    mockedPost.mockResolvedValueOnce({ data: mockResponse })
-
-    const result = await authApi.forgotPassword("test@example.com")
-    expect(result).toEqual(mockResponse)
-    expect(mockedPost).toHaveBeenCalledWith(
-      "/api/v1/auth/forgot-password",
-      expect.any(URLSearchParams),
-    )
-  })
-
-  it("should call resetPassword endpoint", async () => {
-    const mockResponse = createSuccessResponse("password reset")
-    mockedPost.mockResolvedValueOnce({ data: mockResponse })
-
-    const result = await authApi.resetPassword("token-123", "newpassword")
-    expect(result).toEqual(mockResponse)
-    expect(mockedPost).toHaveBeenCalledWith(
-      "/api/v1/auth/reset-password",
-      expect.any(URLSearchParams),
-    )
-  })
+      const result = await execute()
+      expect(result).toEqual(response)
+      expect(mock()).toHaveBeenCalledWith(...expectedArgs)
+    },
+  )
 })

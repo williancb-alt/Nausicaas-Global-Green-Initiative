@@ -13,6 +13,7 @@ vi.mock("../store/authStore")
 describe("useAuthHooks", () => {
   const setUserMock = vi.fn()
   const clearAuthMock = vi.fn()
+  const authSuccess = { status: "success", message: "ok" } as any
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -23,31 +24,39 @@ describe("useAuthHooks", () => {
     } as any)
   })
 
-  describe("useLogin", () => {
-    it("should login and set user on success", async () => {
-      vi.mocked(api.auth.login).mockResolvedValue({
-        status: "success",
-        message: "ok",
-      } as any)
+  describe.each([
+    {
+      name: "useLogin",
+      hook: useLogin,
+      mockAuthFn: () => vi.mocked(api.auth.login),
+      email: "test@test.com",
+      expectedAuthCall: ["test@test.com", "password"],
+    },
+    {
+      name: "useRegister",
+      hook: useRegister,
+      mockAuthFn: () => vi.mocked(api.auth.register),
+      email: "new@test.com",
+      expectedAuthCall: ["new@test.com", "password"],
+    },
+  ])("$name", ({ hook, mockAuthFn, email, expectedAuthCall }) => {
+    it("should authenticate and set user on success", async () => {
+      mockAuthFn().mockResolvedValue(authSuccess)
       vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
 
-      const { result } = renderHook(() => useLogin(), {
-        wrapper: TestWrapper,
-      })
-
-      result.current.mutate({ email: "test@test.com", password: "password" })
+      const { result } = renderHook(() => hook(), { wrapper: TestWrapper })
+      result.current.mutate({ email, password: "password" })
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(api.auth.login).toHaveBeenCalledWith("test@test.com", "password")
+      expect(mockAuthFn()).toHaveBeenCalledWith(...expectedAuthCall)
       expect(api.auth.getUser).toHaveBeenCalled()
       expect(setUserMock).toHaveBeenCalledWith(mockUser)
     })
+  })
 
+  describe("useLogin", () => {
     it("should handle getUser error gracefully", async () => {
-      vi.mocked(api.auth.login).mockResolvedValue({
-        status: "success",
-        message: "ok",
-      } as any)
+      vi.mocked(api.auth.login).mockResolvedValue(authSuccess)
       vi.mocked(api.auth.getUser).mockRejectedValue(new Error("Failed"))
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
@@ -64,10 +73,7 @@ describe("useAuthHooks", () => {
 
   describe("useLogout", () => {
     it("should logout and clear auth on success", async () => {
-      vi.mocked(api.auth.logout).mockResolvedValue({
-        status: "success",
-        message: "ok",
-      } as any)
+      vi.mocked(api.auth.logout).mockResolvedValue(authSuccess)
 
       const { result } = renderHook(() => useLogout(), {
         wrapper: TestWrapper,
@@ -77,25 +83,6 @@ describe("useAuthHooks", () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
       expect(api.auth.logout).toHaveBeenCalled()
       expect(clearAuthMock).toHaveBeenCalled()
-    })
-  })
-
-  describe("useRegister", () => {
-    it("should register and set user on success", async () => {
-      vi.mocked(api.auth.register).mockResolvedValue({
-        status: "success",
-        message: "ok",
-      } as any)
-      vi.mocked(api.auth.getUser).mockResolvedValue(mockUser as any)
-
-      const { result } = renderHook(() => useRegister(), {
-        wrapper: TestWrapper,
-      })
-      result.current.mutate({ email: "new@test.com", password: "password" })
-
-      await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(api.auth.register).toHaveBeenCalledWith("new@test.com", "password")
-      expect(setUserMock).toHaveBeenCalledWith(mockUser)
     })
   })
 

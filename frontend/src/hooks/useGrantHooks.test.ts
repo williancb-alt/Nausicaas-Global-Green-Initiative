@@ -83,54 +83,47 @@ describe("useGrant", () => {
   })
 })
 
-describe("useCreateGrant", () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it("should create a grant", async () => {
-    const mockResponse: BaseResponse = { status: "success", message: "created" }
-    vi.mocked(api.grants.createGrant).mockResolvedValueOnce(mockResponse)
-
-    const { result } = renderHook(() => useCreateGrant(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate({
+describe.each([
+  {
+    name: "useCreateGrant",
+    hook: useCreateGrant,
+    mockFn: () => vi.mocked(api.grants.createGrant),
+    mockResponse: { status: "success", message: "created" } as BaseResponse,
+    mutateArg: {
       name: "Test Grant",
       deadline: "2026-12-31",
       description: "A grant",
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-    expect(result.current.data).toEqual(mockResponse)
-  })
-})
-
-describe("useUpdateGrant", () => {
+    },
+    checkData: true,
+  },
+  {
+    name: "useUpdateGrant",
+    hook: useUpdateGrant,
+    mockFn: () => vi.mocked(api.grants.updateGrant),
+    mockResponse: { status: "success", message: "updated" } as BaseResponse,
+    mutateArg: { name: "Test Grant", deadline: "2027-01-01" },
+    checkData: false,
+  },
+  {
+    name: "useDeleteGrant",
+    hook: useDeleteGrant,
+    mockFn: () => vi.mocked(api.grants.deleteGrant),
+    mockResponse: undefined as unknown as BaseResponse,
+    mutateArg: "Test Grant",
+    checkData: false,
+  },
+])("$name", ({ hook, mockFn, mockResponse, mutateArg, checkData }) => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("should update a grant", async () => {
-    const mockResponse: BaseResponse = { status: "success", message: "updated" }
-    vi.mocked(api.grants.updateGrant).mockResolvedValueOnce(mockResponse)
+  it("should succeed", async () => {
+    mockFn().mockResolvedValueOnce(mockResponse as any)
 
-    const { result } = renderHook(() => useUpdateGrant(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate({ name: "Test Grant", deadline: "2027-01-01" })
+    const { result } = renderHook(() => hook(), { wrapper: TestWrapper })
+    result.current.mutate(mutateArg as any)
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-})
-
-describe("useDeleteGrant", () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it("should delete a grant", async () => {
-    vi.mocked(api.grants.deleteGrant).mockResolvedValueOnce(undefined)
-
-    const { result } = renderHook(() => useDeleteGrant(), {
-      wrapper: TestWrapper,
-    })
-    result.current.mutate("Test Grant")
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    if (checkData) {
+      expect(result.current.data).toEqual(mockResponse)
+    }
   })
 })

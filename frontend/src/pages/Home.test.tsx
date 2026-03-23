@@ -25,6 +25,16 @@ vi.mock("@tanstack/react-query", async importOriginal => {
   }
 })
 
+const mockUseGrants = (overrides: Record<string, unknown> = {}) => {
+  vi.mocked(useGrants).mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+    ...overrides,
+  } as any)
+}
+
 describe("Home Page", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -41,12 +51,7 @@ describe("Home Page", () => {
       setItemsPerPage: vi.fn(),
       reset: vi.fn(),
     } as any)
-    vi.mocked(useGrants).mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as any)
+    mockUseGrants()
     vi.mocked(useCreateGrant).mockReturnValue(mockMutationSuccess() as any)
     vi.mocked(useDeleteGrant).mockReturnValue(mockMutationSuccess() as any)
     vi.mocked(useQueryClient).mockReturnValue({
@@ -71,29 +76,19 @@ describe("Home Page", () => {
   })
 
   it("should show loading state for grants", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-      refetch: vi.fn(),
-    } as any)
+    mockUseGrants({ isLoading: true })
     render(<Home />)
     expect(screen.getByText(/Loading grants/i)).toBeDefined()
   })
 
   it("should show empty state when no grants exist", () => {
-    vi.mocked(useGrants).mockReturnValue({
-      data: EMPTY_PAGINATED_RESPONSE,
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as any)
+    mockUseGrants({ data: EMPTY_PAGINATED_RESPONSE })
     render(<Home />)
     expect(screen.getByText(/no grants/i)).toBeDefined()
   })
 
   it("should list grants when data is available", () => {
-    vi.mocked(useGrants).mockReturnValue({
+    mockUseGrants({
       data: {
         ...EMPTY_PAGINATED_RESPONSE,
         items: [
@@ -109,10 +104,7 @@ describe("Home Page", () => {
         total_pages: 1,
         total_items: 1,
       },
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    } as any)
+    })
     render(<Home />)
     expect(screen.getByText("Env Grant")).toBeDefined()
   })

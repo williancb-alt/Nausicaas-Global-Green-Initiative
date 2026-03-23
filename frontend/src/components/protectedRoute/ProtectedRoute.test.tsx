@@ -25,68 +25,66 @@ describe("ProtectedRoute", () => {
       </ProtectedRoute>,
     )
 
+  const mockUseUser = (overrides: Record<string, unknown> = {}) => {
+    vi.mocked(useUser).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      ...overrides,
+    } as any)
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("should show loading state", () => {
-    vi.mocked(useUser).mockReturnValue({
-      isLoading: true,
-      isError: false,
-    } as any)
+    mockUseUser({ isLoading: true })
     renderProtected()
     expect(screen.getByText("Loading...")).toBeDefined()
   })
 
-  it("should redirect to login if not authenticated", () => {
-    vi.mocked(useUser).mockReturnValue({
-      data: null,
-      isLoading: false,
-      isError: false,
-    } as any)
-    renderProtected()
-    const nav = screen.getByTestId("navigate")
-    expect(nav.getAttribute("data-to")).toBe("/login")
+  it.each([
+    {
+      desc: "redirect to login if not authenticated",
+      userOverrides: { data: null },
+      props: {},
+      redirectTo: "/login",
+    },
+    {
+      desc: "redirect to login if there is an error",
+      userOverrides: { isError: true },
+      props: {},
+      redirectTo: "/login",
+    },
+    {
+      desc: "redirect to home if admin is required but user is not admin",
+      userOverrides: { data: mockUser },
+      props: { requireAdmin: true },
+      redirectTo: "/",
+    },
+  ])("should $desc", ({ userOverrides, props, redirectTo }) => {
+    mockUseUser(userOverrides)
+    renderProtected(props)
+    expect(screen.getByTestId("navigate").getAttribute("data-to")).toBe(
+      redirectTo,
+    )
   })
 
-  it("should redirect to login if there is an error", () => {
-    vi.mocked(useUser).mockReturnValue({
-      isLoading: false,
-      isError: true,
-    } as any)
-    renderProtected()
-    const nav = screen.getByTestId("navigate")
-    expect(nav.getAttribute("data-to")).toBe("/login")
-  })
-
-  it("should redirect to home if admin is required but user is not admin", () => {
-    vi.mocked(useUser).mockReturnValue({
-      data: mockUser,
-      isLoading: false,
-      isError: false,
-    } as any)
-    renderProtected({ requireAdmin: true })
-    const nav = screen.getByTestId("navigate")
-    expect(nav.getAttribute("data-to")).toBe("/")
-  })
-
-  it("should render children if authenticated and admin check passes", () => {
-    vi.mocked(useUser).mockReturnValue({
-      data: mockAdminUser,
-      isLoading: false,
-      isError: false,
-    } as any)
-    renderProtected({ requireAdmin: true })
-    expect(screen.getByText("Content")).toBeDefined()
-  })
-
-  it("should render children if authenticated and no admin check required", () => {
-    vi.mocked(useUser).mockReturnValue({
-      data: mockUser,
-      isLoading: false,
-      isError: false,
-    } as any)
-    renderProtected()
+  it.each([
+    {
+      desc: "authenticated and admin check passes",
+      userOverrides: { data: mockAdminUser },
+      props: { requireAdmin: true },
+    },
+    {
+      desc: "authenticated and no admin check required",
+      userOverrides: { data: mockUser },
+      props: {},
+    },
+  ])("should render children if $desc", ({ userOverrides, props }) => {
+    mockUseUser(userOverrides)
+    renderProtected(props)
     expect(screen.getByText("Content")).toBeDefined()
   })
 })

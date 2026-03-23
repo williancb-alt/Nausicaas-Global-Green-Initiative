@@ -47,12 +47,15 @@ describe("AdminApplicationView", () => {
     vi.spyOn(window, "alert").mockImplementation(() => {})
   })
 
-  it("should render application details", () => {
+  const renderComponent = () =>
     render(
       <MemoryRouter>
         <AdminApplicationView />
       </MemoryRouter>,
     )
+
+  it("should render application details", () => {
+    renderComponent()
     expect(screen.getByText("Application #123")).toBeDefined()
     expect(screen.getByText("user@test.com")).toBeDefined()
     expect(screen.getByText("Test Grant")).toBeDefined()
@@ -65,40 +68,19 @@ describe("AdminApplicationView", () => {
       isLoading: true,
       isError: false,
     } as unknown as ReturnType<typeof useApplication>)
-    render(
-      <MemoryRouter>
-        <AdminApplicationView />
-      </MemoryRouter>,
-    )
+    renderComponent()
     expect(screen.getByText("Loading...")).toBeDefined()
   })
 
-  it("should handle approve button click", () => {
-    render(
-      <MemoryRouter>
-        <AdminApplicationView />
-      </MemoryRouter>,
-    )
-    const approveBtn = screen.getByText("Approve")
-    fireEvent.click(approveBtn)
+  it.each([
+    { label: "Approve", status: "approved" },
+    { label: "Deny", status: "denied" },
+  ])("should handle $label button click", ({ label, status }) => {
+    renderComponent()
+    fireEvent.click(screen.getByText(label))
 
     expect(mutateMock).toHaveBeenCalledWith(
-      { applicationId: "123", status: "approved" },
-      expect.any(Object),
-    )
-  })
-
-  it("should handle deny button click", () => {
-    render(
-      <MemoryRouter>
-        <AdminApplicationView />
-      </MemoryRouter>,
-    )
-    const denyBtn = screen.getByText("Deny")
-    fireEvent.click(denyBtn)
-
-    expect(mutateMock).toHaveBeenCalledWith(
-      { applicationId: "123", status: "denied" },
+      { applicationId: "123", status },
       expect.any(Object),
     )
   })
@@ -113,11 +95,7 @@ describe("AdminApplicationView", () => {
       )
     })
 
-    render(
-      <MemoryRouter>
-        <AdminApplicationView />
-      </MemoryRouter>,
-    )
+    renderComponent()
     fireEvent.click(screen.getByText("Approve"))
 
     expect(window.alert).toHaveBeenCalledWith(

@@ -39,16 +39,7 @@ vi.mock("../components/card/StatsCard", () => ({
 describe("UserDashboard", () => {
   const navigateMock = vi.fn()
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
-
-    vi.mocked(useAuthStore).mockReturnValue({
-      user: mockUser,
-      isAuthenticated: true,
-      setUser: vi.fn(),
-      clearAuth: vi.fn(),
-    } as any)
+  const mockUseMyApplications = (overrides: Record<string, unknown> = {}) => {
     vi.mocked(useMyApplications).mockReturnValue({
       data: {
         ...EMPTY_PAGINATED_RESPONSE,
@@ -57,55 +48,57 @@ describe("UserDashboard", () => {
       },
       isLoading: false,
       isError: false,
+      ...overrides,
     } as any)
+  }
+
+  const mockUseAdminStats = (
+    stats = { total: 1, approved: 0, pending: 1, rejected: 0 },
+  ) => {
     vi.mocked(useAdminStats).mockReturnValue({
-      stats: { total: 1, approved: 0, pending: 1, rejected: 0 },
+      stats,
       statusChartData: [],
       grantWiseData: [],
     } as any)
-  })
+  }
 
-  it("should render welcome message and stats", () => {
+  const renderComponent = () =>
     render(
       <MemoryRouter>
         <UserDashboard />
       </MemoryRouter>,
     )
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(router.useNavigate).mockReturnValue(navigateMock)
+    vi.mocked(useAuthStore).mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true,
+      setUser: vi.fn(),
+      clearAuth: vi.fn(),
+    } as any)
+    mockUseMyApplications()
+    mockUseAdminStats()
+  })
+
+  it("should render welcome message and stats", () => {
+    renderComponent()
     expect(screen.getByText(/Welcome back, user/i)).toBeDefined()
     expect(screen.getByText("Total Applications")).toBeDefined()
     expect(screen.getAllByText("1").length).toBeGreaterThan(0)
   })
 
   it("should show loading state", () => {
-    vi.mocked(useMyApplications).mockReturnValue({
-      isLoading: true,
-      isError: false,
-    } as any)
-    render(
-      <MemoryRouter>
-        <UserDashboard />
-      </MemoryRouter>,
-    )
+    mockUseMyApplications({ isLoading: true })
+    renderComponent()
     expect(screen.getByRole("status")).toBeDefined()
   })
 
   it("should show empty state when no applications exist", () => {
-    vi.mocked(useMyApplications).mockReturnValue({
-      data: EMPTY_PAGINATED_RESPONSE,
-      isLoading: false,
-      isError: false,
-    } as any)
-    vi.mocked(useAdminStats).mockReturnValue({
-      stats: { total: 0, approved: 0, pending: 0, rejected: 0 },
-      statusChartData: [],
-      grantWiseData: [],
-    } as any)
-
-    render(
-      <MemoryRouter>
-        <UserDashboard />
-      </MemoryRouter>,
-    )
+    mockUseMyApplications({ data: EMPTY_PAGINATED_RESPONSE })
+    mockUseAdminStats({ total: 0, approved: 0, pending: 0, rejected: 0 })
+    renderComponent()
     expect(
       screen.getByText(/You haven't submitted any applications yet/),
     ).toBeDefined()
@@ -113,34 +106,26 @@ describe("UserDashboard", () => {
   })
 
   it("should render the list of applications", () => {
-    render(
-      <MemoryRouter>
-        <UserDashboard />
-      </MemoryRouter>,
-    )
+    renderComponent()
     expect(screen.getByText("Test Grant")).toBeDefined()
     expect(screen.getByText(/pending review/i)).toBeDefined()
   })
 
-  it("should navigate to landing page on Start New Application click", () => {
-    render(
-      <MemoryRouter>
-        <UserDashboard />
-      </MemoryRouter>,
-    )
-    const applyBtn = screen.getByText("+ Start New Application")
-    fireEvent.click(applyBtn)
-    expect(navigateMock).toHaveBeenCalledWith("/")
-  })
-
-  it("should navigate to details page on View button click", () => {
-    render(
-      <MemoryRouter>
-        <UserDashboard />
-      </MemoryRouter>,
-    )
-    const viewButtons = screen.getAllByText("View")
-    fireEvent.click(viewButtons[0])
-    expect(navigateMock).toHaveBeenCalledWith("/applications/1")
+  it.each([
+    {
+      desc: "navigate to landing page on Start New Application click",
+      buttonText: "+ Start New Application",
+      expectedPath: "/",
+    },
+    {
+      desc: "navigate to details page on View button click",
+      buttonText: "View",
+      expectedPath: "/applications/1",
+    },
+  ])("should $desc", ({ buttonText, expectedPath }) => {
+    renderComponent()
+    const buttons = screen.getAllByText(buttonText)
+    fireEvent.click(buttons[0])
+    expect(navigateMock).toHaveBeenCalledWith(expectedPath)
   })
 })
