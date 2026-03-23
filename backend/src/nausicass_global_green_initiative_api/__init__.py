@@ -23,9 +23,11 @@ def create_app(config_name: str) -> Flask:
 
     # Deliberate import placement to avoid a circular import
     from nausicass_global_green_initiative_api.api import api_bp
+    from nausicass_global_green_initiative_api.api.health import health_bp
     from nausicass_global_green_initiative_api.services.oauth import init_oauth
 
     app.register_blueprint(api_bp)
+    app.register_blueprint(health_bp)
 
     cors.init_app(app)
     db.init_app(app)

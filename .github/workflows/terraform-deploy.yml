@@ -1,10 +1,38 @@
 name: Terraform Infrastructure Provisioning & Configuration
 
 on:
-  push:
-    branches: [ "infra-actions" ]
+  workflow_call:
+    inputs:
+      layer:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      action:
+        required: true
+        type: string
+      image_tag:
+        required: false
+        description: "Optional image tag override for app layer (e.g. 1.2.3). If not set, defaults to ENVIRONMENT (staging/production)."
+        type: string
   workflow_dispatch:
     inputs:
+      layer:
+        description: "Which layer to target"
+        required: true
+        type: choice
+        options:
+          - core
+          - app
+          - permanent
+      environment:
+        description: "Environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
       action:
         description: "Action to perform"
         required: true
@@ -13,6 +41,10 @@ on:
           - plan
           - apply
           - destroy
+      image_tag:
+        description: "Optional image tag override for app layer (e.g. 1.2.3). If not set, defaults to ENVIRONMENT (staging/production)."
+        required: false
+        type: string
 
 permissions:
   id-token: write
@@ -23,16 +55,54 @@ env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-  TF_VAR_location: northeurope
-  TF_VAR_acr_name: nausicaasacr12345prod
+  IMAGE_TAG: ${{ inputs.image_tag || github.event.inputs.image_tag || inputs.environment || github.event.inputs.environment || 'staging' }}
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || github.event.inputs.environment }}
+
+    env:
+      LAYER: ${{ inputs.layer || github.event.inputs.layer || 'core' }}
+      ENVIRONMENT: ${{ inputs.environment || github.event.inputs.environment || 'staging' }}
+      ACTION: ${{ inputs.action || github.event.inputs.action || 'plan' }}
+      ACR_NAME: ${{ vars.ACR_NAME }}
+      TF_VAR_acme_email: ${{ secrets.TF_VAR_ACME_EMAIL }}
+      TF_VAR_acme_server_url: ${{ secrets.TF_VAR_ACME_SERVER_URL }}
+      TF_VAR_aks_name: ${{ secrets.TF_VAR_AKS_NAME }}
+      TF_VAR_aks_node_count: ${{ secrets.TF_VAR_AKS_NODE_COUNT }}
+      TF_VAR_aks_node_size: ${{ secrets.TF_VAR_AKS_NODE_SIZE }}
+      TF_VAR_backend_hostname: ${{ secrets.TF_VAR_BACKEND_HOSTNAME }}
+      TF_VAR_frontend_hostname: ${{ secrets.TF_VAR_FRONTEND_HOSTNAME }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_zone_name: ${{ secrets.TF_VAR_CLOUDFLARE_ZONE_NAME }}
+      TF_VAR_db_admin_password: ${{ secrets.TF_VAR_DB_ADMIN_PASSWORD }}
+      TF_VAR_db_admin_username: ${{ secrets.TF_VAR_DB_ADMIN_USERNAME }}
+      TF_VAR_db_name: ${{ secrets.TF_VAR_DB_NAME }}
+      TF_VAR_db_server_name: ${{ secrets.TF_VAR_DB_SERVER_NAME }}
+      TF_VAR_dns_prefix: ${{ secrets.TF_VAR_DNS_PREFIX }}
+      TF_VAR_frontend_url: ${{ secrets.TF_VAR_FRONTEND_URL }}
+      TF_VAR_location: ${{ secrets.TF_VAR_LOCATION }}
+      TF_VAR_rg_name: ${{ secrets.TF_VAR_RG_NAME }}
+      TF_VAR_permanent_rg_name: ${{ secrets.TF_VAR_PERMANENT_RG_NAME }}
+      TF_VAR_permanent_key_vault_name: ${{ secrets.TF_VAR_PERMANENT_KEY_VAULT_NAME }}
+      TF_VAR_permanent_acr_name: ${{ vars.ACR_NAME }}
+      TF_VAR_acs_email_connection_string: ${{ secrets.TF_VAR_ACS_EMAIL_CONNECTION_STRING }}
+      TF_VAR_acs_email_sender: ${{ secrets.TF_VAR_ACS_EMAIL_SENDER }}
+      TF_VAR_google_client_id: ${{ secrets.TF_VAR_GOOGLE_CLIENT_ID }}
+      TF_VAR_google_client_secret: ${{ secrets.TF_VAR_GOOGLE_CLIENT_SECRET }}
+      TF_VAR_github_client_id: ${{ secrets.TF_VAR_GITHUB_CLIENT_ID }}
+      TF_VAR_github_client_secret: ${{ secrets.TF_VAR_GITHUB_CLIENT_SECRET }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Block destroy on permanent layer
+        if: env.LAYER == 'permanent' && env.ACTION == 'destroy'
+        run: |
+          echo "Destroy is not allowed for layer=permanent."
+          exit 1
 
       - name: Azure login via OIDC
         uses: azure/login@v2
@@ -41,26 +111,169 @@ jobs:
           tenant-id: ${{ env.ARM_TENANT_ID }}
           subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
+      - name: Set ACR name for app layer
+        if: env.LAYER == 'app'
+        run: |
+          echo "ACR_LOGIN_SERVER=${ACR_NAME}.azurecr.io" >> "$GITHUB_ENV"
+
+      - name: Login to ACR (app layer)
+        if: env.LAYER == 'app'
+        run: |
+          az acr login --name "$ACR_NAME"
+
+      - name: Resolve backend image digest from tag
+        if: env.LAYER == 'app'
+        run: |
+          TAG="${IMAGE_TAG}"
+          DIGEST=$(az acr manifest list-metadata \
+            --registry "$ACR_NAME" \
+            --name backend \
+            --query "[?tags[?@=='${TAG}']].digest" -o tsv | head -n1)
+          if [ -z "$DIGEST" ]; then
+            echo "No digest found for backend:${TAG}" >&2
+            exit 1
+          fi
+          IMAGE_REF="${ACR_LOGIN_SERVER}/backend@${DIGEST}"
+          echo "Using backend image ref: $IMAGE_REF"
+          echo "TF_VAR_backend_image_ref=$IMAGE_REF" >> "$GITHUB_ENV"
+
+      - name: Resolve frontend image digest from tag
+        if: env.LAYER == 'app'
+        run: |
+          TAG="${IMAGE_TAG}"
+          DIGEST=$(az acr manifest list-metadata \
+            --registry "$ACR_NAME" \
+            --name frontend \
+            --query "[?tags[?@=='${TAG}']].digest" -o tsv | head -n1)
+          if [ -z "$DIGEST" ]; then
+            echo "No digest found for frontend:${TAG}" >&2
+            exit 1
+          fi
+          IMAGE_REF="${ACR_LOGIN_SERVER}/frontend@${DIGEST}"
+          echo "Using frontend image ref: $IMAGE_REF"
+          echo "TF_VAR_frontend_image_ref=$IMAGE_REF" >> "$GITHUB_ENV"
+
+      - name: Determine Terraform working directory
+        id: workdir
+        run: |
+          if [ "$LAYER" = "core" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/cores/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "core" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/cores/production" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "app" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/envs/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "app" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/envs/production" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "permanent" ] && [ "$ENVIRONMENT" = "staging" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/permanent/staging" >> "$GITHUB_ENV"
+          elif [ "$LAYER" = "permanent" ] && [ "$ENVIRONMENT" = "production" ]; then
+            echo "TF_WORKDIR=infrastructure/terraform/permanent/production" >> "$GITHUB_ENV"
+          else
+            echo "Unsupported combination: layer=$LAYER environment=$ENVIRONMENT"
+            exit 1
+          fi
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.2
 
+      - name: Terraform Fmt Check
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform fmt -check -diff
+
       - name: Terraform Init
-        working-directory: infrastructure/terraform
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform init
 
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_WORKDIR }}
+        run: terraform validate
+
       - name: Terraform Plan
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'plan' || github.event.inputs.action == 'apply'))
-        working-directory: infrastructure/terraform
+        if: env.ACTION == 'plan' || env.ACTION == 'apply'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
-        working-directory: infrastructure/terraform
+        if: env.ACTION == 'apply'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform apply -auto-approve tfplan
 
+      - name: Apply ESO Kubernetes objects
+        if: env.LAYER == 'core' && env.ACTION == 'apply'
+        run: |
+          az aks get-credentials \
+            --resource-group "$TF_VAR_rg_name" \
+            --name "$TF_VAR_aks_name" \
+            --overwrite-existing
+
+          kubectl create namespace "${ENVIRONMENT}" --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic cloudflare-api-token-secret \
+            --from-literal=api-token="${TF_VAR_cloudflare_api_token}" \
+            --namespace="${ENVIRONMENT}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl wait --for=condition=Established \
+            crd/clustersecretstores.external-secrets.io \
+            crd/pushsecrets.external-secrets.io \
+            crd/externalsecrets.external-secrets.io \
+            --timeout=120s
+
+          ESO_READY=false
+          for i in $(seq 1 24); do
+            if kubectl get --raw /apis/external-secrets.io/v1 > /dev/null 2>&1; then
+              echo "external-secrets.io/v1 API group is available"
+              ESO_READY=true
+              break
+            fi
+            echo "Waiting for API group to appear in discovery... attempt $i/24"
+            sleep 5
+          done
+          if [ "$ESO_READY" != "true" ]; then
+            echo "Timeout: external-secrets.io/v1 API group never appeared"
+            exit 1
+          fi
+
+          for i in $(seq 1 12); do
+            if envsubst < infrastructure/kubernetes/eso-objects.yaml.tpl | kubectl apply -f -; then
+              echo "ESO objects applied successfully"
+              break
+            fi
+            if [ "$i" -eq 12 ]; then
+              echo "Failed to apply ESO objects after 12 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/12 failed, retrying in 10s..."
+            sleep 10
+          done
+
+          kubectl wait externalsecret wildcard-tls-from-akv \
+            -n "${ENVIRONMENT}" \
+            --for=condition=Ready \
+            --timeout=120s || true
+
+          envsubst < infrastructure/kubernetes/wildcard-certificate.yaml.tpl | kubectl apply -f -
+
+      - name: Pre-destroy Kubernetes cleanup
+        if: env.ACTION == 'destroy' && env.LAYER == 'core'
+        run: |
+          az aks get-credentials \
+            --resource-group "$TF_VAR_rg_name" \
+            --name "$TF_VAR_aks_name" \
+            --overwrite-existing
+
+          kubectl delete certificate --all -A --ignore-not-found=true
+          kubectl delete clusterissuer --all --ignore-not-found=true
+
+          kubectl delete externalsecret --all -A --ignore-not-found=true
+          kubectl delete pushsecret --all -A --ignore-not-found=true
+          kubectl delete clustersecretstore --all --ignore-not-found=true
+
+          sleep 30
+
       - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
-        working-directory: infrastructure/terraform
+        if: env.ACTION == 'destroy'
+        working-directory: ${{ env.TF_WORKDIR }}
         run: terraform destroy -auto-approve

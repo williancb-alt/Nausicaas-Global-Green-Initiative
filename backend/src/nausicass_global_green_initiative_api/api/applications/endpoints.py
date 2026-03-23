@@ -5,10 +5,11 @@ from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.applications.dto import (
     applicant_model,
+    grant_summary_model,
+    award_summary_model,
     application_model,
     application_pagination_model,
     create_application_reqparser,
-    grant_summary_model,
     pagination_links_model,
     pagination_reqparser,
     update_application_reqparser,
@@ -26,6 +27,7 @@ from nausicass_global_green_initiative_api.models.application import Application
 application_ns = Namespace(name="applications", validate=True)
 application_ns.models[applicant_model.name] = applicant_model
 application_ns.models[grant_summary_model.name] = grant_summary_model
+application_ns.models[award_summary_model.name] = award_summary_model
 application_ns.models[application_model.name] = application_model
 application_ns.models[pagination_links_model.name] = pagination_links_model
 application_ns.models[application_pagination_model.name] = application_pagination_model

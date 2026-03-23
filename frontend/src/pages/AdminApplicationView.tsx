@@ -5,6 +5,39 @@ import {
   useUpdateApplication,
 } from "../hooks/useApplicationHooks"
 
+function AdminApplicationAwardDetails({
+  awardName,
+  awardDescription,
+  awardJustification,
+}: {
+  awardName: string
+  awardDescription: string | undefined
+  awardJustification: string | undefined
+}): JSX.Element {
+  return (
+    <div className="mb-3">
+      <strong>Award Details:</strong>
+      <div className="mt-2 p-3 bg-light rounded">
+        <div className="mb-2">
+          <strong>Award:</strong> {awardName}
+        </div>
+
+        {awardDescription && (
+          <div className="mb-2">
+            <strong>Description:</strong> {awardDescription}
+          </div>
+        )}
+
+        {awardJustification && (
+          <div>
+            <strong>Justification:</strong> {awardJustification}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function AdminApplicationView(): JSX.Element {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -141,6 +174,14 @@ export function AdminApplicationView(): JSX.Element {
               <strong>Feedback:</strong>
               <p className="mt-1">{application.feedback}</p>
             </div>
+          )}
+
+          {application.award && (
+            <AdminApplicationAwardDetails
+              awardName={application.award.name}
+              awardDescription={application.award.description}
+              awardJustification={application.award_justification}
+            />
           )}
 
           <div className="d-flex gap-2">

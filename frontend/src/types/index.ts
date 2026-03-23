@@ -97,6 +97,11 @@ export interface ApplicationGrant {
   }
 }
 
+export interface ApplicationAward {
+  name: string
+  description?: string
+}
+
 export interface Application {
   id: number
   submitted_at: string
@@ -104,6 +109,8 @@ export interface Application {
   status: ApplicationStatus
   field_values?: Record<string, string>
   feedback?: string
+  award_justification?: string
   applicant: ApplicationApplicant
   grant: ApplicationGrant
+  award?: ApplicationAward
 }

@@ -18,7 +18,7 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build
+RUN echo "Building with VITE_API_BASE_URL=$VITE_API_BASE_URL" && npm run build
 
 FROM nginx:stable-alpine
 
@@ -29,4 +29,4 @@ COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
 EXPOSE 80
 
-CMD sh -c "envsubst '\$VITE_API_BASE_URL \SERVER_NAME' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+CMD sh -c "envsubst '\$VITE_API_BASE_URL \$SERVER_NAME' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"

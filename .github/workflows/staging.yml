@@ -1,0 +1,60 @@
+name: Staging CI / CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  security-events: write
+
+jobs:
+  backend_ci:
+    name: Backend CI
+    uses: ./.github/workflows/backend-ci.yml
+    secrets:
+      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+
+  frontend_ci:
+    name: Frontend CI
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  e2e:
+    name: Playwright E2E
+    needs: [backend_ci, frontend_ci]
+    uses: ./.github/workflows/playwright-e2e.yml
+
+  core_staging:
+    name: Ensure staging core infra in place
+    needs: [e2e]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: apply
+    secrets: inherit
+  
+  build_and_push_staging:
+    name: Build & push staging images
+    needs: [core_staging]
+    uses: ./.github/workflows/push-to-acr.yml
+    with:
+      environment: staging
+    secrets: inherit
+
+  deploy_staging:
+    name: Deploy app layer to staging
+    needs: [build_and_push_staging]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: apply
+    secrets: inherit
