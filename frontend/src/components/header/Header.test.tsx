@@ -14,7 +14,7 @@ describe("Header", () => {
         <Header />
       </MemoryRouter>,
     )
-    expect(screen.getByText("NG")).toBeDefined()
+    expect(screen.getByAltText("NG")).toBeDefined()
     expect(screen.getByTestId("nav-bar")).toBeDefined()
   })
 

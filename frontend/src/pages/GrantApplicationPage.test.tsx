@@ -1,13 +1,15 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { MemoryRouter } from "react-router-dom"
 import { GrantApplicationPage } from "./GrantApplicationPage"
 import { useGrant } from "../hooks/useGrantHooks"
 import { useSubmitApplication } from "../hooks/useApplicationHooks"
 import { useAuthStore } from "../store/authStore"
 
 import { mockUser, mockGrant } from "../test/mock-data"
-import { mockMutationSuccess } from "../test/test-utils"
+import {
+  mockMutationSuccess,
+  renderWithProviders,
+} from "../test/test-utils"
 
 // Mock dependencies
 vi.mock("../hooks/useGrantHooks")
@@ -68,11 +70,7 @@ describe("GrantApplicationPage", () => {
       isLoading: true,
       isError: false,
     } as unknown as ReturnType<typeof useGrant>)
-    render(
-      <MemoryRouter>
-        <GrantApplicationPage />
-      </MemoryRouter>,
-    )
+    renderWithProviders(<GrantApplicationPage />)
     expect(screen.getByTestId("loading-view")).toBeDefined()
   })
 
@@ -82,20 +80,12 @@ describe("GrantApplicationPage", () => {
       isLoading: false,
       isError: true,
     } as unknown as ReturnType<typeof useGrant>)
-    render(
-      <MemoryRouter>
-        <GrantApplicationPage />
-      </MemoryRouter>,
-    )
+    renderWithProviders(<GrantApplicationPage />)
     expect(screen.getByTestId("error-view")).toBeDefined()
   })
 
   it("should render the application form by default", () => {
-    render(
-      <MemoryRouter>
-        <GrantApplicationPage />
-      </MemoryRouter>,
-    )
+    renderWithProviders(<GrantApplicationPage />)
     expect(screen.getByTestId("app-form")).toBeDefined()
   })
 
@@ -109,22 +99,14 @@ describe("GrantApplicationPage", () => {
       )
     })
 
-    render(
-      <MemoryRouter>
-        <GrantApplicationPage />
-      </MemoryRouter>,
-    )
+    renderWithProviders(<GrantApplicationPage />)
     fireEvent.click(screen.getByText("Submit"))
 
     expect(screen.getByTestId("success-view")).toBeDefined()
   })
 
   it("should call mutate with correct arguments on submit", () => {
-    render(
-      <MemoryRouter>
-        <GrantApplicationPage />
-      </MemoryRouter>,
-    )
+    renderWithProviders(<GrantApplicationPage />)
     fireEvent.click(screen.getByText("Submit"))
 
     expect(mutateMock).toHaveBeenCalledWith(
