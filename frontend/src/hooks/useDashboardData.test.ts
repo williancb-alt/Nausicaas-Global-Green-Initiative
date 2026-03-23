@@ -13,7 +13,6 @@ vi.mock("../services/api", () => ({
     applications: {
       getMyApplications: vi.fn(),
     },
-
   },
 }))
 
@@ -73,7 +72,6 @@ describe("useDashboardData", () => {
       total_pages: 1,
       total_items: 2,
     })
-
 
     const { result } = renderHook(() => useDashboardData(mockUser))
 
