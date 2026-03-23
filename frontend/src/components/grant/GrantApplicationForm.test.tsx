@@ -17,7 +17,14 @@ const makeGrant = (configs: DynamicFieldConfig[] = []): Grant => ({
 
 describe("GrantApplicationForm", () => {
   const defaultProps = {
+    awards: [],
+    isAwardsLoading: false,
+    awardsError: null,
+    selectedAwardName: "",
+    awardJustification: "",
     onFieldChange: vi.fn(),
+    onAwardChange: vi.fn(),
+    onAwardJustificationChange: vi.fn(),
     onSubmit: vi.fn(),
     submitError: null,
     isSubmitting: false,
@@ -114,5 +121,37 @@ describe("GrantApplicationForm", () => {
       screen.queryByText(/please fill in the following/i),
     ).not.toBeInTheDocument()
     expect(onSubmit).toHaveBeenCalled()
+  })
+
+  it("requires justification when an award is selected", () => {
+    const onSubmit = vi.fn((e: FormEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    )
+
+    render(
+      <GrantApplicationForm
+        {...defaultProps}
+        grant={makeGrant()}
+        awards={[
+          {
+            name: "Impact Award",
+            deadline: "2026-12-31",
+            deadline_passed: false,
+            time_remaining: "300 days",
+          },
+        ]}
+        selectedAwardName="Impact Award"
+        awardJustification="   "
+        fieldValues={{}}
+        onSubmit={onSubmit}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: /submit application/i }))
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Please explain why your application should be considered for the selected award.",
+    )
+    expect(onSubmit).not.toHaveBeenCalled()
   })
 })

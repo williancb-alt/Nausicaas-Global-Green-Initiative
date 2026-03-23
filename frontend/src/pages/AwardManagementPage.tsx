@@ -522,6 +522,19 @@ export function AwardManagementPage(): JSX.Element {
                   )}
                 </div>
               </div>
+
+              <div className="mt-3">
+                <div className="d-flex justify-content-end align-items-center">
+                  <button
+                    type="submit"
+                    className="btn btn-sm"
+                    style={AWARD_MANAGEMENT_STYLES.btnPrimary}
+                    disabled={createAward.isPending}
+                  >
+                    {createAward.isPending ? "Creating..." : "Create Award"}
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
         </div>

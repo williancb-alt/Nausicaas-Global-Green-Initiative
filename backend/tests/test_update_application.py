@@ -4,7 +4,10 @@ from http import HTTPStatus
 
 from flask import url_for
 
-from nausicass_global_green_initiative_api.models.application import Application
+from nausicass_global_green_initiative_api.models.application import (
+    Application,
+)
+from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.grant import Grant
 from tests.util import (
     ADMIN_EMAIL,
@@ -16,6 +19,7 @@ from tests.util import (
     register_user,
     login_user,
     create_grant,
+    create_award,
 )
 
 
@@ -33,15 +37,44 @@ def _create_application_in_db(db, user, grant_name):
     return application
 
 
-def _create_user_application_via_api(client) -> int:
+def _create_user_application_via_api(
+    client,
+    *,
+    award_name: str | None = None,
+    award_justification: str | None = None,
+) -> int:
     register_user(client)
     login_user(client)
+    payload = {"grant_name": DEFAULT_NAME, "field_values": {}}
+    if award_name is not None:
+        payload["award_name"] = award_name
+    if award_justification is not None:
+        payload["award_justification"] = award_justification
     resp = client.post(
         url_for("api.application_list"),
-        json={"grant_name": DEFAULT_NAME, "field_values": {}},
+        json=payload,
     )
     assert resp.status_code == HTTPStatus.CREATED
     return resp.json["application_id"]
+
+
+def _prepare_user_application_submission(
+    client, *, create_default_award: bool = False
+) -> None:
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    if create_default_award:
+        create_award(client, "test-award", DEFAULT_DEADLINE, "Award description")
+    client.post(url_for("api.auth_logout"))
+    register_user(client)
+    login_user(client)
+
+
+def _submit_application(client, payload: dict[str, object]):
+    return client.post(
+        url_for("api.application_list"),
+        json={"grant_name": DEFAULT_NAME, "field_values": {}} | payload,
+    )
 
 
 @pytest.mark.usefixtures("admin")
@@ -87,6 +120,140 @@ def test_admin_updates_application_status(client, db, user, case):
     assert updated.status == expected_status
     if expected_feedback is not None:
         assert updated.feedback == expected_feedback
+
+
+@pytest.mark.usefixtures("admin")
+def test_user_submits_application_with_award_selection(client, db):
+    _prepare_user_application_submission(client, create_default_award=True)
+
+    application_id = _create_user_application_via_api(
+        client,
+        award_name="test-award",
+        award_justification="My project directly advances the award goals.",
+    )
+
+    application = Application.find_by_id(application_id)
+    assert application is not None
+    assert application.award is not None
+    assert application.award.name == "test-award"
+    assert (
+        application.award_justification
+        == "My project directly advances the award goals."
+    )
+
+
+@pytest.mark.usefixtures("admin")
+@pytest.mark.parametrize(
+    "case",
+    [
+        {
+            "create_default_award": False,
+            "payload": {
+                "award_name": "missing-award",
+                "award_justification": "I should be considered.",
+            },
+            "expected_status": HTTPStatus.NOT_FOUND,
+            "expected_message": "Award 'missing-award' not found.",
+        },
+        {
+            "create_default_award": True,
+            "payload": {
+                "award_name": "test-award",
+                "award_justification": "   ",
+            },
+            "expected_status": HTTPStatus.BAD_REQUEST,
+            "expected_message": (
+                "Award justification is required when an award is selected."
+            ),
+        },
+        {
+            "create_default_award": False,
+            "payload": {"award_justification": "I should be considered."},
+            "expected_status": HTTPStatus.BAD_REQUEST,
+            "expected_message": (
+                "Award justification cannot be provided without selecting " "an award."
+            ),
+        },
+    ],
+)
+def test_user_application_submission_award_validation(client, case):
+    _prepare_user_application_submission(
+        client, create_default_award=case["create_default_award"]
+    )
+
+    response = _submit_application(client, case["payload"])
+
+    assert response.status_code == case["expected_status"]
+    assert response.json["message"] == case["expected_message"]
+
+
+@pytest.mark.usefixtures("admin")
+def test_admin_links_award_to_application(client, db, user):
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    create_award(client, "test-award", DEFAULT_DEADLINE, "Award description")
+    application = _create_application_in_db(db, user, DEFAULT_NAME)
+
+    response = client.put(
+        url_for("api.application", application_id=application.id),
+        json={
+            "status": "approved",
+            "award_name": "test-award",
+            "award_justification": "Best match for the evaluation criteria.",
+        },
+    )
+    assert response.status_code == HTTPStatus.OK
+
+    updated = Application.find_by_id(application.id)
+    assert updated is not None
+    assert updated.award is not None
+    assert updated.award.name == "test-award"
+    assert updated.award_justification == "Best match for the evaluation criteria."
+
+    response = client.get(url_for("api.application", application_id=application.id))
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["award"]["name"] == "test-award"
+    assert response.json["award"]["description"] == "Award description"
+    assert (
+        response.json["award_justification"] == "Best match for the evaluation criteria."
+    )
+
+
+@pytest.mark.usefixtures("admin")
+def test_admin_clears_linked_award_from_application(client, db, user):
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    create_award(client, "test-award", DEFAULT_DEADLINE, "Award description")
+    application = _create_application_in_db(db, user, DEFAULT_NAME)
+    application.award = Award.find_by_name("test-award")
+    application.award_justification = "Initial justification"
+    db.session.commit()
+
+    response = client.put(
+        url_for("api.application", application_id=application.id),
+        json={"award_name": None, "award_justification": None},
+    )
+    assert response.status_code == HTTPStatus.OK
+
+    updated = Application.find_by_id(application.id)
+    assert updated is not None
+    assert updated.award is None
+    assert updated.award_justification is None
+
+
+@pytest.mark.usefixtures("admin")
+def test_admin_cannot_link_unknown_award_to_application(client, db, user):
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    application = _create_application_in_db(db, user, DEFAULT_NAME)
+
+    response = client.put(
+        url_for("api.application", application_id=application.id),
+        json={"award_name": "missing-award"},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json["message"] == "Award 'missing-award' not found."
 
 
 def test_update_application_unauthorized_user(client, db, admin):

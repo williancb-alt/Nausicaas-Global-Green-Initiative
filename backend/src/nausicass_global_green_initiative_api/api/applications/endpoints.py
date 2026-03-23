@@ -9,6 +9,7 @@ from nausicass_global_green_initiative_api.api.applications.dto import (
     pagination_reqparser,
     applicant_model,
     grant_summary_model,
+    award_summary_model,
     application_model,
     pagination_links_model,
     application_pagination_model,
@@ -26,6 +27,7 @@ from nausicass_global_green_initiative_api.models.application import Application
 application_ns = Namespace(name="applications", validate=True)
 application_ns.models[applicant_model.name] = applicant_model
 application_ns.models[grant_summary_model.name] = grant_summary_model
+application_ns.models[award_summary_model.name] = award_summary_model
 application_ns.models[application_model.name] = application_model
 application_ns.models[pagination_links_model.name] = pagination_links_model
 application_ns.models[application_pagination_model.name] = application_pagination_model

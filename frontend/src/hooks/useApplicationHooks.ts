@@ -34,10 +34,20 @@ export function useSubmitApplication() {
     mutationFn: ({
       grantName,
       fieldValues,
+      awardName,
+      awardJustification,
     }: {
       grantName: string
       fieldValues: Record<string, string>
-    }) => api.applications.submitApplication(grantName, fieldValues),
+      awardName?: string
+      awardJustification?: string
+    }) =>
+      api.applications.submitApplication(
+        grantName,
+        fieldValues,
+        awardName,
+        awardJustification,
+      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["myApplications"] })
       void queryClient.invalidateQueries({ queryKey: ["applications"] })
