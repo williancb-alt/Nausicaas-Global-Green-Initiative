@@ -10,6 +10,10 @@ vi.mock("../services/api", () => ({
     grants: {
       listGrants: vi.fn(),
     },
+    applications: {
+      getMyApplications: vi.fn(),
+    },
+
   },
 }))
 
@@ -61,6 +65,15 @@ describe("useDashboardData", () => {
     }
 
     vi.mocked(api.grants.listGrants).mockResolvedValueOnce(mockGrants)
+    vi.mocked(api.applications.getMyApplications).mockResolvedValueOnce({
+      items: [],
+      has_prev: false,
+      has_next: false,
+      page: 1,
+      total_pages: 1,
+      total_items: 2,
+    })
+
 
     const { result } = renderHook(() => useDashboardData(mockUser))
 
