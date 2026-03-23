@@ -24,7 +24,8 @@ export function useDashboardData(user: UserInfo | null) {
           g => !g.deadline_passed,
         )
         setAvailableGrants(grants)
-        setMyApps({ count: 2 })
+        const appResponse = await api.applications.getMyApplications(1, 1)
+        setMyApps({ count: appResponse.total_items })
       } catch (err: unknown) {
         console.error(err)
         setError("Failed to load dashboard data")
