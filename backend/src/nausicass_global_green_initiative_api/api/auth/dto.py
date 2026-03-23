@@ -1,7 +1,7 @@
 import re
 
 from flask_restx import Model
-from flask_restx.fields import String, Boolean
+from flask_restx.fields import Boolean, String
 from flask_restx.inputs import email
 from flask_restx.reqparse import RequestParser
 

@@ -1,20 +1,18 @@
 from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
-from typing import Optional, TYPE_CHECKING
 
 import jwt
 from flask import current_app
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from nausicass_global_green_initiative_api import db, bcrypt
+from nausicass_global_green_initiative_api import bcrypt, db
+from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 from nausicass_global_green_initiative_api.util import (
-    utc_now,
     get_local_utcoffset,
-    make_tzaware,
     localized_dt_string,
-)
-from nausicass_global_green_initiative_api.models.token_blacklist import (
-    BlacklistedToken,
+    make_tzaware,
+    utc_now,
 )
 from nausicass_global_green_initiative_api.util.result import Result
 

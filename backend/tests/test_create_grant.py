@@ -1,16 +1,17 @@
 from datetime import date, timedelta
 from http import HTTPStatus
-from flask import url_for
 
 import pytest
+from flask import url_for
+
 from tests.util import (
-    EMAIL,
     ADMIN_EMAIL,
-    DEFAULT_NAME,
     BAD_REQUEST,
+    DEFAULT_NAME,
+    EMAIL,
     FORBIDDEN,
-    login_user,
     create_grant,
+    login_user,
     retrieve_grant,
 )
 

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from nausicass_global_green_initiative_api.models.user import User
-from tests.util import EMAIL, register_user, login_user, get_access_token_from_cookie
+from tests.util import EMAIL, get_access_token_from_cookie, login_user, register_user
 
 SUCCESS = "successfully logged in"
 UNAUTHORIZED = "email or password does not match"

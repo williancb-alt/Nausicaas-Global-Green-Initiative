@@ -7,7 +7,7 @@ from pytest import FixtureRequest
 from nausicass_global_green_initiative_api import create_app
 from nausicass_global_green_initiative_api import db as database
 from nausicass_global_green_initiative_api.models.user import User
-from tests.util import EMAIL, ADMIN_EMAIL, PASSWORD
+from tests.util import ADMIN_EMAIL, EMAIL, PASSWORD
 
 
 @pytest.fixture

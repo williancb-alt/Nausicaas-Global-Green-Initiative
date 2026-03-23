@@ -1,5 +1,5 @@
-from http import HTTPStatus
 import json
+from http import HTTPStatus
 from typing import Any
 
 from flask import Response, jsonify, request, url_for
@@ -10,16 +10,16 @@ from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.api.auth.decorators import (
     admin_token_required,
 )
-from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
 from nausicass_global_green_initiative_api.api.grants.dto import (
-    pagination_model,
-    grant_name,
     apply_custom_fields_change,
     apply_standard_field_changes,
+    grant_name,
     is_admin_check,
+    pagination_model,
 )
-from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
 from nausicass_global_green_initiative_api.models.grant import Grant
+from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
 
 

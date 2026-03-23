@@ -3,6 +3,8 @@ from flask_restx.fields import Boolean, Integer, List, Nested, Raw, String
 from flask_restx.inputs import positive
 from flask_restx.reqparse import RequestParser
 
+from nausicass_global_green_initiative_api.api.awards.dto import award_name
+
 
 def valid_status(status: str) -> str:
     """Validate application status."""
@@ -33,6 +35,22 @@ create_application_reqparser.add_argument(
     nullable=True,
     help="JSON object containing field values",
 )
+create_application_reqparser.add_argument(
+    "award_name",
+    type=award_name,
+    location="json",
+    required=False,
+    nullable=True,
+    help="Optional award to be considered for",
+)
+create_application_reqparser.add_argument(
+    "award_justification",
+    type=str,
+    location="json",
+    required=False,
+    nullable=True,
+    help="Why the applicant should be considered for the selected award",
+)
 
 update_application_reqparser = RequestParser(bundle_errors=True)
 update_application_reqparser.add_argument(
@@ -50,6 +68,22 @@ update_application_reqparser.add_argument(
     required=False,
     nullable=True,
     help="Admin feedback on the application",
+)
+update_application_reqparser.add_argument(
+    "award_name",
+    type=award_name,
+    location="json",
+    required=False,
+    nullable=True,
+    help="Award to link to the application",
+)
+update_application_reqparser.add_argument(
+    "award_justification",
+    type=str,
+    location="json",
+    required=False,
+    nullable=True,
+    help="Justification for the linked award",
 )
 update_application_reqparser.add_argument(
     "field_values",
@@ -84,6 +118,14 @@ grant_summary_model = Model(
     },
 )
 
+award_summary_model = Model(
+    "AwardSummary",
+    {
+        "name": String,
+        "description": String,
+    },
+)
+
 application_model = Model(
     "Application",
     {
@@ -93,8 +135,10 @@ application_model = Model(
         "status": String,
         "field_values": Raw,
         "feedback": String,
+        "award_justification": String,
         "applicant": Nested(applicant_model, attribute="user"),
         "grant": Nested(grant_summary_model),
+        "award": Nested(award_summary_model, skip_none=True),
     },
 )
 

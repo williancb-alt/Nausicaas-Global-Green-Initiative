@@ -6,14 +6,13 @@ from urllib.parse import urlencode
 from flask import Response, current_app
 
 from nausicass_global_green_initiative_api import db
+from nausicass_global_green_initiative_api.api.auth.handlers import (
+    _create_auth_successful_response,
+)
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.models.user_oauth_account import (
     UserOAuthAccount,
 )
-from nausicass_global_green_initiative_api.api.auth.handlers import (
-    _create_auth_successful_response,
-)
-
 from nausicass_global_green_initiative_api.services.oauth.core import logger
 
 

@@ -4,8 +4,8 @@ from typing import Any, Callable, TypedDict
 from flask import request
 
 from nausicass_global_green_initiative_api.api.exceptions import (
-    ApiUnauthorized,
     ApiForbidden,
+    ApiUnauthorized,
 )
 from nausicass_global_green_initiative_api.models.user import User
 
@@ -38,8 +38,10 @@ def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
         token_payload = _validate_access_token(admin_only=True)
-        if not token_payload["admin"]:
+        user = User.find_by_public_id(token_payload["public_id"])
+        if not user or not user.admin:
             raise ApiForbidden()
+        token_payload["admin"] = user.admin
         for name, val in token_payload.items():
             setattr(decorated, name, val)
         return f(*args, **kwargs)

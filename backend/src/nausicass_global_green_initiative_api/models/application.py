@@ -5,10 +5,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    utc_now,
     get_local_utcoffset,
     localized_dt_string,
     make_tzaware,
+    utc_now,
 )
 
 
@@ -26,19 +26,23 @@ class Application(db.Model):
     )  # pending_review, in_review, approved, denied
     field_values = db.Column(db.JSON, nullable=True)
     feedback = db.Column(db.String(1000), nullable=True)
+    award_justification = db.Column(db.String(1000), nullable=True)
 
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     grant_id = db.Column(db.Integer, db.ForeignKey("grant.id"), nullable=False)
+    award_id = db.Column(db.Integer, db.ForeignKey("award.id"), nullable=True)
 
     # Relationships
     user = db.relationship("User", backref=db.backref("applications"))
     grant = db.relationship("Grant", backref=db.backref("applications"))
+    award = db.relationship("Award", backref=db.backref("applications"))
 
     def __repr__(self) -> str:
         return (
             f"<Application id={self.id}, "
-            f"user_id={self.user_id}, grant_id={self.grant_id}>"
+            f"user_id={self.user_id}, grant_id={self.grant_id}, "
+            f"award_id={self.award_id}, status={self.status}>"
         )
 
     @hybrid_property

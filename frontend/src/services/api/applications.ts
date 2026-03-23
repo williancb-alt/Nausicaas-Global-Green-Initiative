@@ -45,6 +45,8 @@ export const applications = {
   submitApplication: async (
     grantName: string,
     fieldValues: Record<string, string>,
+    awardName?: string,
+    awardJustification?: string,
   ): Promise<{ status: string; message: string; application_id: number }> => {
     const response = await apiClient.post<{
       status: string
@@ -52,7 +54,12 @@ export const applications = {
       application_id: number
     }>(
       "/api/v1/applications",
-      { grant_name: grantName, field_values: fieldValues },
+      {
+        grant_name: grantName,
+        field_values: fieldValues,
+        award_name: awardName,
+        award_justification: awardJustification,
+      },
       { headers: { "Content-Type": "application/json" } },
     )
     return response.data

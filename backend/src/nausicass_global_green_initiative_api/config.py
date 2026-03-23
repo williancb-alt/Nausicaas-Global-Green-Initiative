@@ -39,12 +39,14 @@ class Config:
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     SWAGGER_UI_DOC_EXPANSION = "list"
     RESTX_MASK_SWAGGER = False
+    RESTX_ERROR_404_HELP = False
     JSON_SORT_KEYS = False
 
 
 class TestingConfig(Config):
     """Testing configuration."""
 
+    ENV = "testing"
     TESTING = True
     EMAIL_ENABLED = False
     SQLALCHEMY_DATABASE_URI = os.getenv(
@@ -56,6 +58,7 @@ class TestingConfig(Config):
 class DevelopmentConfig(Config):
     """Development configuration."""
 
+    ENV = "development"
     TOKEN_EXPIRE_MINUTES = 15
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/nausicaa_dev"
@@ -65,6 +68,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration."""
 
+    ENV = "production"
     TOKEN_EXPIRE_HOURS = 1
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_DATABASE_URI = os.getenv(
