@@ -6,10 +6,7 @@ import { useSubmitApplication } from "../hooks/useApplicationHooks"
 import { useAuthStore } from "../store/authStore"
 
 import { mockUser, mockGrant } from "../test/mock-data"
-import {
-  mockMutationSuccess,
-  renderWithProviders,
-} from "../test/test-utils"
+import { mockMutationSuccess, renderWithProviders } from "../test/test-utils"
 
 // Mock dependencies
 vi.mock("../hooks/useGrantHooks")
