@@ -32,11 +32,11 @@ export default [
       "@typescript-eslint/no-unused-vars": [
         "error",
         { varsIgnorePattern: "^[A-Z_]" },
-        ],
+      ],
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
-        ],
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unsafe-argument": "error",
       "@typescript-eslint/no-unsafe-member-access": "error",
