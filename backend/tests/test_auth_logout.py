@@ -1,14 +1,12 @@
 from http import HTTPStatus
 
-from nausicass_global_green_initiative_api.models.token_blacklist import (
-    BlacklistedToken,
-)
+from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 from tests.util import (
-    register_user,
-    login_user,
-    logout_user,
     WWW_AUTH_NO_TOKEN,
     get_access_token_from_cookie,
+    login_user,
+    logout_user,
+    register_user,
 )
 
 SUCCESS = "successfully logged out"

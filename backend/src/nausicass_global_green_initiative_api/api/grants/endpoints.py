@@ -1,22 +1,23 @@
 from http import HTTPStatus
+
 from flask import Response
 from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.grants.dto import (
     create_grant_reqparser,
-    update_grant_reqparser,
-    pagination_reqparser,
-    grant_owner_model,
     grant_model,
+    grant_owner_model,
     pagination_links_model,
     pagination_model,
+    pagination_reqparser,
+    update_grant_reqparser,
 )
 from nausicass_global_green_initiative_api.api.grants.handlers import (
     create_grant,
-    retrieve_grant_list,
-    retrieve_grant,
-    update_grant,
     delete_grant,
+    retrieve_grant,
+    retrieve_grant_list,
+    update_grant,
 )
 from nausicass_global_green_initiative_api.models.grant import Grant as GrantModel
 

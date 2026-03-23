@@ -1,5 +1,6 @@
 from typing import Any, List, Mapping, Optional, Tuple
-from werkzeug.exceptions import Unauthorized, Forbidden
+
+from werkzeug.exceptions import Forbidden, Unauthorized
 
 # TODO - update these when real domain in place
 _REALM_REGULAR_USERS = "registered_users@mydomain.com"

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
 import pytest
-from azure.core.exceptions import ServiceRequestError, HttpResponseError
+from azure.core.exceptions import HttpResponseError, ServiceRequestError
 from flask import Flask
 
 from nausicass_global_green_initiative_api.services.email_service import (
-    EmailService,
     EmailSendError,
+    EmailService,
 )
 
 

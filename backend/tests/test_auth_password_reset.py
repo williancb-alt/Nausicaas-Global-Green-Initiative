@@ -10,9 +10,9 @@ from tests.util import (
     EMAIL,
     PASSWORD,
     forgot_password,
-    reset_password,
     login_user,
     register_user,
+    reset_password,
 )
 
 NEW_PASSWORD = "NewPass1"
@@ -112,6 +112,7 @@ def test_reset_password_used_token(client, db):
 
 def test_reset_password_expired_token(client, db):
     from datetime import timedelta
+
     from nausicass_global_green_initiative_api.util.datetime_util import utc_now
 
     register_user(client)

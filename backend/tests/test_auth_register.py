@@ -1,14 +1,14 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.email_service import EmailService
 from tests.util import (
+    BAD_REQUEST,
     EMAIL,
     PASSWORD,
-    BAD_REQUEST,
-    register_user,
     get_access_token_from_cookie,
+    register_user,
 )
 
 SUCCESS = "successfully registered"

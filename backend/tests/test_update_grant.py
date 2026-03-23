@@ -1,18 +1,18 @@
+import json
 from datetime import date, timedelta
 from http import HTTPStatus
-import json
 
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 from tests.util import (
     ADMIN_EMAIL,
-    PASSWORD,
-    EMAIL,
-    DEFAULT_NAME,
     DEFAULT_DEADLINE,
+    DEFAULT_NAME,
+    EMAIL,
     FORBIDDEN,
+    PASSWORD,
+    create_grant,
     login_user,
     register_user,
-    create_grant,
     retrieve_grant,
     update_grant,
 )

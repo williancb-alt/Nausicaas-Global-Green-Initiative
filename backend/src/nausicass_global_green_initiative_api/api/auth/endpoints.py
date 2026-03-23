@@ -10,17 +10,17 @@ from nausicass_global_green_initiative_api.api.auth.dto import (
     user_model,
 )
 from nausicass_global_green_initiative_api.api.auth.handlers import (
-    process_registration_request,
-    process_login_request,
     get_logged_in_user,
-    process_logout_request,
     process_forgot_password_request,
+    process_login_request,
+    process_logout_request,
+    process_registration_request,
     process_reset_password_request,
 )
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.oauth import (
-    start_oauth_login,
     handle_oauth_callback,
+    start_oauth_login,
 )
 
 auth_ns = Namespace(name="auth", validate=True)

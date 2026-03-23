@@ -1,7 +1,6 @@
-import pytest
-
 from http import HTTPStatus
 
+import pytest
 from flask import url_for
 
 from nausicass_global_green_initiative_api.models.application import (
@@ -11,15 +10,15 @@ from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.grant import Grant
 from tests.util import (
     ADMIN_EMAIL,
-    PASSWORD,
-    DEFAULT_NAME,
     DEFAULT_DEADLINE,
     DEFAULT_DESCRIPTION,
+    DEFAULT_NAME,
     FORBIDDEN,
-    register_user,
-    login_user,
+    PASSWORD,
     create_grant,
     create_award,
+    login_user,
+    register_user,
 )
 
 

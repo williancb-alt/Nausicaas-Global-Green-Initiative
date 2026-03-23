@@ -1,3 +1,6 @@
+# Nausicaas Global Green Initiative API
+# Version: 1.0.0
+
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS

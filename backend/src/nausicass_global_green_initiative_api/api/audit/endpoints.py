@@ -5,12 +5,12 @@ from http import HTTPStatus
 from flask import Response, jsonify
 from flask_restx import Namespace, Resource
 
+from nausicass_global_green_initiative_api.api.audit.dto import (
+    audit_list_reqparser,
+    audit_log_model,
+)
 from nausicass_global_green_initiative_api.api.auth.decorators import (
     admin_token_required,
-)
-from nausicass_global_green_initiative_api.api.audit.dto import (
-    audit_log_model,
-    audit_list_reqparser,
 )
 from nausicass_global_green_initiative_api.models.audit_log import AuditLog
 

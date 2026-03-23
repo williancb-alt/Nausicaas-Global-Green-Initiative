@@ -1,33 +1,23 @@
 from __future__ import annotations
-import re
-from datetime import date, datetime, time, timezone
 
 import json
+import re
+from datetime import date, datetime, time, timezone
 from http import HTTPStatus
-from flask_restx import abort
-from nausicass_global_green_initiative_api.models.user import User
-from nausicass_global_green_initiative_api.models.grant import Grant
-from flask import Request
-from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
 
 from dateutil import parser
-from flask_restx import Model
-from flask_restx.fields import (
-    Boolean,
-    DateTime,
-    Integer,
-    List,
-    Nested,
-    Raw,
-    String,
-    Url,
-)
-from flask_restx.inputs import positive, boolean
+from flask import Request
+from flask_restx import Model, abort
+from flask_restx.fields import Boolean, DateTime, Integer, List, Nested, Raw, String, Url
+from flask_restx.inputs import boolean, positive
 from flask_restx.reqparse import RequestParser
 
+from nausicass_global_green_initiative_api.api.grants.types import GrantDictionary
+from nausicass_global_green_initiative_api.models.grant import Grant
+from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    make_tzaware,
     DATE_MONTH_NAME,
+    make_tzaware,
 )
 
 

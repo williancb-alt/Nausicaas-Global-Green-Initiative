@@ -5,10 +5,10 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.util.datetime_util import (
-    utc_now,
     get_local_utcoffset,
     localized_dt_string,
     make_tzaware,
+    utc_now,
 )
 
 

@@ -4,8 +4,8 @@ from typing import Any, Callable, TypedDict
 from flask import request
 
 from nausicass_global_green_initiative_api.api.exceptions import (
-    ApiUnauthorized,
     ApiForbidden,
+    ApiUnauthorized,
 )
 from nausicass_global_green_initiative_api.models.user import User
 

@@ -1,5 +1,6 @@
 from pathlib import Path
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 VERSION = "1.0.0"
 
@@ -40,7 +41,7 @@ INSTALL_REQUIRES = [
 ]
 EXTRAS_REQUIRE = {
     "dev": [
-        "black",
+        "black>=25.1.0",
         "flake8",
         "pre-commit",
         "pydocstyle",

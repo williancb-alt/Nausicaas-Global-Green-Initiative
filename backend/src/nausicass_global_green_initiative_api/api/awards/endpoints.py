@@ -5,22 +5,22 @@ from flask import Response
 from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.awards.dto import (
-    create_award_reqparser,
-    update_award_reqparser,
-    pagination_reqparser,
-    award_owner_model,
     award_model,
+    award_owner_model,
+    create_award_reqparser,
     pagination_links_model,
     pagination_model,
+    pagination_reqparser,
+    update_award_reqparser,
 )
 from nausicass_global_green_initiative_api.api.awards.handlers import (
     create_award,
-    retrieve_award_list,
-    retrieve_award,
-    update_award,
     delete_award,
+    retrieve_award,
+    retrieve_award_list,
+    update_award,
 )
-from nausicass_global_green_initiative_api.models.award import Award
+from nausicass_global_green_initiative_api.models.award import Award as AwardModel
 
 award_ns = Namespace(name="awards", validate=True)
 award_ns.models[award_owner_model.name] = award_owner_model
@@ -69,7 +69,7 @@ class Award(Resource):
     @award_ns.doc(security="Bearer")
     @award_ns.response(int(HTTPStatus.OK), "Retrieved award.", award_model)
     @award_ns.marshal_with(award_model)
-    def get(self, name: str) -> Award:
+    def get(self, name: str) -> AwardModel:
         """Retrieve an award."""
         return retrieve_award(name)
 

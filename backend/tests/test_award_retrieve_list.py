@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from http import HTTPStatus
 
-from tests.util import ADMIN_EMAIL, login_user, create_award, retrieve_award_list
+from tests.util import ADMIN_EMAIL, create_award, login_user, retrieve_award_list
 
 NAMES = [
     "award1",

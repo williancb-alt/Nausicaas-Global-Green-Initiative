@@ -15,6 +15,7 @@ import { LandingPage } from "./pages/LandingPage"
 import { GrantApplicationPage } from "./pages/GrantApplicationPage"
 import { AuditLogs } from "./pages/AuditLogs"
 import { UserDashboard } from "./pages/UserDashboard"
+import { SupportMessagesPage } from "./pages/SupportMessagesPage"
 
 export const routes = [
   {
@@ -102,6 +103,14 @@ export const routes = [
     ),
   },
   {
+    path: "/admin/support",
+    element: (
+      <ProtectedRoute requireAdmin>
+        <SupportMessagesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/login",
     element: <Login />,
   },
@@ -113,6 +122,7 @@ export const routes = [
     path: "/forgot-password",
     element: <ForgotPassword />,
   },
+
   {
     path: "/reset-password",
     element: <ResetPassword />,

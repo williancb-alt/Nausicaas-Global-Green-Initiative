@@ -4,23 +4,23 @@ from flask import Response
 from flask_restx import Namespace, Resource
 
 from nausicass_global_green_initiative_api.api.applications.dto import (
-    create_application_reqparser,
-    update_application_reqparser,
-    pagination_reqparser,
     applicant_model,
     grant_summary_model,
     award_summary_model,
     application_model,
-    pagination_links_model,
     application_pagination_model,
+    create_application_reqparser,
+    pagination_links_model,
+    pagination_reqparser,
+    update_application_reqparser,
 )
 from nausicass_global_green_initiative_api.api.applications.handlers import (
     create_application,
-    retrieve_my_applications,
+    delete_application,
     retrieve_all_applications,
     retrieve_application,
+    retrieve_my_applications,
     update_application,
-    delete_application,
 )
 from nausicass_global_green_initiative_api.models.application import Application
 

@@ -4,8 +4,8 @@ from http import HTTPStatus
 from tests.util import (
     ADMIN_EMAIL,
     DEFAULT_NAME,
-    login_user,
     create_award,
+    login_user,
     retrieve_award,
     update_award,
 )
