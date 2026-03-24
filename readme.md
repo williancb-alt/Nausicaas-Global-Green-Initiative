@@ -65,15 +65,16 @@ Pauric Dawson (Permanent)
 
 ## Team
 
-| Name | Role / Primary Responsibility |
-|------|-------------------------------|
-| Arno Moelich | Post-submission business logic (applicants cannot modify data) |
-| Matheus Maximo De Araujo | Special award application fields |
-| John Dennehy | Admin functionality, CI pipelines, Infrastructure/Terraform |
-| Willian Belolli | Admin functionality, grant management, project setup |
-| Tito Etimiri | UI/UX design, front-end development |
-| Ronan O'Dea | Applicant details and funding requests |
-| Anuj Kumar | CI pipelines, supporting roles |
+| Name |
+|------|
+| Arno Moelich |
+| Matheus Maximo De Araujo |
+| John Dennehy |
+| Willian Belolli |
+| Tito Etimiri |
+| Ronan O'Dea |
+
+> **Note:** Anuj Kumar was a member of the team but has since left the project.
 
 ## Scrum Master Rotation
 
