@@ -69,21 +69,30 @@ export function useSupportManagement() {
   // Derived State
   const stats: SupportStats = {
     total: messages.length,
-    pending: messages.filter(m => m.status === "Open").length,
-    replied: messages.filter(m => m.status === "Replied").length,
+    pending: messages.filter(m => (m.status || "").trim().toLowerCase() === "open")
+      .length,
+    replied: messages.filter(
+      m => (m.status || "").trim().toLowerCase() === "replied",
+    ).length,
   }
 
+
   const filteredMessages = messages.filter(m => {
+    const status = (m.status || "").trim().toLowerCase()
+    const subject = (m.subject || "").toLowerCase()
+    const email = (m.user?.email || "").toLowerCase()
+    const query = searchQuery.toLowerCase()
+
     const matchesFilter =
       statusFilter === "all" ||
-      (statusFilter === "pending" && m.status === "Open") ||
-      (statusFilter === "replied" && m.status === "Replied")
+      (statusFilter === "pending" && status === "open") ||
+      (statusFilter === "replied" && status === "replied")
 
-    const matchesSearch =
-      m.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = subject.includes(query) || email.includes(query)
+
     return matchesFilter && matchesSearch
   })
+
 
   return {
     filteredMessages,
