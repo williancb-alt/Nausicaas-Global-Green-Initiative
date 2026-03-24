@@ -104,6 +104,10 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 Pauric Dawson (Permanent)
 
+## Superstar
+
+*To be discussed*
+
 ## Team
 
 | Name | Responsibilities / Work Completed |
