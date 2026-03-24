@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react"
 import { api } from "../services/api"
 import type { SupportMessage } from "../services/api/support"
-import { AxiosError } from "axios"
-import { FilterStatus, SupportStats } from "../components/support/types"
+import { FilterStatus } from "../components/support/types"
+import {
+  getErrorMessage,
+  calculateSupportStats,
+  checkMessageMatch,
+} from "./useSupportManagement.helpers"
 
 export function useSupportManagement() {
   const [messages, setMessages] = useState<SupportMessage[]>([])
@@ -22,24 +26,13 @@ export function useSupportManagement() {
   const fetchMessages = async (): Promise<void> => {
     try {
       setLoading(true)
-      const data: SupportMessage[] = await api.support.getAllMessages()
+      const data = await api.support.getAllMessages()
       setMessages(data)
       setError(null)
     } catch (err) {
-      handleApiError(err, "Failed to load messages.")
+      setError(getErrorMessage(err, "Failed to load messages."))
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleApiError = (err: unknown, defaultMsg: string) => {
-    if (err instanceof AxiosError) {
-      const apiError = err as AxiosError<{ message?: string }>
-      setError(apiError.response?.data?.message || err.message || defaultMsg)
-    } else if (err instanceof Error) {
-      setError(err.message)
-    } else {
-      setError("An unknown error occurred.")
     }
   }
 
@@ -60,27 +53,17 @@ export function useSupportManagement() {
       setViewingHistory(messageId)
       await fetchMessages()
     } catch (err) {
-      handleApiError(err, "Failed to send reply.")
+      setError(getErrorMessage(err, "Failed to send reply."))
     } finally {
       setIsSending(false)
     }
   }
 
-  // Derived State
-  const stats: SupportStats = {
-    total: messages.length,
-    pending: messages.filter(m => m.status === "Open").length,
-    replied: messages.filter(m => m.status === "Replied").length,
-  }
+  const stats = calculateSupportStats(messages)
 
-  const filteredMessages = messages.filter(m => {
-    const matchesFilter =
-      statusFilter === "all" || m.status.toLowerCase() === statusFilter
-    const matchesSearch =
-      m.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesFilter && matchesSearch
-  })
+  const filteredMessages = messages.filter(m =>
+    checkMessageMatch(m, statusFilter, searchQuery),
+  )
 
   return {
     filteredMessages,

@@ -4,7 +4,7 @@
 <p><strong>Subject:</strong> {{ subject }}</p>
 <p><strong>Message:</strong></p>
 <blockquote style="border-left: 4px solid #3b7a57; padding-left: 15px; margin-left: 0; color: #444;">
-    {{ message|linebreaksbr }}
+    {{ message | forceescape | replace("\n", "<br>") | safe }}
 </blockquote>
 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 <p style="font-size: 0.8em; color: #666;">
