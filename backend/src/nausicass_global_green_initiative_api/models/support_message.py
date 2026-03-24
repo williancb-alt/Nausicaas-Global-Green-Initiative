@@ -42,6 +42,16 @@ class SupportMessage(db.Model):
         )
         return localized_dt_string(created_at_utc, use_tz=get_local_utcoffset())
 
+    @hybrid_property
+    def answered_at_str(self) -> str | None:
+        if not self.answered_at:
+            return None
+        answered_at_utc = make_tzaware(
+            self.answered_at, use_tz=timezone.utc, localize=False
+        )
+        return localized_dt_string(answered_at_utc, use_tz=get_local_utcoffset())
+
+
     @classmethod
     def get_all(cls) -> list["SupportMessage"]:
         return cls.query.order_by(cls.created_at.desc()).all()

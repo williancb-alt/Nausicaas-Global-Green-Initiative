@@ -98,7 +98,7 @@ export function AdminResponseHistory({
       <p className="mb-0 text-dark" style={{ whiteSpace: "pre-wrap" }}>
         {msg.admin_response}
       </p>
-      <div className="text-muted small mt-2">Sent at {msg.answered_at}</div>
+      <div className="text-muted small mt-2">Sent at {msg.answered_at_str}</div>
     </div>
   )
 }

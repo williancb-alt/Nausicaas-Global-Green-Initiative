@@ -3,12 +3,13 @@
     <p>Thank you for contacting our Environmental Program Office. We have a response regarding your support request for
         <strong>Application #{{ application_id }}</strong>:</p>
     <div style="padding: 15px; background: #f9f9f9; border-left: 4px solid #3b7a57; margin: 20px 0;">
-        {{ reply_text }}
+        {{ reply_text | forceescape | replace("\n", "<br>") | safe }}
     </div>
     <p>Original Message:</p>
     <blockquote style="color: #666; font-style: italic; border-left: 2px solid #ddd; padding-left: 10px;">
-        {{ original_message }}
+        {{ original_message | forceescape | replace("\n", "<br>") | safe }}
     </blockquote>
+
     <p>Best Regards,<br>Nausicaas Global Green Initiative Team</p>
     <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
     <p style="font-size: 0.9rem; color: #555;"><strong>Note:</strong> If you are not satisfied with this response or
