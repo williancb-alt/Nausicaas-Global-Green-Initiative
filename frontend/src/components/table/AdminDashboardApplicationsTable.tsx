@@ -1,4 +1,4 @@
-import { Application } from "@/types"
+import { Application } from "../../types"
 import { FileText } from "lucide-react"
 import { StatusBadge } from "../badge/StatusBadge"
 

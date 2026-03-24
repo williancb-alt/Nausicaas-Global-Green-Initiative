@@ -1,7 +1,7 @@
 import { apiClient } from "./client"
 import type { Application } from "../../types"
 
-interface ApplicationsResponse {
+export interface ApplicationsResponse {
   items: Application[]
   has_prev: boolean
   has_next: boolean

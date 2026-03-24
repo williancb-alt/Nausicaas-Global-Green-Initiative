@@ -1,4 +1,4 @@
-import { Application } from "@/types"
+import { Application } from "../types"
 import { useMemo } from "react"
 
 export function useAdminStats(applications: Application[]) {

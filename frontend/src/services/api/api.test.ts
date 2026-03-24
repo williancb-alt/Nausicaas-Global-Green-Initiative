@@ -58,12 +58,6 @@ const urlSearchParams: unknown = expect.any(URLSearchParams)
 type ResourceRecord = Award | Grant
 type ResourcePageRecord = AwardPage | GrantPage
 
-type AuthScenario = {
-  endpoint: string
-  successMessage: AuthSuccess["message"]
-  execute: () => Promise<AuthSuccess>
-}
-
 type ResourceScenario<
   TResource extends ResourceRecord,
   TPage extends ResourcePageRecord,
@@ -111,12 +105,10 @@ async function expectDeleteRequest(
   expect(mockDelete).toHaveBeenCalledWith(...expectedArgs)
 }
 
-function buildAuthSuccess(
-  scenario: Pick<AuthScenario, "successMessage">,
-): AuthSuccess {
+function buildAuthSuccess(message: AuthSuccess["message"]): AuthSuccess {
   return {
     status: "success",
-    message: scenario.successMessage,
+    message,
     token_type: "bearer",
     expires_in: 900,
   }
@@ -254,141 +246,121 @@ function describeResourceApi<
   })
 }
 
-const awardResource: Award = {
-  name: "test-award",
-  deadline: RESOURCE_DEADLINE,
-  deadline_passed: false,
-  time_remaining: RESOURCE_TIME_REMAINING,
+function buildResourceScenario<
+  TResource extends ResourceRecord,
+  TPage extends ResourcePageRecord,
+>({
+  label,
+  apiNamespace,
+}: {
+  label: "award" | "grant"
+  apiNamespace: {
+    create: (payload: any) => Promise<BaseResponse>
+    list: (page: number, perPage: number) => Promise<TPage>
+    get: (name: string) => Promise<TResource>
+    update: (name: string, data: any) => Promise<BaseResponse | TResource>
+    delete: (name: string) => Promise<void>
+  }
+}): ResourceScenario<TResource, TPage> {
+  const name = `test-${label}`
+  const basePath = `/api/v1/${label}s`
+  const resource = {
+    name,
+    deadline: RESOURCE_DEADLINE,
+    deadline_passed: false,
+    time_remaining: RESOURCE_TIME_REMAINING,
+  } as TResource
+
+  return {
+    suiteName: `${label}s`,
+    resourceLabel: label,
+    basePath,
+    resource,
+    listResponse: buildPage({
+      basePath,
+      item: buildResource({ resource }),
+    }) as unknown as TPage,
+    create: () =>
+      apiNamespace.create(
+        buildCreatePayload({ resourceLabel: label, resource }),
+      ),
+    list: () => apiNamespace.list(PAGE, PER_PAGE),
+    get: () => apiNamespace.get(name),
+    update: () => apiNamespace.update(name, { deadline: UPDATED_DEADLINE }),
+    remove: () => apiNamespace.delete(name),
+  }
 }
 
-const awardScenario: ResourceScenario<Award, AwardPage> = {
-  suiteName: "awards",
-  resourceLabel: "award",
-  basePath: "/api/v1/awards",
-  resource: awardResource,
-  listResponse: buildPage({
-    basePath: "/api/v1/awards",
-    item: buildResource({ resource: awardResource }),
-  }),
-  create: () =>
-    api.awards.createAward(
-      buildCreatePayload({
-        resourceLabel: "award",
-        resource: awardResource,
-      }),
-    ),
-  list: () => api.awards.listAwards(PAGE, PER_PAGE),
-  get: () => api.awards.getAward("test-award"),
-  update: () =>
-    api.awards.updateAward("test-award", { deadline: UPDATED_DEADLINE }),
-  remove: () => api.awards.deleteAward("test-award"),
-}
+const awardScenario = buildResourceScenario<Award, AwardPage>({
+  label: "award",
+  apiNamespace: {
+    create: p => api.awards.createAward(p),
+    list: (page, perPage) => api.awards.listAwards(page, perPage),
+    get: name => api.awards.getAward(name),
+    update: (name, data) => api.awards.updateAward(name, data),
+    delete: name => api.awards.deleteAward(name),
+  },
+})
 
-const grantResource: Grant = {
-  name: "test-grant",
-  deadline: RESOURCE_DEADLINE,
-  deadline_passed: false,
-  time_remaining: RESOURCE_TIME_REMAINING,
-}
-
-const grantScenario: ResourceScenario<Grant, GrantPage> = {
-  suiteName: "grants",
-  resourceLabel: "grant",
-  basePath: "/api/v1/grants",
-  resource: grantResource,
-  listResponse: buildPage({
-    basePath: "/api/v1/grants",
-    item: buildResource({ resource: grantResource }),
-  }),
-  create: () =>
-    api.grants.createGrant(
-      buildCreatePayload({
-        resourceLabel: "grant",
-        resource: grantResource,
-      }),
-    ),
-  list: () => api.grants.listGrants(PAGE, PER_PAGE),
-  get: () => api.grants.getGrant("test-grant"),
-  update: () =>
-    api.grants.updateGrant("test-grant", { deadline: UPDATED_DEADLINE }),
-  remove: () => api.grants.deleteGrant("test-grant"),
-}
+const grantScenario = buildResourceScenario<Grant, GrantPage>({
+  label: "grant",
+  apiNamespace: {
+    create: p => api.grants.createGrant(p),
+    list: (page, perPage) => api.grants.listGrants(page, perPage),
+    get: name => api.grants.getGrant(name),
+    update: (name, data) => api.grants.updateGrant(name, data),
+    delete: name => api.grants.deleteGrant(name),
+  },
+})
 
 describe("api (auth)", () => {
-  describe("auth.register", () => {
-    it("should register a new user", async () => {
-      const scenario: AuthScenario = {
-        endpoint: "/api/v1/auth/register",
-        successMessage: "successfully registered",
-        execute: () => api.auth.register(TEST_EMAIL, TEST_PASSWORD),
-      }
-      const mockResponse = buildAuthSuccess(scenario)
-
-      await expectDataRequest({
-        method: mockPost,
-        response: mockResponse,
-        execute: scenario.execute,
-        expectedArgs: [scenario.endpoint, urlSearchParams],
-      })
-    })
-  })
-
-  describe("auth.login", () => {
-    it("should login a user", async () => {
-      const scenario: AuthScenario = {
-        endpoint: "/api/v1/auth/login",
-        successMessage: "successfully logged in",
-        execute: () => api.auth.login(TEST_EMAIL, TEST_PASSWORD),
-      }
-      const mockResponse = buildAuthSuccess(scenario)
-
-      await expectDataRequest({
-        method: mockPost,
-        response: mockResponse,
-        execute: scenario.execute,
-        expectedArgs: [scenario.endpoint, urlSearchParams],
-      })
-    })
-  })
-
-  describe("auth.getUser", () => {
-    it("should get user info", async () => {
-      const mockResponse: UserInfo = {
+  describe.each([
+    {
+      name: "register",
+      method: () => mockPost,
+      response: buildAuthSuccess("successfully registered"),
+      execute: () => api.auth.register(TEST_EMAIL, TEST_PASSWORD),
+      expectedArgs: ["/api/v1/auth/register", urlSearchParams],
+    },
+    {
+      name: "login",
+      method: () => mockPost,
+      response: buildAuthSuccess("successfully logged in"),
+      execute: () => api.auth.login(TEST_EMAIL, TEST_PASSWORD),
+      expectedArgs: ["/api/v1/auth/login", urlSearchParams],
+    },
+    {
+      name: "getUser",
+      method: () => mockGet,
+      response: {
         email: "test@example.com",
         admin: false,
         public_id: "123",
-      }
-
-      await expectDataRequest({
-        method: mockGet,
-        response: mockResponse,
-        execute: () => api.auth.getUser(),
-        expectedArgs: ["/api/v1/auth/user"],
-      })
-    })
-  })
-
-  describe("auth.logout", () => {
-    it("should logout a user", async () => {
-      const mockResponse = {
+      } as UserInfo,
+      execute: () => api.auth.getUser(),
+      expectedArgs: ["/api/v1/auth/user"],
+    },
+    {
+      name: "logout",
+      method: () => mockPost,
+      response: {
         status: "success",
         message: "successfully logged out",
-      }
-
+      },
+      execute: () => api.auth.logout(),
+      expectedArgs: ["/api/v1/auth/logout"],
+    },
+  ])("auth.$name", ({ method, response, execute, expectedArgs }) => {
+    it("should succeed", async () => {
       await expectDataRequest({
-        method: mockPost,
-        response: mockResponse,
-        execute: () => api.auth.logout(),
-        expectedArgs: ["/api/v1/auth/logout"],
+        method: method(),
+        response,
+        execute,
+        expectedArgs,
       })
     })
   })
 })
 
-describe("api (awards)", () => {
-  describeResourceApi(awardScenario)
-})
-
-describe("api (grants)", () => {
-  describeResourceApi(grantScenario)
-})
+describeResourceApi(awardScenario)
+describeResourceApi(grantScenario)

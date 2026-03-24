@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../services/api"
+import { ApplicationsResponse } from "../services/api/applications"
 
 // Get current user's applications
 export function useMyApplications() {
   return useQuery({
     queryKey: ["myApplications"],
-    queryFn: () => api.applications.getMyApplications(),
+    queryFn: (): Promise<ApplicationsResponse> =>
+      api.applications.getMyApplications(),
   })
 }
 
@@ -13,7 +15,8 @@ export function useMyApplications() {
 export function useApplications() {
   return useQuery({
     queryKey: ["applications"],
-    queryFn: () => api.applications.getAllApplications(),
+    queryFn: (): Promise<ApplicationsResponse> =>
+      api.applications.getAllApplications(),
   })
 }
 
