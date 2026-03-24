@@ -164,7 +164,7 @@ Rotating scrum master so that everyone gets to experience the role once.
 
 ## Risk Register
 
-These are the current risks on the project, re-aligned on a weekly basis. Full register available at [Administration/Risk Register.md](./Administration/Risk%20Register.md).
+These are the current risks on the project, re-aligned on a weekly basis. Full register available at [Administration/Risk Register.md](./Documentation/Administration/Risk%20Register.md).
 
 *This risk register needs to be reviewed and updated.*
 
@@ -233,9 +233,9 @@ See [Infrastructure README](./infrastructure/README.md) for full details on the 
 | Backend API | Flask API details, manual setup | [backend/README.md](./backend/README.md) |
 | Frontend App | React app details, manual setup | [frontend/README.md](./frontend/README.md) |
 | Infrastructure | Terraform, Azure/AKS, CI/CD, deployments | [infrastructure/README.md](./infrastructure/README.md) |
-| Risk Register | Full risk register with mitigations | [Administration/Risk Register.md](./Administration/Risk%20Register.md) |
-| Meeting Minutes | Sprint meeting notes | [Administration/Minutes/](./Administration/Minutes/) |
-| Sprint Planning | Story point estimation records | [Administration/Sprint_Poker_Planning/](./Administration/Sprint_Poker_Planning/) |
+| Risk Register | Full risk register with mitigations | [Administration/Risk Register.md](./Documentation/Administration/Risk%20Register.md) |
+| Meeting Minutes | Sprint meeting notes | [Administration/Minutes/](./Documentation/Administration/Minutes/) |
+| Sprint Planning | Story point estimation records | [Administration/Sprint_Poker_Planning/](./Documentation/Administration/Sprint_Poker_Planning/) |
 
 ## Social Contract
 
