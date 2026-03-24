@@ -9,7 +9,6 @@ An online grant application platform for Studio Ghibli's climate change initiati
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
-- [Project Specification](#project-specification)
 - [Product Owner](#product-owner)
 - [Team](#team)
 - [Scrum Master Rotation](#scrum-master-rotation)
@@ -30,34 +29,51 @@ An online grant application platform for Studio Ghibli's climate change initiati
 - [Definition of Ready](#definition-of-ready)
 - [Definition of Done](#definition-of-done)
 
-## Preamble
-
-This is the online repository for the DevOps Assignment.
-
-Our product will be delivered using an Agile methodology that embraces the DevOps culture. Please note that our culture embraces change and these documents are treated as living, breathing artefacts that will be continuously updated.
-
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, TypeScript, Vite 6, Tailwind CSS, Bootstrap 5 |
-| **Backend** | Python 3.11, Flask 3.1, Flask-RESTx (Swagger UI) |
-| **Database** | PostgreSQL 16, SQLAlchemy ORM, Flask-Migrate (Alembic) |
-| **Authentication** | JWT (PyJWT), Flask-Bcrypt, OAuth (Google, GitHub via Authlib) |
-| **State Management** | Zustand (client), TanStack React Query (server) |
-| **Containerisation** | Docker, Docker Compose (dev and test profiles) |
-| **Cloud Platform** | Microsoft Azure (AKS, ACR, Key Vault, PostgreSQL Flexible Server) |
-| **IaC** | Terraform (3-layer: permanent, core, app) |
-| **CI/CD** | GitHub Actions (9 workflows) |
-| **DNS/TLS** | Cloudflare DNS, cert-manager, External Secrets Operator |
-| **Code Quality** | Black, Flake8, ESLint, Prettier, CodeScene |
-| **Security Scanning** | Snyk, Safety |
-| **Testing** | pytest/tox (backend), Vitest (frontend), Playwright (E2E) |
-| **Project Management** | GitHub Projects, Pointing Poker (story point estimation) |
-
-## Project Specification
-
-Develop an online application system for Studio Ghibli's climate change grant programs, supporting their Sustainable Planet Goals. The platform will manage multiple grants, including the popular Teto Grant (up to €10,000).
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| **Frontend** | React | ^19.0.0 |
+| | TypeScript | ^5.7.3 |
+| | Vite | ^6.1.0 |
+| | Bootstrap | ^5.3.8 |
+| | React Router DOM | ^7.8.2 |
+| | Axios | ^1.13.2 |
+| | React Hook Form + Zod | ^7.69.0 / ^4.3.4 |
+| **State Management** | Zustand (client) | ^5.0.9 |
+| | TanStack React Query (server) | ^5.90.16 |
+| **Backend** | Python | 3.11.9 |
+| | Flask | >=3.1.0 |
+| | Flask-RESTx (Swagger UI) | unpinned |
+| | Flask-SQLAlchemy | >=3.1.0 |
+| | Flask-Migrate (Alembic) | unpinned |
+| | Gunicorn | unpinned |
+| **Authentication** | PyJWT | unpinned |
+| | Flask-Bcrypt | unpinned |
+| | Authlib (Google, GitHub OAuth) | unpinned |
+| **Database** | PostgreSQL | 16 |
+| **Containerisation** | Docker, Docker Compose | dev and test profiles |
+| | Node (frontend build) | 24-alpine |
+| | Nginx (frontend runtime) | stable-alpine |
+| | Python (backend image) | 3.11.9-slim |
+| **Cloud Platform** | Microsoft Azure | AKS, ACR, Key Vault, PostgreSQL Flexible Server |
+| **IaC** | Terraform | 1.6.2 (requires >=1.5.0) |
+| | AzureRM provider | ~>3.116.0 |
+| | Kubernetes provider | ~>2.30 |
+| | Helm provider | ~>2.13 |
+| | Cloudflare provider | ~>4.0 |
+| **CI/CD** | GitHub Actions | 9 workflows |
+| **DNS/TLS** | Cloudflare DNS, cert-manager, External Secrets Operator | — |
+| **Code Quality** | Black | >=25.1.0 |
+| | Flake8 | unpinned |
+| | ESLint | ^9.19.0 |
+| | Prettier | ^3.5.1 |
+| | CodeScene | — |
+| **Security Scanning** | Snyk, Safety | — |
+| **Testing** | pytest / tox (backend) | unpinned |
+| | Vitest (frontend) | ^3.0.5 |
+| | Playwright (E2E) | ^1.58.0 |
+| **Project Management** | GitHub Projects, Pointing Poker | — |
 
 ## Product Owner
 
@@ -65,16 +81,16 @@ Pauric Dawson (Permanent)
 
 ## Team
 
-| Name |
-|------|
-| Arno Moelich |
-| Matheus Maximo De Araujo |
-| John Dennehy |
-| Willian Belolli |
-| Tito Etimiri |
-| Ronan O'Dea |
+| Name | Responsibilities / Work Completed |
+|------|-----------------------------------|
+| Arno Moelich | *To be filled* |
+| Matheus Maximo De Araujo | *To be filled* |
+| John Dennehy | *To be filled* |
+| Willian Belolli | *To be filled* |
+| Tito Etimiri | *To be filled* |
+| Ronan O'Dea | *To be filled* |
 
-> **Note:** Anuj Kumar was a member of the team but has since left the project.
+> **Note:** Anuj Kumar was a member of the team but has since left the project. He contributed towards scaffolding the IaC deployment.
 
 ## Scrum Master Rotation
 
@@ -119,6 +135,8 @@ Rotating scrum master so that everyone gets to experience the role once.
 ## Risk Register
 
 These are the current risks on the project, re-aligned on a weekly basis. Full register available at [Administration/Risk Register.md](./Administration/Risk%20Register.md).
+
+*This risk register needs to be reviewed and updated.*
 
 | Risk ID | Risk Description | Category | Likelihood (1-5) | Impact (1-5) | Risk Rating | Mitigation Strategy |
 |---------|------------------|----------|------------------|--------------|-------------|---------------------|
