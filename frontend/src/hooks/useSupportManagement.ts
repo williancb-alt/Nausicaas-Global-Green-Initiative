@@ -75,7 +75,10 @@ export function useSupportManagement() {
 
   const filteredMessages = messages.filter(m => {
     const matchesFilter =
-      statusFilter === "all" || m.status.toLowerCase() === statusFilter
+      statusFilter === "all" ||
+      (statusFilter === "pending" && m.status === "Open") ||
+      (statusFilter === "replied" && m.status === "Replied")
+
     const matchesSearch =
       m.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.user.email.toLowerCase().includes(searchQuery.toLowerCase())
