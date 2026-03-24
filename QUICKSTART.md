@@ -1,28 +1,55 @@
 # Quickstart Guide
 
-Get the Nausicaä's Global Green Initiative application running locally with Docker.
+Get the Nausicaa's Global Green Initiative application running locally with Docker.
+
+## TL;DR - Up and Running in 4 Commands
+
+```bash
+git clone https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative.git
+cd Nausicaas-Global-Green-Initiative
+cp .env.sample .env                    # then edit with real values (ask team) or set EMAIL_ENABLED=false
+docker compose --profile dev up --build
+```
+
+Once logs show all services are ready, open http://localhost:5173 and click **Sign Up** to create an account.
+
+For an admin user, open a second terminal:
+```bash
+docker compose --profile dev exec backend python -m flask --app run.py add-user admin@test.com --admin
+```
+
+That's it. Read on for the full details.
+
+---
 
 ## Prerequisites
 
 - [Git](https://git-scm.com/downloads)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+- **Optional (for local frontend dev, linting, and tests):** [Node.js](https://nodejs.org/) 18+ and npm. We recommend using [nvm](https://github.com/nvm-sh/nvm) to manage Node versions. Required for:
+  - Frontend linting and formatting (`npm run lint`, `npm run format`)
+  - Frontend unit tests (`npm test`)
+  - E2E tests with Playwright (`npx playwright test`)
+- **Optional (for local code analysis):** [CodeScene CLI](https://codescene.io/) - run `cs delta main` to check code health before pushing. Requires a PAT token (see team for setup).
 
 ## Setup
 
-### 1. Clone the Repository & Checkout relevant branch
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative.git
 cd Nausicaas-Global-Green-Initiative
 ```
 
-If you aren't working on main (which is advised) checkout the relavent branch:
+Create a feature branch off `main` (do not work directly on `main`):
 
-````bash
-git checkout branch-name
-````
+```bash
+git checkout -b feature-your-branch-name
+```
 
-Then add local .env file at root of repo with credentials (contact team members for values)
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root with the following variables (contact team members for OAuth values):
 
 ```
 ACS_EMAIL_CONNECTION_STRING="REPLACE WITH CONNECTION STRING"
@@ -30,12 +57,14 @@ ACS_EMAIL_SENDER="REPLACE WITH SENDER ADDRESS"
 EMAIL_ENABLED=true
 GOOGLE_CLIENT_ID="REPLACE"
 GOOGLE_CLIENT_SECRET="REPLACE"
-GITHUB_CLIENT_ID = "REPLACE"
-GITHUB_CLIENT_SECRET = "REPLACE"
+GITHUB_CLIENT_ID="REPLACE"
+GITHUB_CLIENT_SECRET="REPLACE"
 FRONTEND_URL="http://localhost:5173"
 ```
 
-### 2. Build and Start the Application
+> **Note:** OAuth and email features won't work without valid values, but the app will still run. Set `EMAIL_ENABLED=false` to skip email functionality.
+
+### 3. Build and Start the Application
 
 ```bash
 docker compose --profile dev up --build
@@ -44,158 +73,205 @@ docker compose --profile dev up --build
 This will:
 - Pull the PostgreSQL 16 image
 - Build the Flask backend
-- Build the React frontend
+- Build the React frontend (via Nginx)
 - Run database migrations automatically
 - Start all services
 
-Wait until you see logs indicating all services are ready
+Wait until logs indicate all services are ready.
 
-Note: if running into database migration issues, a fresh rebuild can be completed using the below command:
+> **Tip:** If you hit database migration issues, do a clean rebuild:
+> ```bash
+> docker compose --profile dev down -v && docker compose --profile dev up --build
+> ```
 
-```
-docker compose --profile dev down -v && docker compose --profile dev up --build
-```
+### 4. Create Users
 
-### 3. Create a User
-
-With a fresh clone, the database has no users. Create one using the signup form or CLI.
+With a fresh database there are no users. Create them via the UI or CLI.
 
 **Option A: Via the UI**
 
 1. Open http://localhost:5173
-2. Click **Sign up**
+2. Click **Sign Up**
 3. Enter an email and password
 
-**Option B: Via Command Line**
+**Option B: Via CLI**
 
-Open a new terminal window in the root directory (don't use the window currently running docker).
+Open a new terminal (don't use the one running Docker):
 
 ```bash
-# Create an admin user
-docker compose exec backend python -m flask --app run.py add-user admin@example.com --password yourpassword --admin
+# Create an admin user (you'll be prompted for a password)
+docker compose --profile dev exec backend python -m flask --app run.py add-user admin@test.com --admin
 
 # Create a regular user
-docker compose exec backend python -m flask --app run.py add-user user@example.com
+docker compose --profile dev exec backend python -m flask --app run.py add-user user@test.com
 ```
 
-You will be prompted to enter a password.
+Create both user types so you can test admin and regular user views.
 
-**Recommended: Create both user types for testing**
+### 5. Access the Application
 
+| Service              | URL                              |
+|----------------------|----------------------------------|
+| Frontend (Web App)   | http://localhost:5173            |
+| Backend API          | http://localhost:8080            |
+| Swagger UI (API Docs)| http://localhost:8080/api/v1/ui  |
+
+> **Note:** Admin privileges are required to create, update, and delete grants. Regular users can view grants and submit applications.
+
+## Development Workflow
+
+### Branching
+
+- Create feature branches from `main`
+- Open a PR back to `main` when ready
+- Merges to `main` auto-deploy to **staging**
+- **Production** deploys are manual, triggered by a git tag (e.g. `v1.2.3`)
+
+### What CI Checks on Your PR
+
+When you open a PR, these checks run automatically:
+
+| Check | What it does |
+|-------|-------------|
+| **Backend CI** | Black (formatting), Flake8 (linting), pytest (80% coverage gate) |
+| **Frontend CI** | ESLint, Prettier, Vitest |
+| **E2E** | Playwright tests against a Docker test environment |
+| **CodeScene** | Code health analysis (complexity, file size, nesting) |
+
+### Running Linters Locally (Before Pushing)
+
+Run these to catch issues before CI does:
+
+**Backend:**
 ```bash
-docker compose exec backend python -m flask --app run.py add-user admin@test.com --password yourpassword --admin
-docker compose exec backend python -m flask --app run.py add-user user@test.com
+# Formatting check
+docker compose --profile dev exec backend python -m black --check src tests run.py
+
+# Linting
+docker compose --profile dev exec backend python -m flake8
+
+# Auto-format
+docker compose --profile dev exec backend python -m black src tests run.py
 ```
 
-This allows you to test the application from both admin and regular user perspectives.
-
-### 4. Access the Application
-
-| Service | URL |
-|---------|-----|
-| Frontend (Web App) | http://localhost:5173 |
-| Backend API | http://localhost:8080 |
-| Swagger UI (API Docs) | http://localhost:8080/api/v1/ui |
-
-Log in with your credentials and you can create and manage grants from the home page.
-
-> **Note:** Admin privileges are required to create, update, and delete grants. Regular users can view grants only.
-
-## Useful Commands
-
+**Frontend:**
 ```bash
-# Run in detached mode (background)
-docker compose up --build -d
+cd frontend
+npm install   # first time only
+npm run lint
+npm run format
+```
 
-# View logs
-docker compose logs -f
+### Rebuilding After Code Changes
 
-# View logs for a specific service
-docker compose logs -f backend
-docker compose logs -f frontend
+Backend changes require a rebuild:
+```bash
+docker compose --profile dev up -d --build backend
+```
 
-# Stop all services
-docker compose down
-
-# Stop and remove volumes (resets database)
-docker compose down -v
-
-# Check service status
-docker compose ps
-
-# Ensure fresh development build (needed after new database migration)
-docker compose --profile dev down -v && docker compose --profile dev up --build
+Frontend changes also require a rebuild (served via Nginx, not Vite dev server):
+```bash
+docker compose --profile dev up -d --build frontend
 ```
 
 ## Running Tests
 
 ### Backend Tests
 
-```bash
-# Run all backend tests with tox
-docker compose exec backend /app/.venv/bin/python -m tox
+The backend uses [tox](https://tox.wiki/) as its test runner. Tox runs pytest with Black (formatting) and Flake8 (linting) checks in a single command - this is what CI runs, so it's the best way to verify your code before pushing.
 
-# Run pytest directly (faster, skips linting)
-docker compose exec backend /app/.venv/bin/python -m pytest tests/ -v
+```bash
+# Full test suite with linting (tox) - matches what CI runs
+docker compose --profile dev exec backend python -m tox
+
+# Pytest only (faster, skips linting)
+docker compose --profile dev exec backend python -m pytest tests/ -v
 ```
+
+> **Note:** Tests use a separate test database. Create it if it doesn't exist:
+> ```bash
+> docker compose --profile dev exec db psql -U postgres -c "CREATE DATABASE nausicaa_test;"
+> ```
 
 ### Frontend Tests
 
-Frontend tests run locally (not in Docker):
-
 ```bash
 cd frontend
-npm install
+npm install   # first time only
 npm test
 ```
 
-## Database Commands
+### E2E Tests (Playwright)
 
-### Inspect Database Tables
+E2E tests run against a separate test profile with its own database:
 
 ```bash
-# Connect to PostgreSQL
-docker compose exec db psql -U postgres -d nausicaa_dev
+# Start test services
+docker compose --profile test up -d --build
 
-# List all tables
-docker compose exec db psql -U postgres -d nausicaa_dev -c "\dt"
+# Run tests (from e2e/ directory)
+cd e2e
+npm install   # first time only
+npx playwright test
 
-# View grant table structure
-docker compose exec db psql -U postgres -d nausicaa_dev -c '\d "grant"'
-
-# View user table structure
-docker compose exec db psql -U postgres -d nausicaa_dev -c '\d "user"'
-
-# Query all grants (grant is a reserved word, must be quoted)
-docker compose exec db psql -U postgres -d nausicaa_dev -c 'SELECT * FROM "grant";'
-
-# View custom_fields JSON (formatted)
-docker compose exec db psql -U postgres -d nausicaa_dev -c 'SELECT name, jsonb_pretty(custom_fields::jsonb) FROM "grant";'
-
-# View custom_fields for a specific grant
-docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT name, jsonb_pretty(custom_fields::jsonb) FROM \"grant\" WHERE name = 'Your Grant Name';"
-
-# Query all users
-docker compose exec db psql -U postgres -d nausicaa_dev -c "SELECT id, email, admin FROM \"user\";"
+# Tear down test services
+docker compose --profile test down
 ```
 
-### Database Migrations
+## Database
+
+### Connect to the Database
 
 ```bash
-# Apply pending migrations
-docker compose exec backend /app/.venv/bin/python -m flask --app run.py db upgrade
+docker compose --profile dev exec db psql -U postgres -d nausicaa_dev
+```
+
+### Common Queries
+
+```bash
+# List all tables
+docker compose --profile dev exec db psql -U postgres -d nausicaa_dev -c "\dt"
+
+# View all users
+docker compose --profile dev exec db psql -U postgres -d nausicaa_dev -c "SELECT id, email, admin FROM \"user\";"
+
+# View all grants
+docker compose --profile dev exec db psql -U postgres -d nausicaa_dev -c 'SELECT * FROM "grant";'
+```
+
+### Migrations
+
+```bash
+# Apply pending migrations (also runs automatically on container start)
+docker compose --profile dev exec backend python -m flask --app run.py db upgrade
 
 # Generate a new migration after model changes
-docker compose exec backend /app/.venv/bin/python -m flask --app run.py db migrate -m "description of changes"
+docker compose --profile dev exec backend python -m flask --app run.py db migrate -m "description of changes"
 
-# View migration history
-docker compose exec backend /app/.venv/bin/python -m flask --app run.py db history
+# Copy migration file out of the container
+docker compose --profile dev cp backend:/app/migrations/versions/<filename> backend/migrations/versions/
 ```
 
-### Create Test Database (for running tests)
+## Useful Docker Commands
 
 ```bash
-docker compose exec db psql -U postgres -c "CREATE DATABASE nausicaa_test;"
+# Run in detached mode (background)
+docker compose --profile dev up --build -d
+
+# View logs
+docker compose --profile dev logs -f
+
+# View logs for a specific service
+docker compose --profile dev logs -f backend
+
+# Stop all services
+docker compose --profile dev down
+
+# Stop and remove volumes (resets database)
+docker compose --profile dev down -v
+
+# Check service status
+docker compose --profile dev ps
 ```
 
 ## Troubleshooting
@@ -203,28 +279,28 @@ docker compose exec db psql -U postgres -c "CREATE DATABASE nausicaa_test;"
 **Port already in use**
 Stop other services using ports 5173, 8080, or 55432, or modify the ports in `docker-compose.yml`.
 
-**Database connection errors**
-Ensure the `db` service is healthy before the backend starts. Run `docker compose down -v` and try again.
+**Database connection or migration errors**
+Reset the database and rebuild:
+```bash
+docker compose --profile dev down -v && docker compose --profile dev up --build
+```
 
 **Changes not reflected**
-Rebuild with `docker compose up --build`.
-
-**Migration errors ("Can't locate revision")**
-The database migration history is out of sync. Reset the database:
+Rebuild the affected service:
 ```bash
-docker compose down -v
-docker compose up -d
+docker compose --profile dev up -d --build backend
+docker compose --profile dev up -d --build frontend
 ```
 
-**Column does not exist errors**
-Run database migrations:
-```bash
-docker compose exec backend /app/.venv/bin/python -m flask --app run.py db upgrade
-docker compose restart backend
-```
+## Deployed Environments
 
-## Manual Setup (Without Docker)
+| Environment | Frontend | API / Swagger |
+|-------------|----------|---------------|
+| Staging | https://ui-staging.nausicaaglobalgreeninitiative.ie | https://api-staging.nausicaaglobalgreeninitiative.ie/api/v1/ui |
+| Production | https://ui.nausicaaglobalgreeninitiative.ie | https://api.nausicaaglobalgreeninitiative.ie/api/v1/ui |
 
-For running the frontend or backend manually, see:
-- [Backend README](./backend/README.md) - Python/Flask setup with `uv`
-- [Frontend README](./frontend/README.md) - Node.js/React setup with `npm`
+## Further Reading
+
+- [Backend README](./backend/README.md) - Flask API details, manual (non-Docker) setup
+- [Frontend README](./frontend/README.md) - React app details, manual setup
+- [Infrastructure README](./infrastructure/README.md) - Terraform, Azure/AKS, CI/CD pipelines, deployment process
