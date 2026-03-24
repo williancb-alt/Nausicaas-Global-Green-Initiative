@@ -51,7 +51,6 @@ support_message_model = Model(
         "created_at_str": String,
         "answered_at_str": String,
         "user": Nested(applicant_model),
-
         "application_id": Integer,
     },
 )

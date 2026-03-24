@@ -51,7 +51,6 @@ class SupportMessage(db.Model):
         )
         return localized_dt_string(answered_at_utc, use_tz=get_local_utcoffset())
 
-
     @classmethod
     def get_all(cls) -> list["SupportMessage"]:
         return cls.query.order_by(cls.created_at.desc()).all()
