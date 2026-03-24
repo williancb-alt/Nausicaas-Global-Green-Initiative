@@ -86,10 +86,10 @@ An online grant application platform for Studio Ghibli's climate change initiati
 | Python (backend image) | 3.11.9-slim |
 | Microsoft Azure | AKS, ACR, Key Vault, PostgreSQL Flexible Server |
 | Terraform | 1.6.2 (requires >= 1.5.0) |
-| AzureRM provider | ~> 3.116.0 |
-| Kubernetes provider | ~> 2.30 |
-| Helm provider | ~> 2.13 |
-| Cloudflare provider | ~> 4.0 |
+| AzureRM provider | >= 3.116.0 |
+| Kubernetes provider | >= 2.30 |
+| Helm provider | >= 2.13 |
+| Cloudflare provider | >= 4.0 |
 | GitHub Actions | 9 workflows |
 | Cloudflare DNS, cert-manager, ESO | — |
 
