@@ -26,20 +26,9 @@ export function useSupportManagement() {
       setMessages(data)
       setError(null)
     } catch (err) {
-      handleApiError(err, "Failed to load messages.")
+      setError(getErrorMessage(err, "Failed to load messages."))
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleApiError = (err: unknown, defaultMsg: string) => {
-    if (err instanceof AxiosError) {
-      const apiError = err as AxiosError<{ message?: string }>
-      setError(apiError.response?.data?.message || err.message || defaultMsg)
-    } else if (err instanceof Error) {
-      setError(err.message)
-    } else {
-      setError("An unknown error occurred.")
     }
   }
 
@@ -60,22 +49,13 @@ export function useSupportManagement() {
       setViewingHistory(messageId)
       await fetchMessages()
     } catch (err) {
-      handleApiError(err, "Failed to send reply.")
+      setError(getErrorMessage(err, "Failed to send reply."))
     } finally {
       setIsSending(false)
     }
   }
 
-  // Optimized Stats Calculation - One pass
-  const stats = messages.reduce<SupportStats>(
-    (acc, m) => {
-      const status = (m.status || "").trim().toLowerCase()
-      if (status === "open") acc.pending++
-      if (status === "replied") acc.replied++
-      return acc
-    },
-    { total: messages.length, pending: 0, replied: 0 },
-  )
+  const stats = calculateSupportStats(messages)
 
   const filteredMessages = messages.filter(m =>
     checkMessageMatch(m, statusFilter, searchQuery),
@@ -103,8 +83,36 @@ export function useSupportManagement() {
 }
 
 /**
+ * Pure helper function to get error message from API errors.
+ */
+function getErrorMessage(err: unknown, defaultMsg: string): string {
+  if (err instanceof AxiosError) {
+    const apiError = err as AxiosError<{ message?: string }>
+    return apiError.response?.data?.message || err.message || defaultMsg
+  }
+  if (err instanceof Error) {
+    return err.message
+  }
+  return "An unknown error occurred."
+}
+
+/**
+ * Pure helper function to calculate support statistics in one pass.
+ */
+function calculateSupportStats(messages: SupportMessage[]): SupportStats {
+  return messages.reduce<SupportStats>(
+    (acc, m) => {
+      const status = (m.status || "").trim().toLowerCase()
+      if (status === "open") acc.pending++
+      if (status === "replied") acc.replied++
+      return acc
+    },
+    { total: messages.length, pending: 0, replied: 0 },
+  )
+}
+
+/**
  * Pure helper function to check if a message matches filters.
- * Extracted to reduce cyclomatic complexity of the hook.
  */
 function checkMessageMatch(
   m: SupportMessage,
