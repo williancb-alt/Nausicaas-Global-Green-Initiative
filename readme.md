@@ -31,49 +31,74 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Frontend** | React | ^19.0.0 |
-| | TypeScript | ^5.7.3 |
-| | Vite | ^6.1.0 |
-| | Bootstrap | ^5.3.8 |
-| | React Router DOM | ^7.8.2 |
-| | Axios | ^1.13.2 |
-| | React Hook Form + Zod | ^7.69.0 / ^4.3.4 |
-| **State Management** | Zustand (client) | ^5.0.9 |
-| | TanStack React Query (server) | ^5.90.16 |
-| **Backend** | Python | 3.11.9 |
-| | Flask | >=3.1.0 |
-| | Flask-RESTx (Swagger UI) | unpinned |
-| | Flask-SQLAlchemy | >=3.1.0 |
-| | Flask-Migrate (Alembic) | unpinned |
-| | Gunicorn | unpinned |
-| **Authentication** | PyJWT | unpinned |
-| | Flask-Bcrypt | unpinned |
-| | Authlib (Google, GitHub OAuth) | unpinned |
-| **Database** | PostgreSQL | 16 |
-| **Containerisation** | Docker, Docker Compose | dev and test profiles |
-| | Node (frontend build) | 24-alpine |
-| | Nginx (frontend runtime) | stable-alpine |
-| | Python (backend image) | 3.11.9-slim |
-| **Cloud Platform** | Microsoft Azure | AKS, ACR, Key Vault, PostgreSQL Flexible Server |
-| **IaC** | Terraform | 1.6.2 (requires >=1.5.0) |
-| | AzureRM provider | ~>3.116.0 |
-| | Kubernetes provider | ~>2.30 |
-| | Helm provider | ~>2.13 |
-| | Cloudflare provider | ~>4.0 |
-| **CI/CD** | GitHub Actions | 9 workflows |
-| **DNS/TLS** | Cloudflare DNS, cert-manager, External Secrets Operator | — |
-| **Code Quality** | Black | >=25.1.0 |
-| | Flake8 | unpinned |
-| | ESLint | ^9.19.0 |
-| | Prettier | ^3.5.1 |
-| | CodeScene | — |
-| **Security Scanning** | Snyk, Safety | — |
-| **Testing** | pytest / tox (backend) | unpinned |
-| | Vitest (frontend) | ^3.0.5 |
-| | Playwright (E2E) | ^1.58.0 |
-| **Project Management** | GitHub Projects, Pointing Poker | — |
+### Frontend
+
+| Technology | Version |
+|-----------|---------|
+| React | >= 19.0.0 |
+| TypeScript | >= 5.7.3 |
+| Vite | >= 6.1.0 |
+| Bootstrap | >= 5.3.8 |
+| React Router DOM | >= 7.8.2 |
+| Axios | >= 1.13.2 |
+| React Hook Form | >= 7.69.0 |
+| Zod (validation) | >= 4.3.4 |
+| Zustand (client state) | >= 5.0.9 |
+| TanStack React Query (server state) | >= 5.90.16 |
+
+### Backend
+
+| Technology | Version |
+|-----------|---------|
+| Python | 3.11.9 |
+| Flask | >= 3.1.0 |
+| Flask-RESTx (Swagger UI) | latest |
+| Flask-SQLAlchemy | >= 3.1.0 |
+| Flask-Migrate (Alembic) | latest |
+| Gunicorn | latest |
+| PyJWT | latest |
+| Flask-Bcrypt | latest |
+| Authlib (Google, GitHub OAuth) | latest |
+| PostgreSQL | 16 |
+
+### Testing and Code Quality
+
+| Technology | Version |
+|-----------|---------|
+| pytest / tox (backend) | latest |
+| Vitest (frontend) | >= 3.0.5 |
+| Playwright (E2E) | >= 1.58.0 |
+| Black (Python formatting) | >= 25.1.0 |
+| Flake8 (Python linting) | latest |
+| ESLint | >= 9.19.0 |
+| Prettier | >= 3.5.1 |
+| CodeScene (code health) | — |
+| Snyk (vulnerability scanning) | — |
+| Safety (Python package security) | — |
+
+### Infrastructure and CI/CD
+
+| Technology | Version |
+|-----------|---------|
+| Docker, Docker Compose | dev and test profiles |
+| Node (frontend build image) | 24-alpine |
+| Nginx (frontend runtime image) | stable-alpine |
+| Python (backend image) | 3.11.9-slim |
+| Microsoft Azure | AKS, ACR, Key Vault, PostgreSQL Flexible Server |
+| Terraform | 1.6.2 (requires >= 1.5.0) |
+| AzureRM provider | ~> 3.116.0 |
+| Kubernetes provider | ~> 2.30 |
+| Helm provider | ~> 2.13 |
+| Cloudflare provider | ~> 4.0 |
+| GitHub Actions | 9 workflows |
+| Cloudflare DNS, cert-manager, ESO | — |
+
+### Project Management
+
+| Tool |
+|------|
+| GitHub Projects |
+| Pointing Poker (story point estimation) |
 
 ## Product Owner
 
@@ -294,4 +319,4 @@ Sizing scale:
 - PR created with at least one approval
 - All CI checks pass (linting, tests, security scans)
 - Code has been merged to main
-- Feature works in staging environment
+- Application is deployed, accessible, and interactive on Azure via IaC
