@@ -16,7 +16,6 @@ export interface SupportMessage {
   answered_at_str?: string
 }
 
-
 export const supportApi = {
   createMessage: async (data: {
     application_id: number | string
