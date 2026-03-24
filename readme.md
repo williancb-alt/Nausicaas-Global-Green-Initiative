@@ -99,6 +99,7 @@ An online grant application platform for Studio Ghibli's climate change initiati
 |------|
 | GitHub Projects |
 | Pointing Poker (story point estimation) |
+| EasyRetro (sprint retrospectives) |
 
 ## Product Owner
 
@@ -221,6 +222,8 @@ See [Infrastructure README](./infrastructure/README.md) for full details on the 
 - Project Slack: https://atudevops.slack.com
 - GitHub: https://github.com/williancb-alt/Nausicaas-Global-Green-Initiative.git
 - Figma: https://www.figma.com/files/team/1581042243514154421/project/515037871/Team-project?fuid=1581042238894889205
+- Pointing Poker: https://www.pointingpoker.com/
+- EasyRetro: https://easyretro.io/
 
 ## Further Documentation
 
