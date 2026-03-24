@@ -66,33 +66,20 @@ export function useSupportManagement() {
     }
   }
 
-  // Derived State
-  const stats: SupportStats = {
-    total: messages.length,
-    pending: messages.filter(m => (m.status || "").trim().toLowerCase() === "open")
-      .length,
-    replied: messages.filter(
-      m => (m.status || "").trim().toLowerCase() === "replied",
-    ).length,
-  }
+  // Optimized Stats Calculation - One pass
+  const stats = messages.reduce<SupportStats>(
+    (acc, m) => {
+      const status = (m.status || "").trim().toLowerCase()
+      if (status === "open") acc.pending++
+      if (status === "replied") acc.replied++
+      return acc
+    },
+    { total: messages.length, pending: 0, replied: 0 },
+  )
 
-
-  const filteredMessages = messages.filter(m => {
-    const status = (m.status || "").trim().toLowerCase()
-    const subject = (m.subject || "").toLowerCase()
-    const email = (m.user?.email || "").toLowerCase()
-    const query = searchQuery.toLowerCase()
-
-    const matchesFilter =
-      statusFilter === "all" ||
-      (statusFilter === "pending" && status === "open") ||
-      (statusFilter === "replied" && status === "replied")
-
-    const matchesSearch = subject.includes(query) || email.includes(query)
-
-    return matchesFilter && matchesSearch
-  })
-
+  const filteredMessages = messages.filter(m =>
+    checkMessageMatch(m, statusFilter, searchQuery),
+  )
 
   return {
     filteredMessages,
@@ -113,4 +100,30 @@ export function useSupportManagement() {
     handleSendReply,
     stats,
   }
+}
+
+/**
+ * Pure helper function to check if a message matches filters.
+ * Extracted to reduce cyclomatic complexity of the hook.
+ */
+function checkMessageMatch(
+  m: SupportMessage,
+  statusFilter: FilterStatus,
+  searchQuery: string,
+): boolean {
+  const status = (m.status || "").trim().toLowerCase()
+  const subject = (m.subject || "").toLowerCase()
+  const email = (m.user?.email || "").toLowerCase()
+  const query = searchQuery.trim().toLowerCase()
+
+  const matchesFilter =
+    statusFilter === "all" ||
+    (statusFilter === "pending" && status === "open") ||
+    (statusFilter === "replied" && status === "replied")
+
+  if (!matchesFilter) return false
+
+  if (!query) return true
+
+  return subject.includes(query) || email.includes(query)
 }
