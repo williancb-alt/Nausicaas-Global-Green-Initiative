@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { GrantApplicationPage } from "./GrantApplicationPage"
 import { useGrant } from "../hooks/useGrantHooks"
 import { useSubmitApplication } from "../hooks/useApplicationHooks"
+import { api } from "../services/api"
 import { useAuthStore } from "../store/authStore"
 
 import { mockUser, mockGrant } from "../test/mock-data"
@@ -44,6 +45,14 @@ describe("GrantApplicationPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.spyOn(api.awards, "listAwards").mockResolvedValue({
+      items: [],
+      has_prev: false,
+      has_next: false,
+      page: 1,
+      total_pages: 1,
+      total_items: 0,
+    })
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUser,
       isAuthenticated: true,
