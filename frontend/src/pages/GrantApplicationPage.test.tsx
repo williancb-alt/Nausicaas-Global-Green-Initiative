@@ -46,11 +46,17 @@ describe("GrantApplicationPage", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(api.awards, "listAwards").mockResolvedValue({
+      links: {
+        self: "/api/v1/awards?page=1&per_page=100",
+        first: "/api/v1/awards?page=1&per_page=100",
+        last: "/api/v1/awards?page=1&per_page=100",
+      },
       items: [],
       has_prev: false,
       has_next: false,
       page: 1,
       total_pages: 1,
+      items_per_page: 100,
       total_items: 0,
     })
     vi.mocked(useAuthStore).mockReturnValue({
