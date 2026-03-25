@@ -1,17 +1,19 @@
 import { describe, it, expect } from "vitest"
-import { filterApplications } from "./applications"
+import { NO_AWARD_FILTER_VALUE, filterApplications } from "./applications"
 import type { Application } from "../types"
 
 const makeApp = (
   status: string,
   email: string,
   grantName = "Grant",
+  award?: Application["award"],
 ): Application =>
   ({
     id: 1,
     status,
     applicant: { email },
     grant: { name: grantName },
+    award,
   }) as unknown as Application
 
 describe("filterApplications", () => {
@@ -58,5 +60,33 @@ describe("filterApplications", () => {
   it("should return empty array when no match", () => {
     const result = filterApplications(apps, "xyz-no-match", "all")
     expect(result).toHaveLength(0)
+  })
+
+  it("should filter applications with no award", () => {
+    const awardApps = [
+      makeApp("approved", "alice@example.com", "Environment Grant", {
+        name: "Impact Award",
+      }),
+      makeApp("denied", "bob@example.com", "Green Future"),
+      makeApp(
+        "pending_review",
+        "carol@example.com",
+        "Environment Grant",
+        {} as Application["award"],
+      ),
+    ]
+
+    const result = filterApplications(
+      awardApps,
+      "",
+      "all",
+      NO_AWARD_FILTER_VALUE,
+    )
+
+    expect(result).toHaveLength(2)
+    expect(result.map(application => application.applicant.email)).toEqual([
+      "bob@example.com",
+      "carol@example.com",
+    ])
   })
 })
