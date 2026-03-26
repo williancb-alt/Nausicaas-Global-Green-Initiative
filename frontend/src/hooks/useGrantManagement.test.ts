@@ -65,6 +65,14 @@ vi.mock("@hookform/resolvers/zod", () => ({
   zodResolver: vi.fn(),
 }))
 
+const baseGrant: Grant = {
+  name: "Env Grant",
+  deadline: "12/31/26",
+  description: "Desc",
+  deadline_passed: false,
+  time_remaining: "1 year",
+}
+
 describe("useGrantManagement", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -124,15 +132,7 @@ describe("useGrantManagement", () => {
   it("should start editing a grant", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
 
     expect(result.current.editingId).toBe("Env Grant")
     expect(result.current.editFormData).toEqual({
@@ -148,16 +148,13 @@ describe("useGrantManagement", () => {
     const configs: DynamicFieldConfig[] = [
       { type: "text", label: "Org", maxLength: 100, required: true },
     ]
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      custom_fields: { configs, values: { Org: "Acme" } },
-    }
 
-    act(() => result.current.startEdit(grant))
+    act(() =>
+      result.current.startEdit({
+        ...baseGrant,
+        custom_fields: { configs, values: { Org: "Acme" } },
+      }),
+    )
 
     expect(result.current.editCustomFieldConfigs).toEqual(configs)
     expect(result.current.editCustomFieldValues).toEqual({ Org: "Acme" })
@@ -166,16 +163,12 @@ describe("useGrantManagement", () => {
   it("should handle invalid custom_fields JSON gracefully", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      custom_fields: "not valid json" as any,
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() =>
+      result.current.startEdit({
+        ...baseGrant,
+        custom_fields: "not valid json" as any,
+      }),
+    )
 
     expect(result.current.editCustomFieldConfigs).toEqual([])
     expect(result.current.editCustomFieldValues).toEqual({})
@@ -184,15 +177,7 @@ describe("useGrantManagement", () => {
   it("should handle grant with no custom_fields", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
 
     expect(result.current.editCustomFieldConfigs).toEqual([])
     expect(result.current.editCustomFieldValues).toEqual({})
@@ -201,15 +186,7 @@ describe("useGrantManagement", () => {
   it("should update editFormData on handleEditChange", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
     act(() => result.current.handleEditChange("deadline", "06/30/27"))
 
     expect(result.current.editFormData.deadline).toBe("06/30/27")
@@ -218,15 +195,7 @@ describe("useGrantManagement", () => {
   it("should save edit with payload including custom fields", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
     act(() => result.current.saveEdit())
 
     expect(mockMutate).toHaveBeenCalledWith(
@@ -254,15 +223,7 @@ describe("useGrantManagement", () => {
   it("should clear editingId on save success", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
     act(() => result.current.saveEdit())
 
     const onSuccess = mockMutate.mock.calls[0][1].onSuccess
@@ -274,15 +235,7 @@ describe("useGrantManagement", () => {
   it("should alert on save error", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
     act(() => result.current.saveEdit())
 
     const onError = mockMutate.mock.calls[0][1].onError
@@ -315,16 +268,7 @@ describe("useGrantManagement", () => {
   it("should toggle visibility", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      hidden: false,
-    }
-
-    act(() => result.current.toggleVisibility(grant))
+    act(() => result.current.toggleVisibility({ ...baseGrant, hidden: false }))
 
     expect(mockMutate).toHaveBeenCalledWith(
       { name: "Env Grant", hidden: true },
@@ -339,16 +283,7 @@ describe("useGrantManagement", () => {
   it("should clear togglingGrant on toggle success", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      hidden: false,
-    }
-
-    act(() => result.current.toggleVisibility(grant))
+    act(() => result.current.toggleVisibility({ ...baseGrant, hidden: false }))
 
     const onSuccess = mockMutate.mock.calls[0][1].onSuccess
     act(() => onSuccess())
@@ -359,16 +294,7 @@ describe("useGrantManagement", () => {
   it("should alert and clear togglingGrant on toggle error", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      hidden: true,
-    }
-
-    act(() => result.current.toggleVisibility(grant))
+    act(() => result.current.toggleVisibility({ ...baseGrant, hidden: true }))
 
     const onError = mockMutate.mock.calls[0][1].onError
     act(() => onError(new Error("Toggle failed")))
@@ -397,15 +323,7 @@ describe("useGrantManagement", () => {
   it("should add field config for edit mode", () => {
     const { result } = renderHook(() => useGrantManagement())
 
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-    }
-
-    act(() => result.current.startEdit(grant))
+    act(() => result.current.startEdit(baseGrant))
 
     const field: DynamicFieldConfig = {
       type: "text",
@@ -443,16 +361,13 @@ describe("useGrantManagement", () => {
     const configs: DynamicFieldConfig[] = [
       { type: "text", label: "Org", maxLength: 100, required: true },
     ]
-    const grant: Grant = {
-      name: "Env Grant",
-      deadline: "12/31/26",
-      description: "Desc",
-      deadline_passed: false,
-      time_remaining: "1 year",
-      custom_fields: { configs, values: { Org: "Acme" } },
-    }
 
-    act(() => result.current.startEdit(grant))
+    act(() =>
+      result.current.startEdit({
+        ...baseGrant,
+        custom_fields: { configs, values: { Org: "Acme" } },
+      }),
+    )
     act(() => result.current.handleRemoveField(0, true))
 
     expect(result.current.editCustomFieldConfigs).toEqual([])

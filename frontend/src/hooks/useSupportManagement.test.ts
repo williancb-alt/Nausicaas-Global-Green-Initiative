@@ -44,6 +44,14 @@ const mockMessages: SupportMessage[] = [
   },
 ]
 
+/** Render the hook with messages pre-loaded and wait for loading to finish. */
+async function renderLoaded() {
+  vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
+  const { result } = renderHook(() => useSupportManagement())
+  await waitFor(() => expect(result.current.loading).toBe(false))
+  return result
+}
+
 describe("useSupportManagement", () => {
   beforeEach(() => vi.clearAllMocks())
 
@@ -60,11 +68,7 @@ describe("useSupportManagement", () => {
   })
 
   it("should compute stats from messages", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    const result = await renderLoaded()
     expect(result.current.stats).toEqual({
       total: 3,
       pending: 2,
@@ -112,82 +116,61 @@ describe("useSupportManagement", () => {
     expect(result.current.error).toBe("An unknown error occurred.")
   })
 
-  it("should filter by pending status", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
+  it.each([
+    {
+      name: "pending status",
+      status: "pending" as const,
+      search: "",
+      expectedLength: 2,
+      expectedIds: [1, 3],
+    },
+    {
+      name: "replied status",
+      status: "replied" as const,
+      search: "",
+      expectedLength: 1,
+      expectedIds: [2],
+    },
+    {
+      name: "search query on subject",
+      status: "all" as const,
+      search: "grant",
+      expectedLength: 1,
+      expectedIds: [1],
+    },
+    {
+      name: "search query on email",
+      status: "all" as const,
+      search: "bob@",
+      expectedLength: 1,
+      expectedIds: [2],
+    },
+    {
+      name: "combined status and search",
+      status: "pending" as const,
+      search: "deadline",
+      expectedLength: 1,
+      expectedIds: [3],
+    },
+  ])(
+    "should filter by $name",
+    async ({ status, search, expectedLength, expectedIds }) => {
+      const result = await renderLoaded()
 
-    const { result } = renderHook(() => useSupportManagement())
+      act(() => {
+        if (status !== "all") result.current.setStatusFilter(status)
+        if (search) result.current.setSearchQuery(search)
+      })
 
-    await waitFor(() => expect(result.current.loading).toBe(false))
-
-    act(() => result.current.setStatusFilter("pending"))
-
-    expect(result.current.filteredMessages).toHaveLength(2)
-    expect(result.current.filteredMessages.every(m => m.status === "open")).toBe(
-      true,
-    )
-  })
-
-  it("should filter by replied status", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
-
-    act(() => result.current.setStatusFilter("replied"))
-
-    expect(result.current.filteredMessages).toHaveLength(1)
-    expect(result.current.filteredMessages[0].id).toBe(2)
-  })
-
-  it("should filter by search query on subject", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
-
-    act(() => result.current.setSearchQuery("grant"))
-
-    expect(result.current.filteredMessages).toHaveLength(1)
-    expect(result.current.filteredMessages[0].id).toBe(1)
-  })
-
-  it("should filter by search query on email", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
-
-    act(() => result.current.setSearchQuery("bob@"))
-
-    expect(result.current.filteredMessages).toHaveLength(1)
-    expect(result.current.filteredMessages[0].id).toBe(2)
-  })
-
-  it("should combine status and search filters", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
-
-    act(() => {
-      result.current.setStatusFilter("pending")
-      result.current.setSearchQuery("deadline")
-    })
-
-    expect(result.current.filteredMessages).toHaveLength(1)
-    expect(result.current.filteredMessages[0].id).toBe(3)
-  })
+      expect(result.current.filteredMessages).toHaveLength(expectedLength)
+      expect(result.current.filteredMessages.map(m => m.id)).toEqual(
+        expectedIds,
+      )
+    },
+  )
 
   it("should send reply and refresh messages", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    const result = await renderLoaded()
 
     vi.mocked(api.support.replyToMessage).mockResolvedValueOnce({
       message: "Reply sent",
@@ -211,11 +194,7 @@ describe("useSupportManagement", () => {
   })
 
   it("should not send reply if content is empty", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    const result = await renderLoaded()
 
     await act(() => result.current.handleSendReply(1))
 
@@ -223,11 +202,7 @@ describe("useSupportManagement", () => {
   })
 
   it("should handle reply error", async () => {
-    vi.mocked(api.support.getAllMessages).mockResolvedValueOnce(mockMessages)
-
-    const { result } = renderHook(() => useSupportManagement())
-
-    await waitFor(() => expect(result.current.loading).toBe(false))
+    const result = await renderLoaded()
 
     vi.mocked(api.support.replyToMessage).mockRejectedValueOnce(
       new Error("Send failed"),
