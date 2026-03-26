@@ -194,7 +194,9 @@ def update_application(
             application_id=application_id,
             user_id=user.id,
             user_email=user.email,
-            attempted_changes={k: v for k, v in application_dict.items() if v is not None},
+            attempted_changes={
+                k: v for k, v in application_dict.items() if v is not None
+            },
         )
         raise ApiForbidden()
 

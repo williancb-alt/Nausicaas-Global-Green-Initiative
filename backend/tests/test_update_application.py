@@ -351,9 +351,7 @@ def test_non_admin_cannot_delete_application(client, db, admin):
     """Test that a regular user cannot delete an application."""
     application_id = _setup_non_admin_with_application(client)
 
-    response = client.delete(
-        url_for("api.application", application_id=application_id)
-    )
+    response = client.delete(url_for("api.application", application_id=application_id))
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "message" in response.json and response.json["message"] == FORBIDDEN
