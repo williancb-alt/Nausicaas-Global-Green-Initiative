@@ -122,7 +122,7 @@ describe("useGrantManagement", () => {
     })
 
     // Simulate onSuccess callback
-    const onSuccess = mockCreateMutate.mock.calls[0][1].onSuccess
+    const onSuccess = mockCreateMutate.mock.calls[0][1].onSuccess as () => void
     act(() => onSuccess())
 
     expect(mockReset).toHaveBeenCalled()
@@ -226,7 +226,7 @@ describe("useGrantManagement", () => {
     act(() => result.current.startEdit(baseGrant))
     act(() => result.current.saveEdit())
 
-    const onSuccess = mockMutate.mock.calls[0][1].onSuccess
+    const onSuccess = mockMutate.mock.calls[0][1].onSuccess as () => void
     act(() => onSuccess())
 
     expect(result.current.editingId).toBeNull()
@@ -238,7 +238,7 @@ describe("useGrantManagement", () => {
     act(() => result.current.startEdit(baseGrant))
     act(() => result.current.saveEdit())
 
-    const onError = mockMutate.mock.calls[0][1].onError
+    const onError = mockMutate.mock.calls[0][1].onError as (e: Error) => void
     act(() => onError(new Error("Server error")))
 
     expect(window.alert).toHaveBeenCalledWith(
@@ -285,7 +285,7 @@ describe("useGrantManagement", () => {
 
     act(() => result.current.toggleVisibility({ ...baseGrant, hidden: false }))
 
-    const onSuccess = mockMutate.mock.calls[0][1].onSuccess
+    const onSuccess = mockMutate.mock.calls[0][1].onSuccess as () => void
     act(() => onSuccess())
 
     expect(result.current.togglingGrant).toBeNull()
@@ -296,7 +296,7 @@ describe("useGrantManagement", () => {
 
     act(() => result.current.toggleVisibility({ ...baseGrant, hidden: true }))
 
-    const onError = mockMutate.mock.calls[0][1].onError
+    const onError = mockMutate.mock.calls[0][1].onError as (e: Error) => void
     act(() => onError(new Error("Toggle failed")))
 
     expect(window.alert).toHaveBeenCalledWith(

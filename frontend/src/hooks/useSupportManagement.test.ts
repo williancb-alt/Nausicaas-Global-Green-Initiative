@@ -106,9 +106,7 @@ describe("useSupportManagement", () => {
   })
 
   it("should handle unknown error type", async () => {
-    vi.mocked(api.support.getAllMessages).mockRejectedValueOnce(
-      "string error",
-    )
+    vi.mocked(api.support.getAllMessages).mockRejectedValueOnce("string error")
 
     const { result } = renderHook(() => useSupportManagement())
 
