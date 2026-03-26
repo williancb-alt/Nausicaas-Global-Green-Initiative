@@ -256,14 +256,14 @@ def test_admin_cannot_link_unknown_award_to_application(client, db, user):
     assert response.json["message"] == "Award 'missing-award' not found."
 
 
-def test_update_application_unauthorized_user(client, db, admin):
-    """Test non-admin user cannot update application status."""
-    # Create a grant
+def _setup_non_admin_with_application(client) -> int:
+    """Create a grant as admin, then submit an application as a regular user.
+
+    Returns the application ID.
+    """
     login_user(client, ADMIN_EMAIL, PASSWORD)
     create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
     client.post(url_for("api.auth_logout"))
-
-    # Create a user and submit application
     register_user(client)
     login_user(client)
     application_response = client.post(
@@ -271,9 +271,13 @@ def test_update_application_unauthorized_user(client, db, admin):
         json={"grant_name": DEFAULT_NAME, "field_values": {}},
     )
     assert application_response.status_code == HTTPStatus.CREATED
-    application_id = application_response.json["application_id"]
+    return application_response.json["application_id"]
 
-    # Regular user tries to update application status
+
+def test_update_application_unauthorized_user(client, db, admin):
+    """Test non-admin user cannot update application status."""
+    application_id = _setup_non_admin_with_application(client)
+
     response = client.put(
         url_for("api.application", application_id=application_id),
         json={"status": "approved"},
@@ -345,18 +349,7 @@ def test_retrieve_all_applications_unauthorized(client, db):
 
 def test_non_admin_cannot_delete_application(client, db, admin):
     """Test that a regular user cannot delete an application."""
-    login_user(client, ADMIN_EMAIL, PASSWORD)
-    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
-    client.post(url_for("api.auth_logout"))
-
-    register_user(client)
-    login_user(client)
-    application_response = client.post(
-        url_for("api.application_list"),
-        json={"grant_name": DEFAULT_NAME, "field_values": {}},
-    )
-    assert application_response.status_code == HTTPStatus.CREATED
-    application_id = application_response.json["application_id"]
+    application_id = _setup_non_admin_with_application(client)
 
     response = client.delete(
         url_for("api.application", application_id=application_id)
