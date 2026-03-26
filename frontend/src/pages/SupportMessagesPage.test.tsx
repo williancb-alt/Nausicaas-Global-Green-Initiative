@@ -134,6 +134,75 @@ describe("SupportMessagesPage", () => {
     expect(setError).toHaveBeenCalledWith(null)
   })
 
+  it("should update the search query and status filters", () => {
+    const setSearchQuery = vi.fn()
+    const setStatusFilter = vi.fn()
+
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        setSearchQuery,
+        setStatusFilter,
+        stats: {
+          total: 2,
+          pending: 1,
+          replied: 1,
+        },
+      }),
+    )
+
+    render(<SupportMessagesPage />)
+
+    fireEvent.change(
+      screen.getByPlaceholderText("Search by subject or user email..."),
+      {
+        target: { value: "award" },
+      },
+    )
+
+    expect(setSearchQuery).toHaveBeenCalledWith("award")
+
+    fireEvent.click(screen.getByRole("button", { name: "All (2)" }))
+    fireEvent.click(screen.getByRole("button", { name: "Pending (1)" }))
+    fireEvent.click(screen.getByRole("button", { name: "Replied (1)" }))
+
+    expect(setStatusFilter).toHaveBeenNthCalledWith(1, "all")
+    expect(setStatusFilter).toHaveBeenNthCalledWith(2, "pending")
+    expect(setStatusFilter).toHaveBeenNthCalledWith(3, "replied")
+  })
+
+  it.each([
+    {
+      name: "open official response history for a replied message",
+      message: repliedMessage,
+      actionLabel: "View Official Response",
+      expectedStats: { total: 1, pending: 0, replied: 1 },
+      overrideKey: "setViewingHistory" as const,
+    },
+    {
+      name: "open the reply composer for an open message",
+      message: openMessage,
+      actionLabel: "Compose Response",
+      expectedStats: { total: 1, pending: 1, replied: 0 },
+      overrideKey: "setReplyingTo" as const,
+    },
+  ])("should $name", ({ message, actionLabel, expectedStats, overrideKey }) => {
+    const actionSpy = vi.fn()
+
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        filteredMessages: [message],
+        [overrideKey]: actionSpy,
+        stats: expectedStats,
+      }),
+    )
+
+    render(<SupportMessagesPage />)
+
+    fireEvent.click(screen.getByText(actionLabel))
+
+    expect(actionSpy).toHaveBeenCalledWith(message.id)
+  })
+
   it("should show the official response history when viewing a replied message", () => {
     const setViewingHistory = vi.fn()
 
