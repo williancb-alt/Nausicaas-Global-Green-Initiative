@@ -6,6 +6,7 @@ from flask import url_for
 from nausicass_global_green_initiative_api.models.application import (
     Application,
 )
+from nausicass_global_green_initiative_api.models.audit_log import AuditLog, AuditAction
 from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.grant import Grant
 from tests.util import (
@@ -340,3 +341,85 @@ def test_retrieve_all_applications_unauthorized(client, db):
 
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert "message" in response.json and response.json["message"] == FORBIDDEN
+
+
+def test_non_admin_cannot_delete_application(client, db, admin):
+    """Test that a regular user cannot delete an application."""
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    client.post(url_for("api.auth_logout"))
+
+    register_user(client)
+    login_user(client)
+    application_response = client.post(
+        url_for("api.application_list"),
+        json={"grant_name": DEFAULT_NAME, "field_values": {}},
+    )
+    assert application_response.status_code == HTTPStatus.CREATED
+    application_id = application_response.json["application_id"]
+
+    response = client.delete(
+        url_for("api.application", application_id=application_id)
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert "message" in response.json and response.json["message"] == FORBIDDEN
+
+
+def test_audit_log_records_blocked_edit_attempt(client, db, admin):
+    """Test that a blocked non-admin PUT attempt creates an audit log entry."""
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    client.post(url_for("api.auth_logout"))
+
+    register_user(client)
+    login_user(client)
+    application_response = client.post(
+        url_for("api.application_list"),
+        json={"grant_name": DEFAULT_NAME, "field_values": {}},
+    )
+    assert application_response.status_code == HTTPStatus.CREATED
+    application_id = application_response.json["application_id"]
+
+    client.put(
+        url_for("api.application", application_id=application_id),
+        json={"status": "approved"},
+    )
+
+    log = (
+        AuditLog.query.filter_by(
+            entity_type="application",
+            entity_id=application_id,
+            action=AuditAction.APPLICATION_EDIT_BLOCKED.value,
+        )
+        .order_by(AuditLog.timestamp.desc())
+        .first()
+    )
+    assert log is not None
+    assert log.success is False
+    assert log.is_admin is False
+
+
+def test_audit_log_records_admin_edit(client, db, user, admin):
+    """Test that a successful admin PUT creates an audit log entry."""
+    login_user(client, ADMIN_EMAIL, PASSWORD)
+    create_grant(client, DEFAULT_NAME, DEFAULT_DEADLINE, DEFAULT_DESCRIPTION)
+    application = _create_application_in_db(db, user, DEFAULT_NAME)
+
+    client.put(
+        url_for("api.application", application_id=application.id),
+        json={"status": "in_review"},
+    )
+
+    log = (
+        AuditLog.query.filter_by(
+            entity_type="application",
+            entity_id=application.id,
+            action=AuditAction.APPLICATION_EDITED.value,
+        )
+        .order_by(AuditLog.timestamp.desc())
+        .first()
+    )
+    assert log is not None
+    assert log.success is True
+    assert log.is_admin is True

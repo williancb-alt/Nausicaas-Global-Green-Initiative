@@ -13,6 +13,8 @@ from nausicass_global_green_initiative_api.api.auth.decorators import (
     admin_token_required,
     token_required,
 )
+from nausicass_global_green_initiative_api.api.exceptions import ApiForbidden
+from nausicass_global_green_initiative_api.services.audit_service import AuditService
 from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.models.grant import Grant
@@ -173,7 +175,7 @@ def retrieve_application(application_id: int) -> Application:
     return application
 
 
-@admin_token_required
+@token_required
 def update_application(
     application_id: int, application_dict: ApplicationUpdateDict
 ) -> Response:
@@ -182,16 +184,40 @@ def update_application(
         description=f"Application {application_id} not found."
     )
 
+    public_id = update_application.public_id  # type: ignore[attr-defined]
+    user = User.find_by_public_id(public_id)
+    if not user:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
+
+    if not user.admin:
+        AuditService.log_edit_blocked(
+            application_id=application_id,
+            user_id=user.id,
+            user_email=user.email,
+            attempted_changes={k: v for k, v in application_dict.items() if v is not None},
+        )
+        raise ApiForbidden()
+
     status_changed = False
     new_status = application_dict.get("status")
+    changes = {}
 
-    if new_status:
-        status_changed = application.status != new_status
+    if new_status and application.status != new_status:
+        changes["status"] = {"from": application.status, "to": new_status}
+        status_changed = True
         application.status = new_status
 
     _apply_application_updates(application, application_dict)
+    _collect_update_changes(application_dict, changes)
 
     db.session.commit()
+
+    AuditService.log_admin_edit(
+        application_id=application_id,
+        admin_user_id=user.id,
+        admin_email=user.email,
+        changes=changes if changes else {"note": "No field changes detected"},
+    )
 
     if status_changed:
         _send_status_update_email(application)
@@ -231,16 +257,40 @@ def _send_status_update_email(application: Application) -> None:
         )
 
 
-@admin_token_required
+@token_required
 def delete_application(application_id: int) -> tuple[str, HTTPStatus]:
     """Delete an application (admin only)."""
     application = Application.query.filter_by(id=application_id).first_or_404(
         description=f"Application {application_id} not found."
     )
 
+    public_id = delete_application.public_id  # type: ignore[attr-defined]
+    user = User.find_by_public_id(public_id)
+    if not user:
+        abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
+
+    if not user.admin:
+        AuditService.log_edit_blocked(
+            application_id=application_id,
+            user_id=user.id,
+            user_email=user.email,
+            attempted_changes={"action": "delete"},
+        )
+        raise ApiForbidden()
+
     db.session.delete(application)
     db.session.commit()
     return "", HTTPStatus.NO_CONTENT
+
+
+def _collect_update_changes(
+    application_dict: ApplicationUpdateDict, changes: dict
+) -> None:
+    """Append non-status field changes to the changes dict for audit logging."""
+    for field in ("feedback", "field_values", "award_name", "award_justification"):
+        value = application_dict.get(field)  # type: ignore[literal-required]
+        if value is not None and field not in changes:
+            changes[field] = value
 
 
 def _apply_application_updates(
