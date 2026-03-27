@@ -1,5 +1,9 @@
 import { Search } from "lucide-react"
 import type { Application } from "../../types"
+import {
+  NO_AWARD_FILTER_VALUE,
+  type AwardFilterValue,
+} from "../../utils/applications"
 
 export type StatusFilterValue = "all" | Application["status"]
 
@@ -28,6 +32,9 @@ interface ApplicationStatusFilterBarProps {
   searchTerm: string
   onSearchTermChange: (value: string) => void
   searchPlaceholder?: string
+  awardFilter?: AwardFilterValue
+  onAwardFilterChange?: (value: AwardFilterValue) => void
+  awardOptions?: string[]
 }
 
 export function ApplicationStatusFilterBar({
@@ -36,6 +43,9 @@ export function ApplicationStatusFilterBar({
   searchTerm,
   onSearchTermChange,
   searchPlaceholder = "Search by ID, email or grant...",
+  awardFilter,
+  onAwardFilterChange,
+  awardOptions = [],
 }: ApplicationStatusFilterBarProps) {
   return (
     <div className="row mb-4 g-3">
@@ -79,6 +89,25 @@ export function ApplicationStatusFilterBar({
           />
         </div>
       </div>
+
+      {onAwardFilterChange && (
+        <div className="col-md-3">
+          <select
+            value={awardFilter ?? "all"}
+            onChange={e => onAwardFilterChange(e.target.value)}
+            className="form-select"
+            style={{ borderColor: "#d1fae5" }}
+          >
+            <option value="all">All Awards</option>
+            <option value={NO_AWARD_FILTER_VALUE}>No Award</option>
+            {awardOptions.map(awardName => (
+              <option key={awardName} value={awardName}>
+                {awardName}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   )
 }

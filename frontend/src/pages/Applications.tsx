@@ -1,12 +1,38 @@
-import { JSX } from "react"
+import { JSX, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApplications } from "../hooks/useApplicationHooks"
 import { ApplicationsListTable } from "../components/table/ApplicationsListTable"
+import { ApplicationStatusFilterBar } from "../components/filter/ApplicationStatusFilterBar"
+import {
+  filterApplications,
+  type AwardFilterValue,
+  type StatusFilterValue,
+} from "../utils/applications"
 
 export function Applications(): JSX.Element {
   const navigate = useNavigate()
   const { data: applicationsData, isLoading, isError } = useApplications()
   const applications = applicationsData?.items ?? []
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("all")
+  const [awardFilter, setAwardFilter] = useState<AwardFilterValue>("all")
+
+  const filteredApplications = useMemo(
+    () =>
+      filterApplications(applications, searchTerm, statusFilter, awardFilter),
+    [applications, awardFilter, searchTerm, statusFilter],
+  )
+  const awardOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          applications
+            .map(application => application.award?.name)
+            .filter((awardName): awardName is string => Boolean(awardName)),
+        ),
+      ).sort((left, right) => left.localeCompare(right)),
+    [applications],
+  )
 
   if (isLoading) {
     return (
@@ -29,6 +55,11 @@ export function Applications(): JSX.Element {
   const handleViewApplication = (id: number) => {
     void navigate(`/admin/applications/${id}`)
   }
+
+  const emptyStateMessage =
+    applications.length === 0
+      ? "No applications submitted yet."
+      : "No applications match the selected filters."
 
   return (
     <div
@@ -55,7 +86,27 @@ export function Applications(): JSX.Element {
           </span>
         </div>
 
-        {applications.length === 0 ? (
+        <div
+          className="card border-0 shadow-sm mb-4"
+          style={{ borderRadius: "16px" }}
+        >
+          <div className="card-body p-4">
+            <h2 className="h5 mb-3 fw-bold" style={{ color: "#2d5a41" }}>
+              Filter Applications
+            </h2>
+            <ApplicationStatusFilterBar
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              searchTerm={searchTerm}
+              onSearchTermChange={setSearchTerm}
+              awardFilter={awardFilter}
+              onAwardFilterChange={setAwardFilter}
+              awardOptions={awardOptions}
+            />
+          </div>
+        </div>
+
+        {filteredApplications.length === 0 ? (
           <div
             className="alert"
             style={{
@@ -64,11 +115,11 @@ export function Applications(): JSX.Element {
               border: "1px solid #3b7a57",
             }}
           >
-            No applications submitted yet.
+            {emptyStateMessage}
           </div>
         ) : (
           <ApplicationsListTable
-            applications={applications}
+            applications={filteredApplications}
             onViewApplication={handleViewApplication}
           />
         )}
