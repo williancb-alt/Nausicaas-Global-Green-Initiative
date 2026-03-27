@@ -1,208 +1,274 @@
-import { render, screen, fireEvent } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { fireEvent, render, screen } from "@testing-library/react"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { SupportMessagesPage } from "./SupportMessagesPage"
 import { useSupportManagement } from "../hooks/useSupportManagement"
 import type { SupportMessage } from "../services/api/support"
 
-// Mock dependencies
-vi.mock("../hooks/useSupportManagement", () => ({
-  useSupportManagement: vi.fn(),
-}))
+vi.mock("../hooks/useSupportManagement")
 
-vi.mock("../components/support/SupportPageHeader", () => ({
-  SupportPageHeader: () => <div data-testid="support-page-header">Header</div>,
-}))
-
-vi.mock("../components/support/SupportStatsCards", () => ({
-  SupportStatsCards: ({
-    pending,
-    replied,
-  }: {
-    pending: number
-    replied: number
-  }) => (
-    <div data-testid="support-stats-cards">
-      Pending: {pending}, Replied: {replied}
-    </div>
-  ),
-}))
-
-vi.mock("../components/support/SupportFilterBar", () => ({
-  SupportFilterBar: () => <div data-testid="support-filter-bar">FilterBar</div>,
-}))
-
-vi.mock("../components/support/SupportMessageCard", () => ({
-  SupportMessageCard: ({ msg }: { msg: SupportMessage }) => (
-    <div data-testid={`message-card-${msg.id}`}>{msg.subject}</div>
-  ),
-}))
-
-// Define mock support messages to use in tests
-const mockMessage: SupportMessage = {
+const openMessage: SupportMessage = {
   id: 1,
-  subject: "Test Subject",
-  message: "Test message body",
-  status: "pending",
-  created_at_str: "2024-01-01",
-  user: { email: "test@example.com", public_id: "user-1" },
-  application_id: 100,
+  subject: "Grant application question",
+  message: "Can you confirm my application was received?",
+  status: "Open",
+  created_at_str: "2026-03-20 09:00",
+  user: {
+    email: "member@example.com",
+    public_id: "member-1",
+  },
+  application_id: 4,
 }
 
-const mockMessage2: SupportMessage = {
+const repliedMessage: SupportMessage = {
   id: 2,
-  subject: "Another Subject",
-  message: "Another message",
-  status: "replied",
-  created_at_str: "2024-01-02",
-  user: { email: "user2@example.com", public_id: "user-2" },
-  application_id: 101,
-  admin_response: "We got it",
-  answered_at_str: "2024-01-03",
+  subject: "Award consideration follow-up",
+  message: "I would like to understand the review timeline.",
+  status: "Replied",
+  created_at_str: "2026-03-21 10:00",
+  user: {
+    email: "applicant@example.com",
+    public_id: "member-2",
+  },
+  application_id: 5,
+  admin_response: "Your application is currently under review.",
+  answered_at_str: "2026-03-21 14:30",
 }
 
-// Mock the hook to return default values for all tests, and allow overriding in specific tests as needed
-const defaultHookReturn = {
-  filteredMessages: [mockMessage, mockMessage2],
-  loading: false,
-  error: null,
-  setError: vi.fn(),
-  statusFilter: "all" as const,
-  setStatusFilter: vi.fn(),
-  searchQuery: "",
-  setSearchQuery: vi.fn(),
-  replyingTo: null,
-  setReplyingTo: vi.fn(),
-  viewingHistory: null,
-  setViewingHistory: vi.fn(),
-  replyContent: "",
-  setReplyContent: vi.fn(),
-  isSending: false,
-  handleSendReply: vi.fn(),
-  stats: { total: 2, pending: 1, replied: 1 },
+type SupportManagementState = ReturnType<typeof useSupportManagement>
+
+function createSupportState(
+  overrides: Partial<SupportManagementState> = {},
+): SupportManagementState {
+  return {
+    filteredMessages: [],
+    loading: false,
+    error: null,
+    setError: vi.fn(),
+    statusFilter: "all",
+    setStatusFilter: vi.fn(),
+    searchQuery: "",
+    setSearchQuery: vi.fn(),
+    replyingTo: null,
+    setReplyingTo: vi.fn(),
+    viewingHistory: null,
+    setViewingHistory: vi.fn(),
+    replyContent: "",
+    setReplyContent: vi.fn(),
+    isSending: false,
+    handleSendReply: vi.fn(),
+    stats: {
+      total: 0,
+      pending: 0,
+      replied: 0,
+    },
+    ...overrides,
+  }
 }
 
 describe("SupportMessagesPage", () => {
-  // Clear all mocks before each test
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(useSupportManagement).mockReturnValue(defaultHookReturn)
   })
 
-  it("loading state rendered when loading prop set to true", () => {
-    // Mock the hook to return loading state
-    vi.mocked(useSupportManagement).mockReturnValue({
-      ...defaultHookReturn,
-      loading: true,
-    })
+  it("should show the loading state while messages are loading", () => {
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({ loading: true }),
+    )
 
-    // Render the component
     render(<SupportMessagesPage />)
 
-    // Validate that the loading indicator and message are shown when loading is true
-    expect(screen.getByRole("status")).toBeDefined()
-    expect(screen.getByText("Gathering communication records...")).toBeDefined()
-  })
-
-  it("page with header, stats, filter bar, and messages rendered whne successful", () => {
-    // Render the component
-    render(<SupportMessagesPage />)
-
-    // Validate that main sections of the page are rendered
-    expect(screen.getByTestId("support-page-header")).toBeDefined()
-    expect(screen.getByTestId("support-stats-cards")).toBeDefined()
-    expect(screen.getByTestId("support-filter-bar")).toBeDefined()
-    expect(screen.getByTestId("message-card-1")).toBeDefined()
-    expect(screen.getByTestId("message-card-2")).toBeDefined()
-  })
-
-  it("passes stats to SupportStatsCards", () => {
-    // Render the component
-    render(<SupportMessagesPage />)
-
-    // Validate that the stats from the hook are passed to the SupportStatsCards component
-    expect(screen.getByText("Pending: 1, Replied: 1")).toBeDefined()
-  })
-
-  it("renders message cards as expected", () => {
-    // Render the component
-    render(<SupportMessagesPage />)
-
-    // Validate that message cards shown
-    // Note these are rendered based on value in the hook
-    expect(screen.getByText("Test Subject")).toBeDefined()
-    expect(screen.getByText("Another Subject")).toBeDefined()
-  })
-
-  it("empty state shown when no messages match", () => {
-    // Mock the hook to return empty messages array
-    vi.mocked(useSupportManagement).mockReturnValue({
-      ...defaultHookReturn,
-      filteredMessages: [],
-    })
-
-    // Render the component
-    render(<SupportMessagesPage />)
-
-    // Validate that the empty state message is shown when there are no messages to display
-    expect(screen.getByText("No messages found")).toBeDefined()
     expect(
-      screen.getByText("Try adjusting your filters or search terms"),
-    ).toBeDefined()
+      screen.getByText("Gathering communication records..."),
+    ).toBeInTheDocument()
   })
 
-  it("error alert shown when error is set", () => {
-    // Mock the hook to return an error
-    vi.mocked(useSupportManagement).mockReturnValue({
-      ...defaultHookReturn,
-      error: "Something went wrong",
-    })
+  it("should render the empty state with support filters and stats", () => {
+    vi.mocked(useSupportManagement).mockReturnValue(createSupportState())
 
-    // Render the component
     render(<SupportMessagesPage />)
 
-    // Validate that the error alert is shown when error is set in the hook
-    expect(screen.getByText("Something went wrong")).toBeDefined()
+    expect(screen.getByText("Support Hub")).toBeInTheDocument()
+    expect(
+      screen.getByText("Manage and respond to initiative member inquiries"),
+    ).toBeInTheDocument()
+    expect(screen.getByText("Total Messages")).toBeInTheDocument()
+    expect(screen.getByText("Pending Review")).toBeInTheDocument()
+    expect(screen.getByText("Successfully Replied")).toBeInTheDocument()
+    expect(
+      screen.getByPlaceholderText("Search by subject or user email..."),
+    ).toBeInTheDocument()
+    expect(screen.getByText("All (0)")).toBeInTheDocument()
+    expect(screen.getByText("Pending (0)")).toBeInTheDocument()
+    expect(screen.getByText("Replied (0)")).toBeInTheDocument()
+    expect(screen.getByText("No messages found")).toBeInTheDocument()
   })
 
-  it("error dismissed when close button is clicked", () => {
-    // Mock the hook to return an error and a mock setError function
+  it("should render support messages and allow dismissing an error", () => {
     const setError = vi.fn()
-    vi.mocked(useSupportManagement).mockReturnValue({
-      ...defaultHookReturn,
-      error: "Something went wrong",
-      setError,
-    })
 
-    // Render the component
-    render(<SupportMessagesPage />)
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        error: "Reply failed",
+        setError,
+        filteredMessages: [openMessage, repliedMessage],
+        stats: {
+          total: 2,
+          pending: 1,
+          replied: 1,
+        },
+      }),
+    )
 
-    // Click the close button on the error alert and validate that setError was called to clear the error
-    const closeButton = screen.getByRole("button")
-    fireEvent.click(closeButton)
+    const { container } = render(<SupportMessagesPage />)
+
+    expect(screen.getByText("Reply failed")).toBeInTheDocument()
+    expect(screen.getByText(openMessage.subject)).toBeInTheDocument()
+    expect(screen.getByText(repliedMessage.subject)).toBeInTheDocument()
+    expect(screen.getByText("Compose Response")).toBeInTheDocument()
+    expect(screen.getByText("View Official Response")).toBeInTheDocument()
+
+    const dismissButton = container.querySelector(".btn-close")
+    expect(dismissButton).not.toBeNull()
+    fireEvent.click(dismissButton!)
 
     expect(setError).toHaveBeenCalledWith(null)
   })
 
-  it("error alert not shown when error is null", () => {
-    // Render the component with error set to null
+  it("should update the search query and status filters", () => {
+    const setSearchQuery = vi.fn()
+    const setStatusFilter = vi.fn()
+
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        setSearchQuery,
+        setStatusFilter,
+        stats: {
+          total: 2,
+          pending: 1,
+          replied: 1,
+        },
+      }),
+    )
+
     render(<SupportMessagesPage />)
 
-    // Validate that the error alert is not shown when error is null
-    expect(screen.queryByText("Something went wrong")).toBeNull()
+    fireEvent.change(
+      screen.getByPlaceholderText("Search by subject or user email..."),
+      {
+        target: { value: "award" },
+      },
+    )
+
+    expect(setSearchQuery).toHaveBeenCalledWith("award")
+
+    fireEvent.click(screen.getByRole("button", { name: "All (2)" }))
+    fireEvent.click(screen.getByRole("button", { name: "Pending (1)" }))
+    fireEvent.click(screen.getByRole("button", { name: "Replied (1)" }))
+
+    expect(setStatusFilter).toHaveBeenNthCalledWith(1, "all")
+    expect(setStatusFilter).toHaveBeenNthCalledWith(2, "pending")
+    expect(setStatusFilter).toHaveBeenNthCalledWith(3, "replied")
   })
 
-  it("message cards not shown in loading state", () => {
-    // Mock the hook to return loading state
-    vi.mocked(useSupportManagement).mockReturnValue({
-      ...defaultHookReturn,
-      loading: true,
-    })
+  it.each([
+    {
+      name: "open official response history for a replied message",
+      message: repliedMessage,
+      actionLabel: "View Official Response",
+      expectedStats: { total: 1, pending: 0, replied: 1 },
+      overrideKey: "setViewingHistory" as const,
+    },
+    {
+      name: "open the reply composer for an open message",
+      message: openMessage,
+      actionLabel: "Compose Response",
+      expectedStats: { total: 1, pending: 1, replied: 0 },
+      overrideKey: "setReplyingTo" as const,
+    },
+  ])("should $name", ({ message, actionLabel, expectedStats, overrideKey }) => {
+    const actionSpy = vi.fn()
 
-    // Render the component
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        filteredMessages: [message],
+        [overrideKey]: actionSpy,
+        stats: expectedStats,
+      }),
+    )
+
     render(<SupportMessagesPage />)
 
-    // Validate that message cards and main page content not shown when loading is true
-    expect(screen.queryByTestId("message-card-1")).toBeNull()
-    expect(screen.queryByTestId("support-page-header")).toBeNull()
+    fireEvent.click(screen.getByText(actionLabel))
+
+    expect(actionSpy).toHaveBeenCalledWith(message.id)
+  })
+
+  it("should show the official response history when viewing a replied message", () => {
+    const setViewingHistory = vi.fn()
+
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        filteredMessages: [repliedMessage],
+        viewingHistory: repliedMessage.id,
+        setViewingHistory,
+        stats: {
+          total: 1,
+          pending: 0,
+          replied: 1,
+        },
+      }),
+    )
+
+    const { container } = render(<SupportMessagesPage />)
+
+    expect(screen.getByText("Official Response")).toBeInTheDocument()
+    expect(screen.getByText(repliedMessage.admin_response!)).toBeInTheDocument()
+    expect(screen.getByText("Sent at 2026-03-21 14:30")).toBeInTheDocument()
+
+    const closeHistoryButton = container.querySelector(".link-success")
+    expect(closeHistoryButton).not.toBeNull()
+    fireEvent.click(closeHistoryButton!)
+
+    expect(setViewingHistory).toHaveBeenCalledWith(null)
+  })
+
+  it("should show the reply form for an open message", () => {
+    const setReplyingTo = vi.fn()
+    const setReplyContent = vi.fn()
+    const handleSendReply = vi.fn().mockResolvedValue(undefined)
+
+    vi.mocked(useSupportManagement).mockReturnValue(
+      createSupportState({
+        filteredMessages: [openMessage],
+        replyingTo: openMessage.id,
+        setReplyingTo,
+        replyContent: "Draft response",
+        setReplyContent,
+        handleSendReply,
+        stats: {
+          total: 1,
+          pending: 1,
+          replied: 0,
+        },
+      }),
+    )
+
+    const { container } = render(<SupportMessagesPage />)
+
+    const textarea = screen.getByPlaceholderText(
+      "Type your official response here...",
+    )
+    fireEvent.change(textarea, { target: { value: "Updated response" } })
+
+    expect(setReplyContent).toHaveBeenCalledWith("Updated response")
+
+    fireEvent.click(screen.getByRole("button", { name: /Send Reply/i }))
+    expect(handleSendReply).toHaveBeenCalledWith(openMessage.id)
+
+    const closeReplyButton = container.querySelector(".btn-link.text-muted")
+    expect(closeReplyButton).not.toBeNull()
+    fireEvent.click(closeReplyButton!)
+
+    expect(setReplyingTo).toHaveBeenCalledWith(null)
   })
 })
