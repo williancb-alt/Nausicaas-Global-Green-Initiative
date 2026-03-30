@@ -1,4 +1,4 @@
-FROM python:3.11.9-slim AS builder
+FROM python:3.11.12-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -23,7 +23,7 @@ RUN uv venv && \
 
 COPY . .
 
-FROM python:3.11.9-slim
+FROM python:3.11.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
