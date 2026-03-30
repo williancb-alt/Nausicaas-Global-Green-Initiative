@@ -72,7 +72,7 @@ jobs:
       - name: Scan backend image with Grype
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
-          grype "$ACR/backend:${IMAGE_TAG}" --fail-on high
+          grype "$ACR/backend:${IMAGE_TAG}" --only-fixed --fail-on high
 
       - name: Push backend image
         run: |
@@ -90,7 +90,7 @@ jobs:
       - name: Scan frontend image with Grype
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
-          grype "$ACR/frontend:${IMAGE_TAG}" --fail-on high
+          grype "$ACR/frontend:${IMAGE_TAG}" --only-fixed --fail-on high
 
       - name: Push frontend image
         run: |

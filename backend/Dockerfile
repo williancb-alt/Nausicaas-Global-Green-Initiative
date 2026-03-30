@@ -30,7 +30,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libpq5 \
  && rm -rf /var/lib/apt/lists/*
 
@@ -44,7 +44,7 @@ COPY --from=builder /app/.venv/lib/python3.11/site-packages /tmp/site-packages
 RUN uv venv --clear && \
     . .venv/bin/activate && \
     cp -r /tmp/site-packages/. .venv/lib/python3.11/site-packages/ && \
-    uv pip install --upgrade pip && \
+    uv pip install --upgrade pip setuptools wheel && \
     uv pip install -e . && \
     uv pip install tox
 
