@@ -130,9 +130,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Snyk CLI requires distutils, which was removed in Python 3.12+
       - uses: actions/setup-python@v6
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
