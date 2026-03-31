@@ -73,7 +73,7 @@ describe("awardsApi", () => {
   })
 
   it("should call deleteAward", async () => {
-    mockedDelete.mockResolvedValueOnce({ data: undefined })
+    mockedDelete.mockResolvedValueOnce(undefined as any)
 
     await awardsApi.deleteAward("Green Award")
     expect(mockedDelete).toHaveBeenCalledWith("/api/v1/awards/Green%20Award")

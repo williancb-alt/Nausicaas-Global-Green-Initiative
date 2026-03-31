@@ -73,7 +73,7 @@ describe("grantsApi", () => {
   })
 
   it("should call deleteGrant", async () => {
-    mockedDelete.mockResolvedValueOnce({ data: undefined })
+    mockedDelete.mockResolvedValueOnce(undefined as any)
 
     await grantsApi.deleteGrant("Test Grant")
     expect(mockedDelete).toHaveBeenCalledWith("/api/v1/grants/Test%20Grant")

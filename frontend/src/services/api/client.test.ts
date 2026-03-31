@@ -1,147 +1,146 @@
-import { describe, it, expect } from "vitest"
-import {
-  AxiosError,
-  AxiosHeaders,
-  type InternalAxiosRequestConfig,
-} from "axios"
-import { apiClient } from "./client"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 
-// Extract interceptor handlers from the axios instance
-// Mocking just this piece is sufficient
-const requestInterceptors = (
-  apiClient.interceptors.request as unknown as {
-    handlers: Array<{
-      fulfilled: (
-        config: InternalAxiosRequestConfig,
-      ) => InternalAxiosRequestConfig
-      rejected: (error: unknown) => Promise<never>
-    }>
-  }
-).handlers
+const mockFetch = vi.fn()
+vi.stubGlobal("fetch", mockFetch)
 
-const responseInterceptors = (
-  apiClient.interceptors.response as unknown as {
-    handlers: Array<{
-      fulfilled: (response: unknown) => unknown
-      rejected: (error: AxiosError) => never
-    }>
-  }
-).handlers
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
-// These are interceptor function handlers that will be called
-const requestFulfilled = requestInterceptors[0].fulfilled
-const requestRejected = requestInterceptors[0].rejected
-const responseFulfilled = responseInterceptors[0].fulfilled
-const responseRejected = responseInterceptors[0].rejected
+// Must import after stubbing fetch
+const { apiClient } = await import("./client")
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(data),
+  } as Response
+}
 
 describe("apiClient", () => {
-  it("should have correct base URL", () => {
-    expect(apiClient.defaults.baseURL).toBeDefined()
-  })
+  describe("GET", () => {
+    it("should fetch with correct URL", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ name: "test" }))
 
-  it("should have withCredentials enabled", () => {
-    expect(apiClient.defaults.withCredentials).toBe(true)
-  })
-
-  it("should have default headers", () => {
-    expect(apiClient.defaults.headers["Content-Type"]).toBe(
-      "application/x-www-form-urlencoded",
-    )
-  })
-})
-
-describe("request interceptor", () => {
-  it("config passed through on fulfilled requests", () => {
-    // Validate that the request config is passed through unchanged when the request is fulfilled
-    const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig
-    expect(requestFulfilled(config)).toBe(config)
-  })
-
-  it("rejects request with Error when given an Error", async () => {
-    // Validate that the request is rejected with the same Error when the rejected handler is given an Error object
-    const err = new Error("request failed")
-    await expect(requestRejected(err)).rejects.toThrow("request failed")
-  })
-
-  it("wraps non-Error values in an Error on rejection", async () => {
-    // Validate that non-Error values are wrapped in an Error when the rejected handler is given such values
-    await expect(requestRejected("string error")).rejects.toThrow(
-      "string error",
-    )
-  })
-})
-
-describe("response interceptor", () => {
-  // Helper function to create a mocked AxiosError with specified response data to
-  // testing the responseRejected handler
-  function makeResponseError(
-    message: string,
-    status: number,
-    data: Record<string, unknown>,
-  ): AxiosError {
-    const error = new AxiosError(message)
-    error.response = {
-      data,
-      status,
-      statusText: "",
-      headers: {},
-      config: { headers: new AxiosHeaders() },
-    }
-    return error
-  }
-
-  it("response passed through on fulfilled responses", () => {
-    // Validate that the response is passed through unchanged when the response is fulfilled
-    const response = { data: "ok", status: 200 }
-    expect(responseFulfilled(response)).toBe(response)
-  })
-
-  it("throws an error with response message", () => {
-    // Validate that the response error is thrown with the message from the response data when available
-    const error = makeResponseError("fail", 401, {
-      message: "Unauthorized access",
-    })
-    expect(() => responseRejected(error)).toThrow("Unauthorized access")
-  })
-
-  it("throws an error with response error field", () => {
-    // Validate that the response error is thrown with the error field from the response data when available
-    const error = makeResponseError("fail", 404, { error: "Not found" })
-    expect(() => responseRejected(error)).toThrow("Not found")
-  })
-
-  it("uses error.message when no response data", () => {
-    // Validate that the error message is thrown with the error's own message when there is no response data
-    const error = new AxiosError("Network Error")
-    expect(() => responseRejected(error)).toThrow("Network Error")
-  })
-
-  it("uses HTTP status when no message available", () => {
-    // Validate that the error message includes the HTTP status code when there is no message in the response data
-    const error = makeResponseError("", 500, {})
-    expect(() => responseRejected(error)).toThrow("HTTP error 500")
-  })
-
-  it("field-specific validation errors added to the response error", () => {
-    // Call helper to create a specific error
-    const error = makeResponseError("fail", 422, {
-      message: "Validation failed",
-      errors: { email: "is invalid", name: "is required" },
+      const result = await apiClient.get("/api/v1/test")
+      expect(result.data).toEqual({ name: "test" })
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/api/v1/test"),
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+      )
     })
 
-    // Validate that the error message includes the field-specific validation errors from the response data
-    expect(() => responseRejected(error)).toThrow(
-      "Validation failed - email: is invalid; name: is required",
-    )
+    it("should append query params", async () => {
+      mockFetch.mockResolvedValue(jsonResponse([]))
+
+      await apiClient.get("/api/v1/items", {
+        params: { page: 1, per_page: 10 },
+      })
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain("page=1")
+      expect(url).toContain("per_page=10")
+    })
   })
 
-  it("field errors not added when errors object is empty", () => {
-    // Call helper to create an error with empty errors object
-    const error = makeResponseError("fail", 400, {
-      message: "Bad request",
-      errors: {},
+  describe("POST", () => {
+    it("should send URLSearchParams as form-urlencoded", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ status: "success" }))
+
+      await apiClient.post(
+        "/api/v1/auth/login",
+        new URLSearchParams({ email: "a@b.com" }),
+      )
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.headers).toHaveProperty(
+        "Content-Type",
+        "application/x-www-form-urlencoded",
+      )
     })
-    // Validate that the error message does not include field errors when the errors object is empty
-    expect(() => responseRejected(error)).toThrow("Bad request")
+
+    it("should send objects as JSON", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ status: "success" }))
+
+      await apiClient.post(
+        "/api/v1/applications",
+        { grant_name: "test" },
+        { headers: { "Content-Type": "application/json" } },
+      )
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.body).toBe(JSON.stringify({ grant_name: "test" }))
+    })
+  })
+
+  describe("PUT", () => {
+    it("should send PUT request", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ status: "success" }))
+
+      await apiClient.put(
+        "/api/v1/grants/test",
+        new URLSearchParams({ deadline: "12/31/24" }),
+      )
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe("PUT")
+    })
+  })
+
+  describe("DELETE", () => {
+    it("should send DELETE request", async () => {
+      mockFetch.mockResolvedValue({ ok: true, status: 204 } as Response)
+
+      await apiClient.delete("/api/v1/grants/test")
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe("DELETE")
+    })
+  })
+
+  describe("error handling", () => {
+    it("should throw with response message", async () => {
+      mockFetch.mockResolvedValue(
+        jsonResponse({ message: "Unauthorized access" }, 401),
+      )
+
+      await expect(apiClient.get("/api/v1/test")).rejects.toThrow(
+        "Unauthorized access",
+      )
+    })
+
+    it("should throw with response error field", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({ error: "Not found" }, 404))
+
+      await expect(apiClient.get("/api/v1/test")).rejects.toThrow("Not found")
+    })
+
+    it("should use HTTP status when no message available", async () => {
+      mockFetch.mockResolvedValue(jsonResponse({}, 500))
+
+      await expect(apiClient.get("/api/v1/test")).rejects.toThrow(
+        "HTTP error 500",
+      )
+    })
+
+    it("should include field-specific validation errors", async () => {
+      mockFetch.mockResolvedValue(
+        jsonResponse(
+          {
+            message: "Validation failed",
+            errors: { email: "is invalid", name: "is required" },
+          },
+          422,
+        ),
+      )
+
+      await expect(apiClient.get("/api/v1/test")).rejects.toThrow(
+        "Validation failed - email: is invalid; name: is required",
+      )
+    })
+
+    it("should not append field errors when errors object is empty", async () => {
+      mockFetch.mockResolvedValue(
+        jsonResponse({ message: "Bad request", errors: {} }, 400),
+      )
+
+      await expect(apiClient.get("/api/v1/test")).rejects.toThrow("Bad request")
+    })
   })
 })

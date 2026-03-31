@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useSupportManagement } from "./useSupportManagement"
 import { api } from "../services/api"
 import type { SupportMessage } from "../services/api/support"
-import { AxiosError } from "axios"
 
 vi.mock("../services/api", () => ({
   api: {
@@ -88,16 +87,10 @@ describe("useSupportManagement", () => {
     expect(result.current.filteredMessages).toEqual([])
   })
 
-  it("should handle AxiosError with API message", async () => {
-    const axiosErr = new AxiosError("Request failed")
-    axiosErr.response = {
-      data: { message: "Unauthorized access" },
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: { headers: {} as any },
-    }
-    vi.mocked(api.support.getAllMessages).mockRejectedValueOnce(axiosErr)
+  it("should handle API error with message", async () => {
+    vi.mocked(api.support.getAllMessages).mockRejectedValueOnce(
+      new Error("Unauthorized access"),
+    )
 
     const { result } = renderHook(() => useSupportManagement())
 
@@ -111,7 +104,7 @@ describe("useSupportManagement", () => {
     const { result } = renderHook(() => useSupportManagement())
 
     await waitFor(() => expect(result.current.loading).toBe(false))
-    expect(result.current.error).toBe("An unknown error occurred.")
+    expect(result.current.error).toBe("Failed to load messages.")
   })
 
   it.each([
