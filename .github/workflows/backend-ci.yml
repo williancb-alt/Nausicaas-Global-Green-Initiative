@@ -135,10 +135,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Generate requirements.txt for Snyk
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install pip-tools
+          pip-compile setup.py -o requirements.txt
 
       - name: Set up Node (for Snyk CLI)
         uses: actions/setup-node@v6
@@ -155,7 +156,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
           snyk test \
-            --file=setup.py \
+            --file=requirements.txt \
             --package-manager=pip \
             --sarif-file-output=snyk-backend.sarif \
             --severity-threshold=medium
