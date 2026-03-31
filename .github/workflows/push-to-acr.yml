@@ -56,13 +56,17 @@ jobs:
         id: grype-cache
         uses: actions/cache@v5
         with:
-          path: /usr/local/bin/grype
+          path: ${{ runner.tool_cache }}/grype
           key: grype-${{ runner.os }}
 
       - name: Install Grype
         if: steps.grype-cache.outputs.cache-hit != 'true'
         run: |
-          curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b /usr/local/bin
+          mkdir -p "${{ runner.tool_cache }}/grype"
+          curl -sSfL https://get.anchore.io/grype | sh -s -- -b "${{ runner.tool_cache }}/grype"
+
+      - name: Add Grype to PATH
+        run: echo "${{ runner.tool_cache }}/grype" >> $GITHUB_PATH
 
       - name: Build backend image
         run: |

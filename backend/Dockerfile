@@ -30,10 +30,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --upgrade setuptools wheel pip --break-system-packages
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /root/.local/bin/uv /root/.local/bin/uv
 ENV PATH="/root/.local/bin:${PATH}"
