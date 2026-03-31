@@ -1,4 +1,4 @@
-FROM python:3.11.12-slim AS builder
+FROM python:3.13-slim AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libpq-dev curl \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:${PATH}"
@@ -23,7 +23,7 @@ RUN uv venv && \
 
 COPY . .
 
-FROM python:3.11.12-slim
+FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -32,21 +32,22 @@ WORKDIR /app
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libpq5 \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade setuptools wheel pip --break-system-packages
 
 COPY --from=builder /root/.local/bin/uv /root/.local/bin/uv
 ENV PATH="/root/.local/bin:${PATH}"
 
 COPY . /app
 
-COPY --from=builder /app/.venv/lib/python3.11/site-packages /tmp/site-packages
+COPY --from=builder /app/.venv/lib/python3.13/site-packages /tmp/site-packages
 
 RUN uv venv --clear && \
     . .venv/bin/activate && \
-    cp -r /tmp/site-packages/. .venv/lib/python3.11/site-packages/ && \
-    uv pip install --upgrade pip setuptools wheel && \
+    cp -r /tmp/site-packages/. .venv/lib/python3.13/site-packages/ && \
     uv pip install -e . && \
-    uv pip install tox
+    uv pip install tox && \
+    uv pip install --upgrade pip setuptools wheel
 
 ENV PATH="/app/.venv/bin:${PATH}"
 

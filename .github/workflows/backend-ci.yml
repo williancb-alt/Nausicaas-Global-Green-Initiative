@@ -22,7 +22,7 @@ permissions:
   security-events: write
 
 env:
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: "3.13"
   COVERAGE_THRESHOLD: "80"
   DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/nausicaa_test
   TEST_DATABASE_URL: postgresql://postgres:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/nausicaa_test
