@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Optional
 
 from flask import Response, url_for
@@ -13,7 +13,7 @@ FORBIDDEN = "You are not an administrator"
 WWW_AUTH_NO_TOKEN = 'Bearer realm="registered_users@mydomain.com"'
 DEFAULT_NAME = "some-grant"
 DEFAULT_URL = "https://www.fakesite.com"
-DEFAULT_DEADLINE = date.today().strftime("%m/%d/%y")
+DEFAULT_DEADLINE = (date.today() + timedelta(days=30)).strftime("%m/%d/%y")
 DEFAULT_DESCRIPTION = "A test grant description"
 
 

@@ -52,19 +52,51 @@ jobs:
         run: |
           az acr login --name ${{ vars.ACR_NAME }}
 
-      - name: Build & push backend
+      - name: Cache Grype binary
+        id: grype-cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.tool_cache }}/grype
+          key: grype-${{ runner.os }}
+
+      - name: Install Grype
+        if: steps.grype-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "${{ runner.tool_cache }}/grype"
+          curl -sSfL https://get.anchore.io/grype | sh -s -- -b "${{ runner.tool_cache }}/grype"
+
+      - name: Add Grype to PATH
+        run: echo "${{ runner.tool_cache }}/grype" >> $GITHUB_PATH
+
+      - name: Build backend image
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
           docker build -t "$ACR/backend:${IMAGE_TAG}" ./backend
-          docker push "$ACR/backend:${IMAGE_TAG}"
 
-      - name: Build & push frontend
+      - name: Scan backend image with Grype
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          grype "$ACR/backend:${IMAGE_TAG}" --only-fixed --fail-on high
 
+      - name: Push backend image
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          docker push "$ACR/backend:${IMAGE_TAG}"
+
+      - name: Build frontend image
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
           docker build \
             --build-arg VITE_API_BASE_URL="${{ secrets.BACKEND_BASE_URL }}" \
             --build-arg SERVER_NAME="${{ secrets.FRONTEND_BASE_URL }}" \
             -t "$ACR/frontend:${IMAGE_TAG}" ./frontend
 
+      - name: Scan frontend image with Grype
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          grype "$ACR/frontend:${IMAGE_TAG}" --only-fixed --fail-on high
+
+      - name: Push frontend image
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
           docker push "$ACR/frontend:${IMAGE_TAG}"

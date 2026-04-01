@@ -4,7 +4,7 @@ Flask REST API with PostgreSQL database for managing grants and user authenticat
 
 ## Tech Stack
 
-- **Python**: 3.11+
+- **Python**: 3.13+
 - **Framework**: Flask 3.1.0+
 - **Database**: PostgreSQL 16
 - **ORM**: SQLAlchemy
@@ -40,7 +40,7 @@ docker compose exec backend python -m flask --app run.py add-user demo@example.c
 
 #### Pre-requisites
 
-- Python 3.11 or higher
+- Python 3.13 or higher
 - PostgreSQL 16
 - `uv` package manager ([installation guide](https://github.com/astral-sh/uv))
 
@@ -65,7 +65,7 @@ cd backend
 Create virtual environment
 
 ```
-uv venv
+uv venv --python python3.13
 ```
 
 Activate the virtual environment

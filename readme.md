@@ -50,7 +50,7 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 | Technology | Version |
 |-----------|---------|
-| Python | 3.11.9 |
+| Python | 3.13 |
 | Flask | >= 3.1.0 |
 | Flask-RESTx (Swagger UI) | latest |
 | Flask-SQLAlchemy | >= 3.1.0 |
@@ -83,7 +83,7 @@ An online grant application platform for Studio Ghibli's climate change initiati
 | Docker, Docker Compose | dev and test profiles |
 | Node (frontend build image) | 24-alpine |
 | Nginx (frontend runtime image) | stable-alpine |
-| Python (backend image) | 3.11.9-slim |
+| Python (backend image) | 3.13-slim |
 | Microsoft Azure | AKS, ACR, Key Vault, PostgreSQL Flexible Server |
 | Terraform | 1.6.2 (requires >= 1.5.0) |
 | AzureRM provider | >= 3.116.0 |

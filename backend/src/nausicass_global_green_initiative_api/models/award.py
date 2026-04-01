@@ -40,7 +40,7 @@ class Award(db.Model):
     @hybrid_property
     def deadline_str(self) -> str:
         deadline_utc = make_tzaware(self.deadline, use_tz=timezone.utc, localize=False)
-        return localized_dt_string(deadline_utc, use_tz=get_local_utcoffset())
+        return localized_dt_string(deadline_utc, use_tz=timezone.utc)
 
     @hybrid_property
     def deadline_passed(self) -> bool:

@@ -1,6 +1,12 @@
+[project]
+name = "nausicass-global-green-initiative-api"
+version = "1.0.0"
+requires-python = ">=3.13"
+dynamic = ["description", "readme", "license", "authors", "maintainers", "urls", "dependencies", "optional-dependencies"]
+
 [tool.black]
 line-length = 89
-target-version = ['py311']
+target-version = ['py313']
 include = '\.pyi?$'
 exclude =  '''
 /(
