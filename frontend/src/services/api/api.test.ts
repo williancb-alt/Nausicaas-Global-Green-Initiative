@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest"
 import type {
   AuthSuccess,
   Award,
@@ -15,6 +15,10 @@ vi.stubGlobal("fetch", mockFetch)
 
 beforeEach(() => {
   vi.clearAllMocks()
+})
+
+afterAll(() => {
+  vi.unstubAllGlobals()
 })
 
 function jsonResponse(data: unknown, status = 200): Response {

@@ -5,20 +5,29 @@ if (!API_BASE_URL) {
   throw new Error("VITE_API_BASE_URL environment variable is required")
 }
 
+function tryParseJson(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+async function buildErrorMessage(response: Response): Promise<string> {
+  const fallback = `HTTP error ${response.status}`
+  const text = await response.text()
+  if (!text) return fallback
+  const body = tryParseJson(text)
+  return body ? parseErrorMessage(body, fallback) : fallback
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (response.ok) {
     if (response.status === 204) return undefined as T
     return response.json() as Promise<T>
   }
 
-  const fallback = `HTTP error ${response.status}`
-  try {
-    const body: unknown = await response.json()
-    throw new Error(parseErrorMessage(body, fallback))
-  } catch (e) {
-    if (e instanceof Error) throw e
-    throw new Error(fallback)
-  }
+  throw new Error(await buildErrorMessage(response))
 }
 
 type RequestOptions = {
@@ -36,7 +45,8 @@ function buildUrl(
   for (const [key, value] of Object.entries(params)) {
     searchParams.append(key, String(value))
   }
-  return `${url}?${searchParams.toString()}`
+  const qs = searchParams.toString()
+  return qs ? `${url}?${qs}` : url
 }
 
 function buildFetchInit(
@@ -58,12 +68,13 @@ function buildFetchInit(
     fetchBody = JSON.stringify(body)
   }
 
-  return {
+  const init: RequestInit = {
     method,
     headers,
     credentials: "include",
-    body: fetchBody,
   }
+  if (fetchBody) init.body = fetchBody
+  return init
 }
 
 export const apiClient = {

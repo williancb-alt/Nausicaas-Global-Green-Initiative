@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest"
 
 const mockFetch = vi.fn()
 vi.stubGlobal("fetch", mockFetch)
@@ -7,14 +7,20 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
+
 // Must import after stubbing fetch
 const { apiClient } = await import("./client")
 
 function jsonResponse(data: unknown, status = 200): Response {
+  const body = JSON.stringify(data)
   return {
     ok: status >= 200 && status < 300,
     status,
     json: () => Promise.resolve(data),
+    text: () => Promise.resolve(body),
   } as Response
 }
 

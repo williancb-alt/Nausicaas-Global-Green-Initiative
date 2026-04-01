@@ -1,4 +1,4 @@
-import React, { JSX, useState } from "react"
+import React, { JSX, useEffect, useRef, useState } from "react"
 import { api } from "../../services/api"
 import { SuccessMessage } from "./SuccessMessage"
 import { SupportForm } from "./SupportForm"
@@ -17,6 +17,13 @@ export function ContactModalBody({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +40,7 @@ export function ContactModalBody({
       })
       setIsSubmitting(false)
       setIsSuccess(true)
-      setTimeout(() => {
-        onClose()
-      }, 3000)
+      closeTimerRef.current = setTimeout(onClose, 3000)
     } catch (err: unknown) {
       setIsSubmitting(false)
       if (err instanceof Error) {
