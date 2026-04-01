@@ -68,7 +68,9 @@ describe("applicationsApi", () => {
       expectedArgs: ["/api/v1/applications/42"],
     },
   ])("should call $name", async ({ mock, response, execute, expectedArgs }) => {
-    mock().mockResolvedValueOnce({ data: response })
+    mock().mockResolvedValueOnce(
+      response === undefined ? undefined : ({ data: response } as any),
+    )
 
     const result = await execute()
     if (response !== undefined) {

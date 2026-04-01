@@ -1,4 +1,3 @@
-import { AxiosError } from "axios"
 import { SupportMessage } from "../services/api/support"
 import { FilterStatus, SupportStats } from "../components/support/types"
 
@@ -6,14 +5,10 @@ import { FilterStatus, SupportStats } from "../components/support/types"
  * Pure helper function to get error message from API errors.
  */
 export function getErrorMessage(err: unknown, defaultMsg: string): string {
-  if (err instanceof AxiosError) {
-    const apiError = err as AxiosError<{ message?: string }>
-    return apiError.response?.data?.message || err.message || defaultMsg
-  }
   if (err instanceof Error) {
     return err.message
   }
-  return "An unknown error occurred."
+  return defaultMsg
 }
 
 /**

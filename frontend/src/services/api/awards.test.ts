@@ -6,7 +6,9 @@ import { EMPTY_PAGINATED_RESPONSE } from "../../test/mock-data"
 const mockedGet = vi.spyOn(apiClient, "get")
 const mockedPost = vi.spyOn(apiClient, "post")
 const mockedPut = vi.spyOn(apiClient, "put")
-const mockedDelete = vi.spyOn(apiClient, "delete")
+const mockedDelete = vi.spyOn(apiClient, "delete") as unknown as ReturnType<
+  typeof vi.fn<() => Promise<void>>
+>
 
 const createSuccessResponse = (message: string): BaseResponse => ({
   status: "success",
@@ -73,7 +75,7 @@ describe("awardsApi", () => {
   })
 
   it("should call deleteAward", async () => {
-    mockedDelete.mockResolvedValueOnce({ data: undefined })
+    mockedDelete.mockResolvedValueOnce(undefined)
 
     await awardsApi.deleteAward("Green Award")
     expect(mockedDelete).toHaveBeenCalledWith("/api/v1/awards/Green%20Award")

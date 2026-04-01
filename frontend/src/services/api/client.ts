@@ -1,145 +1,127 @@
-import axios, { type AxiosError } from "axios"
+import { parseErrorMessage } from "./errorParser"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")
 if (!API_BASE_URL) {
   throw new Error("VITE_API_BASE_URL environment variable is required")
 }
 
-export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
+function tryParseJson(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+async function buildErrorMessage(response: Response): Promise<string> {
+  const fallback = `HTTP error ${response.status}`
+  const text = await response.text()
+  if (!text) return fallback
+  const body = tryParseJson(text)
+  return body ? parseErrorMessage(body, fallback) : fallback
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.ok) {
+    if (response.status === 204) return undefined as T
+    return response.json() as Promise<T>
+  }
+
+  throw new Error(await buildErrorMessage(response))
+}
+
+type RequestOptions = {
+  params?: Record<string, string | number>
+  headers?: Record<string, string>
+}
+
+function buildUrl(
+  path: string,
+  params?: Record<string, string | number>,
+): string {
+  const url = `${API_BASE_URL}${path}`
+  if (!params) return url
+  const searchParams = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    searchParams.append(key, String(value))
+  }
+  const qs = searchParams.toString()
+  return qs ? `${url}?${qs}` : url
+}
+
+function buildFetchInit(
+  method: string,
+  body?: BodyInit | Record<string, unknown> | null,
+  options?: RequestOptions,
+): RequestInit {
+  const headers: Record<string, string> = {
+    ...options?.headers,
+  }
+
+  let fetchBody: BodyInit | null = null
+
+  if (body instanceof URLSearchParams) {
+    headers["Content-Type"] = "application/x-www-form-urlencoded"
+    fetchBody = body.toString()
+  } else if (body !== null && body !== undefined) {
+    headers["Content-Type"] = "application/json"
+    fetchBody = JSON.stringify(body)
+  }
+
+  const init: RequestInit = {
+    method,
+    headers,
+    credentials: "include",
+  }
+  if (fetchBody) init.body = fetchBody
+  return init
+}
+
+export const apiClient = {
+  async get<T>(path: string, options?: RequestOptions): Promise<{ data: T }> {
+    const url = buildUrl(path, options?.params)
+    const response = await fetch(url, buildFetchInit("GET", null, options))
+    const data = await handleResponse<T>(response)
+    return { data }
   },
-})
 
-apiClient.interceptors.request.use(
-  config => config,
-  error =>
-    Promise.reject(error instanceof Error ? error : new Error(String(error))),
-)
+  async post<T>(
+    path: string,
+    body?: URLSearchParams | Record<string, unknown>,
+    options?: RequestOptions,
+  ): Promise<{ data: T }> {
+    const url = buildUrl(path)
+    const response = await fetch(url, buildFetchInit("POST", body, options))
+    const data = await handleResponse<T>(response)
+    return { data }
+  },
 
-apiClient.interceptors.response.use(
-  response => response,
-  (
-    error: AxiosError<{
-      message?: string
-      error?: string
-      errors?: Record<string, string>
-    }>,
-  ) => {
-    let message =
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      error.message ||
-      `HTTP error ${error.response?.status || "unknown"}`
+  async put<T>(
+    path: string,
+    body?: URLSearchParams | Record<string, unknown>,
+    options?: RequestOptions,
+  ): Promise<{ data: T }> {
+    const url = buildUrl(path)
+    const response = await fetch(url, buildFetchInit("PUT", body, options))
+    const data = await handleResponse<T>(response)
+    return { data }
+  },
 
-    // Append field-specific validation errors if present
-    const fieldErrors = error.response?.data?.errors
-    if (fieldErrors && typeof fieldErrors === "object") {
-      const errorDetails = Object.entries(fieldErrors)
-        .map(([field, msg]) => `${field}: ${msg}`)
-        .join("; ")
-      if (errorDetails) {
-        message = `${message} - ${errorDetails}`
-      }
+  async delete(path: string, options?: RequestOptions): Promise<void> {
+    const url = buildUrl(path)
+    const response = await fetch(url, buildFetchInit("DELETE", null, options))
+    if (!response.ok) {
+      await handleResponse(response)
     }
-
-    throw new Error(message)
   },
-)
-
-export interface BaseResponse {
-  status: string
-  message: string
 }
 
-export interface AuthSuccess extends BaseResponse {
-  token_type: string
-  expires_in: number
-}
-
-export interface UserInfo {
-  email: string
-  admin: boolean
-  public_id?: string
-  token_expires_in?: string
-}
-
-export interface Grant {
-  name: string
-  info_url?: string | null
-  created_at_iso8601?: string
-  created_at_rfc822?: string
-  deadline: string
-  deadline_passed: boolean
-  time_remaining: string
-  description?: string
-  custom_fields?: {
-    configs: Array<
-      | { type: "text"; label: string; maxLength: number; required: boolean }
-      | { type: "radio"; label: string; options: string[]; required: boolean }
-      | { type: "phone"; label: string; required: boolean }
-      | { type: "email"; label: string; required: boolean }
-      | {
-          type: "currency"
-          label: string
-          min: number
-          max: number
-          required: boolean
-        }
-    >
-    values: Record<string, string>
-  }
-  hidden?: boolean
-  owner?: { email: string; public_id: string }
-  link?: string
-}
-
-export interface GrantPage {
-  links: {
-    self: string
-    prev?: string
-    next?: string
-    first: string
-    last: string
-  }
-  has_prev: boolean
-  has_next: boolean
-  page: number
-  total_pages: number
-  items_per_page: number
-  total_items: number
-  items: Grant[]
-}
-
-export interface Award {
-  name: string
-  info_url?: string | null
-  created_at_iso8601?: string
-  created_at_rfc822?: string
-  deadline: string
-  deadline_passed: boolean
-  time_remaining: string
-  description?: string
-  hidden?: boolean
-  owner?: { email: string; public_id: string }
-  link?: string
-}
-
-export interface AwardPage {
-  links: {
-    self: string
-    prev?: string
-    next?: string
-    first: string
-    last: string
-  }
-  has_prev: boolean
-  has_next: boolean
-  page: number
-  total_pages: number
-  items_per_page: number
-  total_items: number
-  items: Award[]
-}
+export type {
+  BaseResponse,
+  AuthSuccess,
+  UserInfo,
+  Grant,
+  GrantPage,
+  Award,
+  AwardPage,
+} from "./types"

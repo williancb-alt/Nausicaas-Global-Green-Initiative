@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest"
 import type {
   AuthSuccess,
   Award,
@@ -10,38 +10,24 @@ import type {
 } from "./client"
 import { api } from "./index"
 
-const { mockPost, mockGet, mockPut, mockDelete } = vi.hoisted(() => {
-  return {
-    mockPost: vi.fn(),
-    mockGet: vi.fn(),
-    mockPut: vi.fn(),
-    mockDelete: vi.fn(),
-  }
-})
-
-vi.mock("axios", () => {
-  const mockAxiosInstance = {
-    post: mockPost,
-    get: mockGet,
-    put: mockPut,
-    delete: mockDelete,
-    interceptors: {
-      request: { use: vi.fn() },
-      response: { use: vi.fn() },
-    },
-    defaults: { baseURL: "http://localhost:4000/v1" },
-  }
-
-  return {
-    default: {
-      create: vi.fn(() => mockAxiosInstance),
-    },
-  }
-})
+const mockFetch = vi.fn()
+vi.stubGlobal("fetch", mockFetch)
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
+
+afterAll(() => {
+  vi.unstubAllGlobals()
+})
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(data),
+  } as Response
+}
 
 const TEST_EMAIL = "test@example.com"
 const TEST_PASSWORD = "password123"
@@ -53,7 +39,6 @@ const RESOURCE_DEADLINE = "2024-12-31"
 const UPDATED_RESOURCE_DEADLINE = "2025-01-31"
 const RESOURCE_TIME_REMAINING = "30 days"
 const UPDATED_RESOURCE_TIME_REMAINING = "60 days"
-const urlSearchParams: unknown = expect.any(URLSearchParams)
 
 type ResourceRecord = Award | Grant
 type ResourcePageRecord = AwardPage | GrantPage
@@ -72,46 +57,6 @@ type ResourceScenario<
   get: () => Promise<TResource>
   update: () => Promise<BaseResponse | TResource>
   remove: () => Promise<void>
-}
-
-function mockDataResponse<T>(method: ReturnType<typeof vi.fn>, response: T) {
-  method.mockResolvedValue({ data: response })
-}
-
-async function expectDataRequest<T>({
-  method,
-  response,
-  execute,
-  expectedArgs,
-}: {
-  method: ReturnType<typeof vi.fn>
-  response: T
-  execute: () => Promise<unknown>
-  expectedArgs: unknown[]
-}) {
-  mockDataResponse(method, response)
-
-  await expect(execute()).resolves.toEqual(response)
-  expect(method).toHaveBeenCalledWith(...expectedArgs)
-}
-
-async function expectDeleteRequest(
-  execute: () => Promise<void>,
-  ...expectedArgs: unknown[]
-) {
-  mockDelete.mockResolvedValue({ status: 204 })
-
-  await execute()
-  expect(mockDelete).toHaveBeenCalledWith(...expectedArgs)
-}
-
-function buildAuthSuccess(message: AuthSuccess["message"]): AuthSuccess {
-  return {
-    status: "success",
-    message,
-    token_type: "bearer",
-    expires_in: 900,
-  }
 }
 
 function buildResource<TResource extends ResourceRecord>({
@@ -185,36 +130,38 @@ function describeResourceApi<
         status: "success",
         message: `New ${scenario.resourceLabel} added: ${scenario.resource.name}.`,
       }
+      mockFetch.mockResolvedValue(jsonResponse(response))
 
-      await expectDataRequest({
-        method: mockPost,
-        response,
-        execute: scenario.create,
-        expectedArgs: [scenario.basePath, urlSearchParams],
-      })
+      const result = await scenario.create()
+      expect(result).toEqual(response)
+
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain(scenario.basePath)
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe("POST")
     })
 
     it(`should list ${scenario.resourceLabel}s`, async () => {
-      await expectDataRequest({
-        method: mockGet,
-        response: scenario.listResponse,
-        execute: scenario.list,
-        expectedArgs: [
-          scenario.basePath,
-          { params: { page: PAGE, per_page: PER_PAGE } },
-        ],
-      })
+      mockFetch.mockResolvedValue(jsonResponse(scenario.listResponse))
+
+      const result = await scenario.list()
+      expect(result).toEqual(scenario.listResponse)
+
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain(scenario.basePath)
+      expect(url).toContain("page=1")
+      expect(url).toContain("per_page=10")
     })
 
     it(`should get a single ${scenario.resourceLabel}`, async () => {
       const response = buildResource({ resource: scenario.resource })
+      mockFetch.mockResolvedValue(jsonResponse(response))
 
-      await expectDataRequest({
-        method: mockGet,
-        response,
-        execute: scenario.get,
-        expectedArgs: [`${scenario.basePath}/${scenario.resource.name}`],
-      })
+      const result = await scenario.get()
+      expect(result).toEqual(response)
+
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain(`${scenario.basePath}/${scenario.resource.name}`)
     })
 
     it(`should update a ${scenario.resourceLabel}`, async () => {
@@ -225,23 +172,26 @@ function describeResourceApi<
           time_remaining: UPDATED_RESOURCE_TIME_REMAINING,
         } as Partial<TResource>,
       })
+      mockFetch.mockResolvedValue(jsonResponse(response))
 
-      await expectDataRequest({
-        method: mockPut,
-        response,
-        execute: scenario.update,
-        expectedArgs: [
-          `${scenario.basePath}/${scenario.resource.name}`,
-          urlSearchParams,
-        ],
-      })
+      const result = await scenario.update()
+      expect(result).toEqual(response)
+
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain(`${scenario.basePath}/${scenario.resource.name}`)
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe("PUT")
     })
 
     it(`should delete a ${scenario.resourceLabel}`, async () => {
-      await expectDeleteRequest(
-        scenario.remove,
-        `${scenario.basePath}/${scenario.resource.name}`,
-      )
+      mockFetch.mockResolvedValue({ ok: true, status: 204 } as Response)
+
+      await scenario.remove()
+
+      const url = mockFetch.mock.calls[0][0] as string
+      expect(url).toContain(`${scenario.basePath}/${scenario.resource.name}`)
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.method).toBe("DELETE")
     })
   })
 }
@@ -291,6 +241,69 @@ function buildResourceScenario<
   }
 }
 
+function buildAuthSuccess(message: AuthSuccess["message"]): AuthSuccess {
+  return {
+    status: "success",
+    message,
+    token_type: "bearer",
+    expires_in: 900,
+  }
+}
+
+async function assertAuthCall<T>(
+  response: T,
+  call: () => Promise<T>,
+  expectedPath: string,
+) {
+  mockFetch.mockResolvedValue(jsonResponse(response))
+  const result = await call()
+  expect(result).toEqual(response)
+  const url = mockFetch.mock.calls[0][0] as string
+  expect(url).toContain(expectedPath)
+}
+
+describe("api (auth)", () => {
+  it("should register", async () => {
+    const response = buildAuthSuccess("successfully registered")
+    await assertAuthCall(
+      response,
+      () => api.auth.register(TEST_EMAIL, TEST_PASSWORD),
+      "/api/v1/auth/register",
+    )
+    const init = mockFetch.mock.calls[0][1] as RequestInit
+    expect(init.method).toBe("POST")
+  })
+
+  it("should login", async () => {
+    await assertAuthCall(
+      buildAuthSuccess("successfully logged in"),
+      () => api.auth.login(TEST_EMAIL, TEST_PASSWORD),
+      "/api/v1/auth/login",
+    )
+  })
+
+  it("should getUser", async () => {
+    const response: UserInfo = {
+      email: "test@example.com",
+      admin: false,
+      public_id: "123",
+    }
+    await assertAuthCall(
+      response,
+      () => api.auth.getUser(),
+      "/api/v1/auth/user",
+    )
+  })
+
+  it("should logout", async () => {
+    await assertAuthCall(
+      { status: "success", message: "successfully logged out" },
+      () => api.auth.logout(),
+      "/api/v1/auth/logout",
+    )
+  })
+})
+
 const awardScenario = buildResourceScenario<Award, AwardPage>({
   label: "award",
   apiNamespace: {
@@ -311,55 +324,6 @@ const grantScenario = buildResourceScenario<Grant, GrantPage>({
     update: (name, data) => api.grants.updateGrant(name, data),
     delete: name => api.grants.deleteGrant(name),
   },
-})
-
-describe("api (auth)", () => {
-  describe.each([
-    {
-      name: "register",
-      method: () => mockPost,
-      response: buildAuthSuccess("successfully registered"),
-      execute: () => api.auth.register(TEST_EMAIL, TEST_PASSWORD),
-      expectedArgs: ["/api/v1/auth/register", urlSearchParams],
-    },
-    {
-      name: "login",
-      method: () => mockPost,
-      response: buildAuthSuccess("successfully logged in"),
-      execute: () => api.auth.login(TEST_EMAIL, TEST_PASSWORD),
-      expectedArgs: ["/api/v1/auth/login", urlSearchParams],
-    },
-    {
-      name: "getUser",
-      method: () => mockGet,
-      response: {
-        email: "test@example.com",
-        admin: false,
-        public_id: "123",
-      } as UserInfo,
-      execute: () => api.auth.getUser(),
-      expectedArgs: ["/api/v1/auth/user"],
-    },
-    {
-      name: "logout",
-      method: () => mockPost,
-      response: {
-        status: "success",
-        message: "successfully logged out",
-      },
-      execute: () => api.auth.logout(),
-      expectedArgs: ["/api/v1/auth/logout"],
-    },
-  ])("auth.$name", ({ method, response, execute, expectedArgs }) => {
-    it("should succeed", async () => {
-      await expectDataRequest({
-        method: method(),
-        response,
-        execute,
-        expectedArgs,
-      })
-    })
-  })
 })
 
 describeResourceApi(awardScenario)
