@@ -1,0 +1,42 @@
+name: Test SBOM Generation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Syft
+        run: |
+          curl -sSfL https://get.anchore.io/syft | sh -s -- -b /usr/local/bin
+
+      - name: Build backend image (local only)
+        run: docker build -t backend:test ./backend
+
+      - name: Build frontend image (local only)
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL="http://localhost" \
+            --build-arg SERVER_NAME="localhost" \
+            -t frontend:test ./frontend
+
+      - name: Generate backend SBOM
+        run: syft backend:test -o cyclonedx-json > backend-sbom.cdx.json
+
+      - name: Generate frontend SBOM
+        run: syft frontend:test -o cyclonedx-json > frontend-sbom.cdx.json
+
+      - name: Generate source SBOM
+        run: syft dir:. -o cyclonedx-json > source-sbom.cdx.json
+
+      - name: Upload SBOMs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-test
+          path: |
+            backend-sbom.cdx.json
+            frontend-sbom.cdx.json
+            source-sbom.cdx.json
