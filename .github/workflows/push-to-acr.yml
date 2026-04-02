@@ -25,6 +25,7 @@ on:
 permissions:
   id-token: write
   contents: read
+  security-events: write
 
 env:
   ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
@@ -68,6 +69,22 @@ jobs:
       - name: Add Grype to PATH
         run: echo "${{ runner.tool_cache }}/grype" >> $GITHUB_PATH
 
+      - name: Cache Syft binary
+        id: syft-cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.tool_cache }}/syft
+          key: syft-${{ runner.os }}
+
+      - name: Install Syft
+        if: steps.syft-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "${{ runner.tool_cache }}/syft"
+          curl -sSfL https://get.anchore.io/syft | sh -s -- -b "${{ runner.tool_cache }}/syft"
+
+      - name: Add Syft to PATH
+        run: echo "${{ runner.tool_cache }}/syft" >> $GITHUB_PATH
+
       - name: Build backend image
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
@@ -100,3 +117,26 @@ jobs:
         run: |
           ACR="${{ vars.ACR_NAME }}.azurecr.io"
           docker push "$ACR/frontend:${IMAGE_TAG}"
+
+      - name: Generate backend SBOM
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          syft "$ACR/backend:${IMAGE_TAG}" -o cyclonedx-json > backend-sbom.cdx.json
+
+      - name: Generate frontend SBOM
+        run: |
+          ACR="${{ vars.ACR_NAME }}.azurecr.io"
+          syft "$ACR/frontend:${IMAGE_TAG}" -o cyclonedx-json > frontend-sbom.cdx.json
+
+      - name: Generate source SBOM
+        run: |
+          syft dir:. -o cyclonedx-json > source-sbom.cdx.json
+
+      - name: Upload SBOMs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ env.IMAGE_TAG }}
+          path: |
+            backend-sbom.cdx.json
+            frontend-sbom.cdx.json
+            source-sbom.cdx.json
