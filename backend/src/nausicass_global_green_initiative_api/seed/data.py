@@ -9,7 +9,24 @@ from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.support_message import SupportMessage
 from nausicass_global_green_initiative_api.models.user import User
 
-SEED_PASSWORD = os.getenv("SEED_PASSWORD", "Password123")
+
+def _get_seed_password() -> str:
+    """
+    Extract password to use for all seeded users
+    """
+
+    # Check env variable
+    password = os.getenv("SEED_PASSWORD", "")
+
+    # If not set, raise error to ensure
+    # password is set correctly at runtime
+    if not password:
+        raise RuntimeError(
+            "SEED_PASSWORD environment variable must be set " "to seed the database."
+        )
+
+    # If found, return password
+    return password
 
 
 class DatabaseSeeder:
@@ -19,16 +36,16 @@ class DatabaseSeeder:
 
     USERS = [
         # Admins
-        {"email": "L00196611@atu.ie", "password": SEED_PASSWORD, "admin": True},
-        {"email": "L00196726@atu.ie", "password": SEED_PASSWORD, "admin": True},
-        {"email": "L00203120@atu.ie", "password": SEED_PASSWORD, "admin": True},
-        {"email": "L00203089@atu.ie", "password": SEED_PASSWORD, "admin": True},
-        {"email": "L00203060@atu.ie", "password": SEED_PASSWORD, "admin": True},
-        {"email": "L00188491@atu.ie", "password": SEED_PASSWORD, "admin": True},
+        {"email": "L00196611@atu.ie", "admin": True},
+        {"email": "L00196726@atu.ie", "admin": True},
+        {"email": "L00203120@atu.ie", "admin": True},
+        {"email": "L00203089@atu.ie", "admin": True},
+        {"email": "L00203060@atu.ie", "admin": True},
+        {"email": "L00188491@atu.ie", "admin": True},
         # Non-Admins
-        {"email": "applicant1@example.com", "password": SEED_PASSWORD, "admin": False},
-        {"email": "applicant2@example.com", "password": SEED_PASSWORD, "admin": False},
-        {"email": "applicant3@example.com", "password": SEED_PASSWORD, "admin": False},
+        {"email": "applicant1@example.com", "admin": False},
+        {"email": "applicant2@example.com", "admin": False},
+        {"email": "applicant3@example.com", "admin": False},
     ]
 
     GRANTS = [
@@ -445,16 +462,29 @@ class DatabaseSeeder:
         return True
 
     def _create_users(self) -> None:
+        # Resolve password at runtime
+        password = _get_seed_password()
 
+        new_users = []
         # Loop over the users
         for u in self.USERS:
-            # Create the user instance, append to the class list
-            user = User(email=u["email"], password=u["password"], admin=u["admin"])
-            self.users.append(user)
+            # Reuse existing user or create a new one
+            existing = User.find_by_email(u["email"])
+            if existing:
+                self.users.append(existing)
+            else:
+                user = User(
+                    email=u["email"],
+                    password=password,
+                    admin=u["admin"],
+                )
+                self.users.append(user)
+                new_users.append(user)
 
-        # Once all have been looped over, add all within same call
-        db.session.add_all(self.users)
-        db.session.flush()
+        # Only add newly created users to the session
+        if new_users:
+            db.session.add_all(new_users)
+            db.session.flush()
 
         # Set values that are used across entities for ownership
         self.admin = self.users[0]
@@ -582,7 +612,11 @@ class DatabaseSeeder:
 def run_seed() -> dict | None:
     """
     This function is called to seed the database with initial dummy data.
+    Returns None if already seeded or blocked by production env.
     """
+    flask_env = os.getenv("FLASK_ENV", "development")
+    if flask_env == "production":
+        return None
 
     # Initialise the database seeder class
     seeder = DatabaseSeeder()

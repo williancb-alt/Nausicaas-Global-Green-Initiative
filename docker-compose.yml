@@ -34,7 +34,7 @@ services:
       ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
       ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
-      SEED_PASSWORD: ${SEED_PASSWORD:-Password123}
+      SEED_PASSWORD: ${SEED_PASSWORD}
     depends_on:
       - db
     ports:
@@ -124,7 +124,7 @@ services:
       ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
       ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
-      SEED_PASSWORD: ${SEED_PASSWORD:-Password123}
+      SEED_PASSWORD: ${SEED_PASSWORD}
     depends_on:
       db-test:
         condition: service_healthy

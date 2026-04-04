@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from flask_sqlalchemy import SQLAlchemy
 
@@ -11,7 +13,8 @@ class TestDatabaseSeeder:
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, db: SQLAlchemy):
+    def setup(self, db: SQLAlchemy, monkeypatch):
+        monkeypatch.setenv("SEED_PASSWORD", "TestSeed123")
         self.db = db
         self.seeder = DatabaseSeeder()
 
@@ -42,10 +45,11 @@ class TestDatabaseSeeder:
     def test_seed_users_can_authenticate(self):
         self.seeder.run()
 
+        password = os.getenv("SEED_PASSWORD")
         for seed_user in DatabaseSeeder.USERS:
             user = User.find_by_email(seed_user["email"])
             assert user is not None
-            assert user.check_password(seed_user["password"])
+            assert user.check_password(password)
 
     def test_seed_creates_all_grants(self):
         self.seeder.run()
@@ -216,7 +220,7 @@ class TestDatabaseSeeder:
         first_admin = DatabaseSeeder.USERS[0]
         user = User(
             email=first_admin["email"],
-            password=first_admin["password"],
+            password=os.getenv("SEED_PASSWORD"),
             admin=first_admin["admin"],
         )
         self.db.session.add(user)
@@ -232,7 +236,8 @@ class TestRunSeed:
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, db: SQLAlchemy):
+    def setup(self, db: SQLAlchemy, monkeypatch):
+        monkeypatch.setenv("SEED_PASSWORD", "TestSeed123")
         self.db = db
 
     def test_run_seed_returns_summary(self):
@@ -261,40 +266,24 @@ class TestRunSeed:
         assert result is None
 
 
-class TestSeedDbCommand:
+class TestSeedProductionGuard:
     """
-    Tests for the flask seed-db CLI command.
+    Tests that seeding is blocked in production.
     """
 
     @pytest.fixture(autouse=True)
-    def setup(self, app, db: SQLAlchemy):
-        self.app = app
+    def setup(self, db: SQLAlchemy, monkeypatch):
+        monkeypatch.setenv("SEED_PASSWORD", "TestSeed123")
         self.db = db
 
-    def test_seed_db_command_succeeds(self):
-        from run import app
-
-        runner = app.test_cli_runner()
-        result = runner.invoke(args=["seed-db"])
-
-        assert result.exit_code == 0
-        assert "Database seeded successfully" in result.output
-
-    def test_seed_db_command_already_seeded(self):
-        from run import app
-
-        runner = app.test_cli_runner()
-        runner.invoke(args=["seed-db"])
-        result = runner.invoke(args=["seed-db"])
-
-        assert result.exit_code == 0
-        assert "already seeded" in result.output
-
-    def test_seed_db_command_blocked_in_production(self, monkeypatch):
+    def test_run_seed_blocked_in_production(self, monkeypatch):
+        """run_seed returns None and inserts nothing
+        when FLASK_ENV is production."""
         monkeypatch.setenv("FLASK_ENV", "production")
-        from run import app
+        from nausicass_global_green_initiative_api.seed import (
+            run_seed,
+        )
 
-        runner = app.test_cli_runner()
-        result = runner.invoke(args=["seed-db"])
-
-        assert result.exit_code != 0 or "cannot be run in production" in result.output
+        result = run_seed()
+        assert result is None
+        assert User.query.count() == 0
