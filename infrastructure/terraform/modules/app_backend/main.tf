@@ -334,7 +334,7 @@ resource "kubernetes_job_v1" "backend_migrate" {
           command = [
             "sh",
             "-c",
-            "python -m flask --app run.py db upgrade",
+            "python -m flask --app run.py db upgrade && python -m flask --app run.py seed-db",
           ]
         }
 
