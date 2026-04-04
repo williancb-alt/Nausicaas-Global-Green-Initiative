@@ -134,7 +134,6 @@ services:
       - "8081:8080"
     command: >
       sh -c "python -m flask --app run.py db upgrade &&
-           python -m flask --app run.py seed-db &&
            python -m gunicorn --bind 0.0.0.0:8080 --workers 2 run:app"
 
   frontend-test:
