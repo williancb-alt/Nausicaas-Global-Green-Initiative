@@ -1,6 +1,16 @@
 name: DAST - OWASP ZAP
 
 on:
+  workflow_dispatch:
+    inputs:
+      api_target:
+        description: "Backend API URL to scan"
+        required: true
+        type: string
+      ui_target:
+        description: "Frontend UI URL to scan"
+        required: true
+        type: string
   workflow_call:
     inputs:
       api_target:
