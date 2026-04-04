@@ -34,4 +34,11 @@ def create_app(config_name: str) -> Flask:
     migrate.init_app(app, db)
     bcrypt.init_app(app)
     init_oauth(app)
+
+    @app.after_request
+    def set_security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        return response
+
     return app

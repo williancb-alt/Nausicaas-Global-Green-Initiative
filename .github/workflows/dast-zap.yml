@@ -1,7 +1,6 @@
 name: DAST - OWASP ZAP
 
 on:
-  push:
   workflow_call:
     inputs:
       api_target:
@@ -12,10 +11,6 @@ on:
         description: "Frontend UI URL to scan"
         required: true
         type: string
-
-env:
-  API_TARGET: ${{ inputs.api_target || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
-  UI_TARGET: ${{ inputs.ui_target || 'https://ui-staging.nausicaaglobalgreeninitiative.ie' }}
 
 permissions:
   contents: read
@@ -32,9 +27,9 @@ jobs:
 
       - name: Wait for API
         run: |
-          echo "Waiting for API at ${{ env.API_TARGET }}"
+          echo "Waiting for API at ${{ inputs.api_target }}"
           for i in $(seq 1 30); do
-            if curl -sf "${{ env.API_TARGET }}/health" > /dev/null 2>&1; then
+            if curl -sf "${{ inputs.api_target }}/health" > /dev/null 2>&1; then
               echo "API ready"
               exit 0
             fi
@@ -47,10 +42,10 @@ jobs:
       - name: Run ZAP API scan
         uses: zaproxy/action-api-scan@v0.10.0
         with:
-          target: "${{ env.API_TARGET }}/api/v1/swagger.json"
+          target: "${{ inputs.api_target }}/api/v1/swagger.json"
           format: openapi
           fail_action: true
-          cmd_options: "-a -j"
+          cmd_options: "-a -j -w report_html.html"
           allow_issue_writing: false
 
       - name: Upload ZAP API report
@@ -58,7 +53,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-api-report
-          path: report_json.json
+          path: |
+            report_json.json
+            report_html.html
           retention-days: 30
 
   zap_ui_scan:
@@ -71,9 +68,9 @@ jobs:
 
       - name: Wait for UI
         run: |
-          echo "Waiting for UI at ${{ env.UI_TARGET }}..."
+          echo "Waiting for UI at ${{ inputs.ui_target }}..."
           for i in $(seq 1 30); do
-            if curl -sf "${{ env.UI_TARGET }}" > /dev/null 2>&1; then
+            if curl -sf "${{ inputs.ui_target }}" > /dev/null 2>&1; then
               echo "UI ready"
               exit 0
             fi
@@ -86,7 +83,7 @@ jobs:
       - name: Run ZAP baseline scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: "${{ env.UI_TARGET }}"
+          target: "${{ inputs.ui_target }}"
           fail_action: true
           allow_issue_writing: false
 
