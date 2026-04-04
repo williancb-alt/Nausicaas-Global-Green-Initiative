@@ -111,6 +111,7 @@ resource "kubernetes_secret" "backend_env" {
     FRONTEND_URL  = var.frontend_url
     EMAIL_ENABLED = "true"
     FLASK_ENV     = var.environment
+    SEED_PASSWORD = var.seed_password
   }
 }
 

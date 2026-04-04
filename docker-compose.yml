@@ -34,6 +34,7 @@ services:
       ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
       ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
+      SEED_PASSWORD: ${SEED_PASSWORD:-Password123}
     depends_on:
       - db
     ports:
@@ -42,6 +43,7 @@ services:
       - ./backend/migrations:/app/migrations
     command: >
       sh -c "python -m flask --app run.py db upgrade &&
+           python -m flask --app run.py seed-db &&
            python -m gunicorn --bind 0.0.0.0:8080 --workers 4 run:app"
 
   frontend:
@@ -122,6 +124,7 @@ services:
       ACS_EMAIL_CONNECTION_STRING: ${ACS_EMAIL_CONNECTION_STRING}
       ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      SEED_PASSWORD: ${SEED_PASSWORD:-Password123}
     depends_on:
       db-test:
         condition: service_healthy
@@ -131,6 +134,7 @@ services:
       - "8081:8080"
     command: >
       sh -c "python -m flask --app run.py db upgrade &&
+           python -m flask --app run.py seed-db &&
            python -m gunicorn --bind 0.0.0.0:8080 --workers 2 run:app"
 
   frontend-test:
