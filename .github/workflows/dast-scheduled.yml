@@ -1,0 +1,74 @@
+name: DAST - Scheduled Weekly Scan
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: staging-environment
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  security-events: write
+
+jobs:
+  deploy_core:
+    name: Deploy staging core layer
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: apply
+    secrets: inherit
+
+  build_and_push:
+    name: Build & push staging images
+    needs: [deploy_core]
+    uses: ./.github/workflows/push-to-acr.yml
+    with:
+      environment: staging
+    secrets: inherit
+
+  deploy_app:
+    name: Deploy staging app layer
+    needs: [build_and_push]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: apply
+    secrets: inherit
+
+  dast:
+    name: DAST - OWASP ZAP
+    needs: [deploy_app]
+    uses: ./.github/workflows/dast-zap.yml
+    with:
+      api_target: "https://api-staging.nausicaaglobalgreeninitiative.ie"
+      ui_target: "https://ui-staging.nausicaaglobalgreeninitiative.ie"
+
+  teardown_app:
+    name: Teardown staging app layer
+    needs: [dast]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: destroy
+    secrets: inherit
+
+  teardown_core:
+    name: Teardown staging core layer
+    needs: [teardown_app]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: destroy
+    secrets: inherit

@@ -1,8 +1,16 @@
 name: DAST - OWASP ZAP
 
 on:
-  schedule:
-    - cron: "0 6 * * 1"
+  workflow_call:
+    inputs:
+      api_target:
+        description: "Backend API URL to scan"
+        required: true
+        type: string
+      ui_target:
+        description: "Frontend UI URL to scan"
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       api_target:
@@ -22,41 +30,11 @@ env:
 
 permissions:
   contents: read
-  id-token: write
-  actions: read
   security-events: write
 
 jobs:
-  deploy_core:
-    name: Deploy staging core layer
-    uses: ./.github/workflows/terraform-deploy.yml
-    with:
-      layer: core
-      environment: staging
-      action: apply
-    secrets: inherit
-
-  build_and_push:
-    name: Build & push staging images
-    needs: [deploy_core]
-    uses: ./.github/workflows/push-to-acr.yml
-    with:
-      environment: staging
-    secrets: inherit
-
-  deploy_app:
-    name: Deploy staging app layer
-    needs: [build_and_push]
-    uses: ./.github/workflows/terraform-deploy.yml
-    with:
-      layer: app
-      environment: staging
-      action: apply
-    secrets: inherit
-
   zap_api_scan:
     name: ZAP API Scan
-    needs: [deploy_app]
     runs-on: ubuntu-latest
 
     steps:
@@ -98,7 +76,6 @@ jobs:
 
   zap_ui_scan:
     name: ZAP UI Scan
-    needs: [deploy_app]
     runs-on: ubuntu-latest
 
     steps:
@@ -125,34 +102,4 @@ jobs:
           target: "${{ env.UI_TARGET }}"
           fail_action: true
           allow_issue_writing: false
-          artifact_name: ""
-
-      - name: Upload ZAP UI report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-ui-report
-          path: report_html.html
-          retention-days: 30
-
-  teardown_app:
-    name: Teardown staging app layer
-    needs: [zap_api_scan, zap_ui_scan]
-    if: always()
-    uses: ./.github/workflows/terraform-deploy.yml
-    with:
-      layer: app
-      environment: staging
-      action: destroy
-    secrets: inherit
-
-  teardown_core:
-    name: Teardown staging core layer
-    needs: [teardown_app]
-    if: always()
-    uses: ./.github/workflows/terraform-deploy.yml
-    with:
-      layer: core
-      environment: staging
-      action: destroy
-    secrets: inherit
+          artifact_name: zap-ui-report

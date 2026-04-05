@@ -38,9 +38,11 @@ def create_app(config_name: str) -> Flask:
     @app.after_request
     def set_security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-site"
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return response
+
+    app.url_map.strict_slashes = False
 
     @app.errorhandler(404)
     def not_found(e):
