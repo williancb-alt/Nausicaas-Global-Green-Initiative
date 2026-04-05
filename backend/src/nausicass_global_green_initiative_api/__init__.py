@@ -41,7 +41,9 @@ def create_app(config_name: str) -> Flask:
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
         response.headers["Server"] = ""
         return response
 

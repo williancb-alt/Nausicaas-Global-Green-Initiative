@@ -60,6 +60,7 @@ jobs:
         with:
           target: "${{ env.API_TARGET }}/api/v1/swagger.json"
           format: openapi
+          rules_file_name: ".github/zap/api-rules.tsv"
           fail_action: true
           cmd_options: "-a -j -r report_html.html"
           allow_issue_writing: false
@@ -100,6 +101,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: "${{ env.UI_TARGET }}"
+          rules_file_name: ".github/zap/ui-rules.tsv"
           fail_action: true
           allow_issue_writing: false
           artifact_name: zap-ui-report
