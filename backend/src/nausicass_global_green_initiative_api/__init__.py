@@ -20,6 +20,7 @@ bcrypt = Bcrypt()
 def create_app(config_name: str) -> Flask:
     app = Flask("nausicass_global_green_initiative_api")
     app.config.from_object(get_config(config_name))
+    app.url_map.strict_slashes = False
 
     # Deliberate import placement to avoid a circular import
     from nausicass_global_green_initiative_api.api import api_bp
@@ -38,11 +39,11 @@ def create_app(config_name: str) -> Flask:
     @app.after_request
     def set_security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Cross-Origin-Resource-Policy"] = "same-site"
+        response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Server"] = ""
         return response
-
-    app.url_map.strict_slashes = False
 
     @app.errorhandler(404)
     def not_found(e):
