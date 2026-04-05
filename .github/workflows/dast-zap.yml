@@ -1,7 +1,6 @@
 name: DAST - OWASP ZAP
 
 on:
-  push:
   workflow_call:
     inputs:
       api_target:
