@@ -1,7 +1,7 @@
 # Nausicaas Global Green Initiative API
 # Version: 1.0.0
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -39,6 +39,15 @@ def create_app(config_name: str) -> Flask:
     def set_security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return response
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return jsonify(status="fail", message="Resource not found"), 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        return jsonify(status="fail", message="Method not allowed"), 405
 
     return app

@@ -40,7 +40,7 @@ def _serialize_audit_log(log: AuditLog) -> dict:
 @audit_ns.route("", endpoint="audit_list")
 @audit_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
 @audit_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class AuditLogList(Resource):
     """Handles HTTP requests to URL: /api/v1/audit"""
 
@@ -69,7 +69,7 @@ class AuditLogList(Resource):
 @audit_ns.route("/failed", endpoint="audit_failed")
 @audit_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
 @audit_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class AuditLogFailed(Resource):
     """Handles HTTP requests to URL: /api/v1/audit/failed"""
 
@@ -100,7 +100,7 @@ class AuditLogFailed(Resource):
 @audit_ns.param("entity_id", "Entity ID")
 @audit_ns.response(int(HTTPStatus.FORBIDDEN), "Administrator token required.")
 @audit_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@audit_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class AuditLogEntity(Resource):
     """Handles HTTP requests to URL: /api/v1/audit/entity/{type}/{id}"""
 

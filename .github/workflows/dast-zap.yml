@@ -83,7 +83,7 @@ jobs:
           target: "${{ env.API_TARGET }}/api/v1/swagger.json"
           format: openapi
           fail_action: true
-          cmd_options: "-a -j -w report_html.html"
+          cmd_options: "-a -j -r report_html.html"
           allow_issue_writing: false
 
       - name: Upload ZAP API report
@@ -125,6 +125,7 @@ jobs:
           target: "${{ env.UI_TARGET }}"
           fail_action: true
           allow_issue_writing: false
+          artifact_name: ""
 
       - name: Upload ZAP UI report
         if: always()
