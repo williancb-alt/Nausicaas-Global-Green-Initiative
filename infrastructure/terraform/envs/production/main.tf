@@ -92,6 +92,7 @@ module "app_frontend" {
 
   frontend_hostname  = var.frontend_hostname
   frontend_image_ref = var.frontend_image_ref
+  backend_hostname   = var.backend_hostname
 
   namespace       = var.environment
   tls_secret_name = "nausicaa-wildcard-tls"

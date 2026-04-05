@@ -39,6 +39,11 @@ resource "kubernetes_deployment" "frontend" {
             name  = "SERVER_NAME"
             value = var.frontend_hostname
           }
+
+          env {
+            name  = "PUBLIC_API_URL"
+            value = "https://${var.backend_hostname}"
+          }
         }
       }
     }

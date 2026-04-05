@@ -1,34 +1,62 @@
 name: DAST - OWASP ZAP
 
 on:
+  schedule:
+    - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
       api_target:
         description: "Backend API URL to scan"
-        required: true
+        required: false
+        default: "https://api-staging.nausicaaglobalgreeninitiative.ie"
         type: string
       ui_target:
         description: "Frontend UI URL to scan"
-        required: true
+        required: false
+        default: "https://ui-staging.nausicaaglobalgreeninitiative.ie"
         type: string
-  workflow_call:
-    inputs:
-      api_target:
-        description: "Backend API URL to scan"
-        required: true
-        type: string
-      ui_target:
-        description: "Frontend UI URL to scan"
-        required: true
-        type: string
+
+env:
+  API_TARGET: ${{ inputs.api_target || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
+  UI_TARGET: ${{ inputs.ui_target || 'https://ui-staging.nausicaaglobalgreeninitiative.ie' }}
 
 permissions:
   contents: read
+  id-token: write
+  actions: read
   security-events: write
 
 jobs:
+  deploy_core:
+    name: Deploy staging core layer
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: apply
+    secrets: inherit
+
+  build_and_push:
+    name: Build & push staging images
+    needs: [deploy_core]
+    uses: ./.github/workflows/push-to-acr.yml
+    with:
+      environment: staging
+    secrets: inherit
+
+  deploy_app:
+    name: Deploy staging app layer
+    needs: [build_and_push]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: apply
+    secrets: inherit
+
   zap_api_scan:
     name: ZAP API Scan
+    needs: [deploy_app]
     runs-on: ubuntu-latest
 
     steps:
@@ -37,9 +65,9 @@ jobs:
 
       - name: Wait for API
         run: |
-          echo "Waiting for API at ${{ inputs.api_target }}"
+          echo "Waiting for API at ${{ env.API_TARGET }}"
           for i in $(seq 1 30); do
-            if curl -sf "${{ inputs.api_target }}/health" > /dev/null 2>&1; then
+            if curl -sf "${{ env.API_TARGET }}/health" > /dev/null 2>&1; then
               echo "API ready"
               exit 0
             fi
@@ -52,7 +80,7 @@ jobs:
       - name: Run ZAP API scan
         uses: zaproxy/action-api-scan@v0.10.0
         with:
-          target: "${{ inputs.api_target }}/api/v1/swagger.json"
+          target: "${{ env.API_TARGET }}/api/v1/swagger.json"
           format: openapi
           fail_action: true
           cmd_options: "-a -j -w report_html.html"
@@ -70,6 +98,7 @@ jobs:
 
   zap_ui_scan:
     name: ZAP UI Scan
+    needs: [deploy_app]
     runs-on: ubuntu-latest
 
     steps:
@@ -78,9 +107,9 @@ jobs:
 
       - name: Wait for UI
         run: |
-          echo "Waiting for UI at ${{ inputs.ui_target }}..."
+          echo "Waiting for UI at ${{ env.UI_TARGET }}..."
           for i in $(seq 1 30); do
-            if curl -sf "${{ inputs.ui_target }}" > /dev/null 2>&1; then
+            if curl -sf "${{ env.UI_TARGET }}" > /dev/null 2>&1; then
               echo "UI ready"
               exit 0
             fi
@@ -93,7 +122,7 @@ jobs:
       - name: Run ZAP baseline scan
         uses: zaproxy/action-baseline@v0.15.0
         with:
-          target: "${{ inputs.ui_target }}"
+          target: "${{ env.UI_TARGET }}"
           fail_action: true
           allow_issue_writing: false
 
@@ -104,3 +133,25 @@ jobs:
           name: zap-ui-report
           path: report_html.html
           retention-days: 30
+
+  teardown_app:
+    name: Teardown staging app layer
+    needs: [zap_api_scan, zap_ui_scan]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: destroy
+    secrets: inherit
+
+  teardown_core:
+    name: Teardown staging core layer
+    needs: [teardown_app]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: destroy
+    secrets: inherit
