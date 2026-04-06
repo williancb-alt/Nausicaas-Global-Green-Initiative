@@ -1,10 +1,12 @@
 import logging
 import sys
 
+from flask import Flask
+
 from .json_logs_format import JSONLogsFormat
 
 
-def configure_logging(app, env):
+def configure_logging(app: Flask, env: str) -> None:
     """
     This function configures logging based on env.
 
@@ -41,7 +43,10 @@ def configure_logging(app, env):
 
     # Also need to configure the root logger
     # for libraries using logging.getLogger(__name__)
+    # Clear existing handlers first to avoid duplicates
+    # across multiple calls (e.g. in tests)
     root_logger = logging.getLogger()
+    root_logger.handlers.clear()
     root_logger.addHandler(handler)
     root_logger.setLevel(log_level)
 

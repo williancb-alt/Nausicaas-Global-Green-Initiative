@@ -76,8 +76,7 @@ def test_register_triggers_welcome_email_once_on_success(client, db, monkeypatch
     response = register_user(client, email=EMAIL, password=PASSWORD)
     assert response.status_code == HTTPStatus.CREATED
 
-    email_sent.wait(timeout=5)
-    assert sent["args"] is not None
+    assert email_sent.wait(timeout=2), "Welcome email was not sent within timeout"
     _, kwargs = sent["args"]
     assert kwargs["to"] == [EMAIL]
     assert "Welcome to Nausicaas Global Green Initiative" in kwargs["subject"]

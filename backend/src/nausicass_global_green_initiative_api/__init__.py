@@ -19,7 +19,7 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 
 
-def _setup_observability(app, config_name):
+def _setup_observability(app: Flask, config_name: str) -> None:
     """
     This function sets up
     logging and request tracking middleware.

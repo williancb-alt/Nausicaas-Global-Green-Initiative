@@ -1,9 +1,9 @@
 import time
 
-from flask import g, request
+from flask import Flask, Response, g, request
 
 
-def register_request_logging(app):
+def register_request_logging(app: Flask) -> None:
     """
     This function logs every request with
     method, path, status, and duration.
@@ -11,12 +11,12 @@ def register_request_logging(app):
     """
 
     @app.before_request
-    def start_timer():
+    def start_timer() -> None:
         # Track start time of request
         g.request_start = time.monotonic()
 
     @app.after_request
-    def log_request(response):
+    def log_request(response: Response) -> Response:
         # Calculate duration in milliseconds
         duration_ms = round((time.monotonic() - g.request_start) * 1000, 1)
 

@@ -42,26 +42,26 @@ class ApplicationUpdateDict(TypedDict, total=False):
     field_values: dict | None
 
 
-@token_required
-def create_application(application_dict: ApplicationCreateDict) -> Response:
-    """Create a new application for a grant."""
-    grant_name = application_dict["grant_name"]
-    field_values = application_dict.get("field_values")
-    award_name = application_dict.get("award_name")
-    award_justification = application_dict.get("award_justification")
-
-    # Find the grant
+def _validate_create_application(grant_name: str, user_public_id: str):
+    """
+    Validate grant and user eligibility, abort on failure.
+    """
     grant = Grant.find_by_name(grant_name)
     if not grant:
         logger.warning(
-            "Application failed: grant not found", extra={"grant_name": grant_name}
+            "Application failed: grant not found",
+            extra={"grant_name": grant_name},
         )
-        abort(HTTPStatus.NOT_FOUND, f"Grant '{grant_name}' not found.", status="fail")
+        abort(
+            HTTPStatus.NOT_FOUND,
+            f"Grant '{grant_name}' not found.",
+            status="fail",
+        )
 
-    # Check if grant deadline has passed
     if grant.deadline_passed:
         logger.warning(
-            "Application failed: deadline passed", extra={"grant_name": grant_name}
+            "Application failed: deadline passed",
+            extra={"grant_name": grant_name},
         )
         abort(
             HTTPStatus.BAD_REQUEST,
@@ -69,18 +69,18 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
             status="fail",
         )
 
-    # Get current user
-    public_id = create_application.public_id  # type: ignore[attr-defined]
-    user = User.find_by_public_id(public_id)
+    user = User.find_by_public_id(user_public_id)
     if not user:
         logger.warning("Application failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
-    # Check if user is admin
     if user.admin:
         logger.warning(
             "Application failed: admin attempted to apply",
-            extra={"user_id": str(user.public_id), "grant_name": grant_name},
+            extra={
+                "user_id": str(user.public_id),
+                "grant_name": grant_name,
+            },
         )
         abort(
             HTTPStatus.FORBIDDEN,
@@ -88,12 +88,14 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
             status="fail",
         )
 
-    # Check if user already applied to this grant
     existing = Application.find_by_user_and_grant(user.id, grant.id)
     if existing:
         logger.warning(
             "Application failed: duplicate",
-            extra={"user_id": str(user.public_id), "grant_name": grant_name},
+            extra={
+                "user_id": str(user.public_id),
+                "grant_name": grant_name,
+            },
         )
         abort(
             HTTPStatus.CONFLICT,
@@ -101,19 +103,31 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
             status="fail",
         )
 
-    award = _get_optional_award(award_name)
-    _validate_award_justification(award_name, award_justification)
+    return grant, user
 
-    # Create application
+
+@token_required
+def create_application(application_dict: ApplicationCreateDict) -> Response:
+    """Create a new application for a grant."""
+    grant_name = application_dict["grant_name"]
+    public_id = create_application.public_id  # type: ignore[attr-defined]
+
+    grant, user = _validate_create_application(grant_name, public_id)
+
+    award = _get_optional_award(application_dict.get("award_name"))
+    _validate_award_justification(
+        application_dict.get("award_name"),
+        application_dict.get("award_justification"),
+    )
+
     application = Application(
         user_id=user.id,
         grant_id=grant.id,
         award=award,
-        award_justification=award_justification,
-        field_values=field_values,
+        award_justification=application_dict.get("award_justification"),
+        field_values=application_dict.get("field_values"),
         status="pending_review",
     )
-
     db.session.add(application)
     db.session.commit()
     logger.info(

@@ -178,6 +178,21 @@ class TestRequestIdMiddleware:
         resp2 = client.get("/health")
         assert resp1.headers["X-Request-ID"] != resp2.headers["X-Request-ID"]
 
+    def test_rejects_malformed_header(self, prod_app):
+        client = prod_app.test_client()
+        resp = client.get(
+            "/health", headers={"X-Request-ID": "<script>alert(1)</script>"}
+        )
+        request_id = resp.headers.get("X-Request-ID")
+        assert request_id != "<script>alert(1)</script>"
+        assert len(request_id) == 36
+
+    def test_rejects_oversized_header(self, prod_app):
+        client = prod_app.test_client()
+        resp = client.get("/health", headers={"X-Request-ID": "a" * 200})
+        request_id = resp.headers.get("X-Request-ID")
+        assert len(request_id) == 36
+
 
 class TestRequestLoggingMiddleware:
     def test_health_endpoint_not_logged(self, prod_app):

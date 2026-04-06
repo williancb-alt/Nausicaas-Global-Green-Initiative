@@ -14,7 +14,7 @@ class JSONLogsFormat(logging.Formatter):
     Azure Monitor Container Insights.
     """
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         # Base log entry with standard fields
         log_entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -48,7 +48,7 @@ class JSONLogsFormat(logging.Formatter):
         return json.dumps(log_entry, default=str)
 
 
-def _get_request_id():
+def _get_request_id() -> str | None:
     """
     Try to retrieve request ID from Flask
     """
