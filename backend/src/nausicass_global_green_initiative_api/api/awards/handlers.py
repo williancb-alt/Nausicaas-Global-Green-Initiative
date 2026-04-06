@@ -17,6 +17,7 @@ from nausicass_global_green_initiative_api.api.awards.dto import (
 )
 from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.audit_service import AuditService
 
 
 class AwardDictionary(TypedDict, total=False):
@@ -42,6 +43,15 @@ def create_award(award_dict: AwardDictionary) -> Response:
     award.owner_id = owner.id
     db.session.add(award)
     db.session.commit()
+
+    AuditService.log_award_created(
+        award_id=award.id,
+        user_id=owner.id,
+        user_email=owner.email,
+        is_admin=owner.admin,
+        award_name=name,
+    )
+
     response = jsonify(status="success", message=f"New award added: {name}.")
     response.status_code = HTTPStatus.CREATED
     response.headers["Location"] = url_for("api.award", name=name, _external=True)
@@ -72,9 +82,22 @@ def update_award(
 ) -> Response | tuple[dict[str, str], HTTPStatus]:
     award = Award.find_by_name(name)
     if award:
+        changes = {
+            k: {"from": getattr(award, k, None), "to": v} for k, v in award_dict.items()
+        }
         for k, v in award_dict.items():
             setattr(award, k, v)
         db.session.commit()
+
+        owner = User.find_by_public_id(update_award.public_id)  # type: ignore[attr-defined]
+        AuditService.log_award_edited(
+            award_id=award.id,
+            user_id=owner.id,
+            user_email=owner.email,
+            is_admin=owner.admin,
+            changes=changes,
+        )
+
         message = f"'{name}' was successfully updated"
         response_dict = dict(status="success", message=message)
         return response_dict, HTTPStatus.OK
@@ -91,6 +114,16 @@ def delete_award(name: str) -> tuple[str, HTTPStatus]:
     award = Award.query.filter_by(name=name).first_or_404(
         description=f"{name} not found in database."
     )
+    owner = User.find_by_public_id(delete_award.public_id)  # type: ignore[attr-defined]
+
+    AuditService.log_award_deleted(
+        award_id=award.id,
+        user_id=owner.id,
+        user_email=owner.email,
+        is_admin=owner.admin,
+        award_name=name,
+    )
+
     db.session.delete(award)
     db.session.commit()
     return "", HTTPStatus.NO_CONTENT

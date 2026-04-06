@@ -1,5 +1,6 @@
 """AuditLog model for tracking all system changes and access attempts."""
 
+from datetime import timedelta
 from enum import Enum
 from typing import Optional
 
@@ -26,6 +27,10 @@ class AuditAction(str, Enum):
     GRANT_CREATED = "grant_created"
     GRANT_EDITED = "grant_edited"
     GRANT_DELETED = "grant_deleted"
+
+    # Auth/security-related actions
+    LOGIN_FAILED = "login_failed"
+    UNAUTHORIZED_ACCESS = "unauthorized_access"
 
 
 class AuditLog(db.Model):
@@ -117,3 +122,27 @@ class AuditLog(db.Model):
             .limit(limit)
             .all()
         )
+
+    @classmethod
+    def get_filtered_logs(
+        cls,
+        limit: int = 100,
+        action: Optional[str] = None,
+        success: Optional[bool] = None,
+        days: Optional[int] = None,
+        user_email: Optional[str] = None,
+    ) -> list["AuditLog"]:
+        """Retrieve audit logs with optional filters."""
+        query = cls.query
+
+        if action:
+            query = query.filter_by(action=action)
+        if success is not None:
+            query = query.filter_by(success=success)
+        if days is not None:
+            cutoff = utc_now() - timedelta(days=days)
+            query = query.filter(cls.timestamp >= cutoff)
+        if user_email:
+            query = query.filter_by(user_email=user_email)
+
+        return query.order_by(cls.timestamp.desc()).limit(limit).all()

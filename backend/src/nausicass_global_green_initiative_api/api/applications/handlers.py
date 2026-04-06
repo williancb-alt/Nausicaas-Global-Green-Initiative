@@ -101,6 +101,13 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     db.session.add(application)
     db.session.commit()
 
+    AuditService.log_application_created(
+        application_id=application.id,
+        user_id=user.id,
+        user_email=user.email,
+        details={"grant_name": grant_name},
+    )
+
     response = jsonify(
         status="success",
         message=f"Application submitted for '{grant_name}'.",
@@ -221,6 +228,13 @@ def update_application(
         changes=changes if changes else {"note": "No field changes detected"},
     )
 
+    if new_status == "submitted":
+        AuditService.log_application_submitted(
+            application_id=application_id,
+            user_id=user.id,
+            user_email=user.email,
+        )
+
     if status_changed:
         _send_status_update_email(application)
 
@@ -279,6 +293,12 @@ def delete_application(application_id: int) -> tuple[str, HTTPStatus]:
             attempted_changes={"action": "delete"},
         )
         raise ApiForbidden()
+
+    AuditService.log_application_deleted(
+        application_id=application_id,
+        admin_user_id=user.id,
+        admin_email=user.email,
+    )
 
     db.session.delete(application)
     db.session.commit()

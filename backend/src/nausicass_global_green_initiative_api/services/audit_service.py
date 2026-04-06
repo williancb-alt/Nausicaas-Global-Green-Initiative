@@ -138,6 +138,85 @@ class AuditService:
         )
 
     @classmethod
+    def log_application_deleted(
+        cls,
+        application_id: int,
+        admin_user_id: int,
+        admin_email: str,
+    ) -> AuditLog:
+        """Log when an admin deletes an application."""
+        ip_address, user_agent = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.APPLICATION_DELETED.value,
+            entity_type="application",
+            entity_id=application_id,
+            user_id=admin_user_id,
+            user_email=admin_email,
+            is_admin=True,
+            details=cls._serialize_details({"event": "Application deleted by admin"}),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=True,
+        )
+
+    @classmethod
+    def log_login_failed(
+        cls,
+        email: str,
+        reason: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> AuditLog:
+        """Log a failed login attempt."""
+        req_ip, req_ua = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.LOGIN_FAILED.value,
+            entity_type="user",
+            entity_id=0,
+            user_id=None,
+            user_email=email,
+            is_admin=False,
+            details=cls._serialize_details(
+                {"event": "Login attempt failed", "reason": reason}
+            ),
+            ip_address=ip_address or req_ip,
+            user_agent=user_agent or req_ua,
+            success=False,
+            failure_reason=reason,
+        )
+
+    @classmethod
+    def log_unauthorized_access(
+        cls,
+        user_id: Optional[int],
+        user_email: Optional[str],
+        attempted_endpoint: str,
+    ) -> AuditLog:
+        """Log an unauthorized access attempt to an admin endpoint."""
+        ip_address, user_agent = cls._get_request_context()
+
+        return AuditLog.log(
+            action=AuditAction.UNAUTHORIZED_ACCESS.value,
+            entity_type="system",
+            entity_id=0,
+            user_id=user_id,
+            user_email=user_email,
+            is_admin=False,
+            details=cls._serialize_details(
+                {
+                    "event": "Unauthorized access attempt",
+                    "attempted_endpoint": attempted_endpoint,
+                }
+            ),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=False,
+            failure_reason="Admin privileges required",
+        )
+
+    @classmethod
     def log_grant_created(
         cls,
         grant_id: int,
