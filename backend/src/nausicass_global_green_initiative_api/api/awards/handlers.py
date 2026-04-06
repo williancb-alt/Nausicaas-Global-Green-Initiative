@@ -89,7 +89,9 @@ def update_award(
             setattr(award, k, v)
         db.session.commit()
 
-        owner = User.find_by_public_id(update_award.public_id)  # type: ignore[attr-defined]
+        owner = User.find_by_public_id(  # type: ignore[attr-defined]
+            update_award.public_id
+        )
         AuditService.log_award_edited(
             award_id=award.id,
             user_id=owner.id,
