@@ -242,7 +242,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "backend" {
       name        = kubernetes_deployment.backend.metadata[0].name
     }
 
-    min_replicas = 1
+    min_replicas = 3
     max_replicas = 10
 
     metric {
