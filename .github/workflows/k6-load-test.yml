@@ -1,0 +1,97 @@
+name: K6 Performance Test
+
+on:
+  push:
+  workflow_call:
+    inputs:
+      api_target:
+        description: "Backend API URL to test"
+        required: true
+        type: string
+      test_script:
+        description: "K6 test script to run (smoke, load, stress)"
+        required: false
+        default: "smoke"
+        type: string
+    secrets:
+      SEED_PASSWORD:
+        required: true
+  workflow_dispatch:
+    inputs:
+      api_target:
+        description: "Backend API URL to test"
+        required: false
+        default: "https://api-staging.nausicaaglobalgreeninitiative.ie"
+        type: string
+      test_script:
+        description: "K6 test script to run"
+        required: false
+        default: "smoke"
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+
+env:
+  API_TARGET: ${{ inputs.api_target || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
+  TEST_SCRIPT: ${{ inputs.test_script || 'smoke' }}
+
+permissions:
+  contents: read
+
+jobs:
+  k6_performance_test:
+    name: "K6 ${{ inputs.test_script || 'smoke' }} test"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API at ${{ env.API_TARGET }}"
+          for i in $(seq 1 30); do
+            if curl -sf "${{ env.API_TARGET }}/health" > /dev/null 2>&1; then
+              echo "API ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 10s"
+            sleep 10
+          done
+          echo "API did not become ready in allocated time"
+          exit 1
+
+      - name: Run k6 ${{ env.TEST_SCRIPT }} test
+        run: |
+          k6 run .github/k6/${{ env.TEST_SCRIPT }}.js \
+            --out json=k6-results.json \
+            --summary-export=k6-summary.json
+        env:
+          BASE_URL: ${{ env.API_TARGET }}
+          TEST_USER_EMAIL: L00196611@atu.ie
+          TEST_USER_PASSWORD: ${{ secrets.SEED_PASSWORD }}
+
+      - name: Upload k6 results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-${{ env.TEST_SCRIPT }}-results
+          path: |
+            k6-results.json
+            k6-summary.json
+          retention-days: 30
+
+      - name: Print k6 summary from runs
+        if: always()
+        run: |
+          if [ -f k6-summary.json ]; then
+            echo "## K6 Performance Test Summary" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat k6-summary.json | python3 -m json.tool >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
