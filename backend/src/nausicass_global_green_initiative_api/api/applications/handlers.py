@@ -221,19 +221,7 @@ def update_application(
 
     db.session.commit()
 
-    AuditService.log_admin_edit(
-        application_id=application_id,
-        admin_user_id=user.id,
-        admin_email=user.email,
-        changes=changes if changes else {"note": "No field changes detected"},
-    )
-
-    if new_status == "submitted":
-        AuditService.log_application_submitted(
-            application_id=application_id,
-            user_id=user.id,
-            user_email=user.email,
-        )
+    _log_admin_update_audit(user, application_id, new_status, changes)
 
     if status_changed:
         _send_status_update_email(application)
@@ -244,6 +232,27 @@ def update_application(
     )
     response.status_code = HTTPStatus.OK
     return response
+
+
+def _log_admin_update_audit(
+    user: User,
+    application_id: int,
+    new_status: str | None,
+    changes: dict,
+) -> None:
+    """Log an admin edit and, when applicable, the submission lock event."""
+    AuditService.log_admin_edit(
+        application_id=application_id,
+        admin_user_id=user.id,
+        admin_email=user.email,
+        changes=changes if changes else {"note": "No field changes detected"},
+    )
+    if new_status == "submitted":
+        AuditService.log_application_submitted(
+            application_id=application_id,
+            user_id=user.id,
+            user_email=user.email,
+        )
 
 
 def _send_status_update_email(application: Application) -> None:
