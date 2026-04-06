@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 from typing import TypedDict
 
@@ -18,6 +19,8 @@ from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.email_service import EmailService
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationCreateDict(TypedDict, total=False):
@@ -50,10 +53,16 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     # Find the grant
     grant = Grant.find_by_name(grant_name)
     if not grant:
+        logger.warning(
+            "Application failed: grant not found", extra={"grant_name": grant_name}
+        )
         abort(HTTPStatus.NOT_FOUND, f"Grant '{grant_name}' not found.", status="fail")
 
     # Check if grant deadline has passed
     if grant.deadline_passed:
+        logger.warning(
+            "Application failed: deadline passed", extra={"grant_name": grant_name}
+        )
         abort(
             HTTPStatus.BAD_REQUEST,
             f"Cannot apply to '{grant_name}' - deadline has passed.",
@@ -64,10 +73,15 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     public_id = create_application.public_id  # type: ignore[attr-defined]
     user = User.find_by_public_id(public_id)
     if not user:
+        logger.warning("Application failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
     # Check if user is admin
     if user.admin:
+        logger.warning(
+            "Application failed: admin attempted to apply",
+            extra={"user_id": str(user.public_id), "grant_name": grant_name},
+        )
         abort(
             HTTPStatus.FORBIDDEN,
             "Administrators cannot apply for grants.",
@@ -77,6 +91,10 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     # Check if user already applied to this grant
     existing = Application.find_by_user_and_grant(user.id, grant.id)
     if existing:
+        logger.warning(
+            "Application failed: duplicate",
+            extra={"user_id": str(user.public_id), "grant_name": grant_name},
+        )
         abort(
             HTTPStatus.CONFLICT,
             f"You have already applied to '{grant_name}'.",
@@ -98,6 +116,14 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
 
     db.session.add(application)
     db.session.commit()
+    logger.info(
+        "Application created",
+        extra={
+            "application_id": application.id,
+            "grant_name": grant_name,
+            "user_id": str(user.public_id),
+        },
+    )
 
     response = jsonify(
         status="success",
@@ -117,6 +143,7 @@ def retrieve_my_applications(page: int, per_page: int) -> Response:
     public_id = retrieve_my_applications.public_id  # type: ignore[attr-defined]
     user = User.find_by_public_id(public_id)
     if not user:
+        logger.warning("Retrieve applications failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
     pagination = Application.query.filter_by(user_id=user.id).paginate(
@@ -161,9 +188,14 @@ def retrieve_application(application_id: int) -> Application:
     public_id = retrieve_application.public_id  # type: ignore[attr-defined]
     user = User.find_by_public_id(public_id)
     if not user:
+        logger.warning("Retrieve application failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
 
     if not user.admin and application.user_id != user.id:
+        logger.warning(
+            "Retrieve application failed: forbidden",
+            extra={"user_id": str(user.public_id), "application_id": application_id},
+        )
         abort(
             HTTPStatus.FORBIDDEN,
             "You do not have permission to view this application.",
@@ -192,6 +224,10 @@ def update_application(
     _apply_application_updates(application, application_dict)
 
     db.session.commit()
+    logger.info(
+        "Application updated",
+        extra={"application_id": application_id, "status_changed": status_changed},
+    )
 
     if status_changed:
         _send_status_update_email(application)
@@ -240,6 +276,7 @@ def delete_application(application_id: int) -> tuple[str, HTTPStatus]:
 
     db.session.delete(application)
     db.session.commit()
+    logger.info("Application deleted", extra={"application_id": application_id})
     return "", HTTPStatus.NO_CONTENT
 
 
@@ -287,6 +324,7 @@ def _get_optional_award(award_name: str | None) -> Award | None:
 
     award = Award.find_by_name(award_name)
     if not award:
+        logger.warning("Award not found", extra={"award_name": award_name})
         abort(
             HTTPStatus.NOT_FOUND,
             f"Award '{award_name}' not found.",
@@ -302,12 +340,17 @@ def _validate_award_justification(
         award_justification is not None and award_justification.strip() != ""
     )
     if award_name and not has_justification:
+        logger.warning(
+            "Validation failed: award justification missing",
+            extra={"award_name": award_name},
+        )
         abort(
             HTTPStatus.BAD_REQUEST,
             "Award justification is required when an award is selected.",
             status="fail",
         )
     if not award_name and has_justification:
+        logger.warning("Validation failed: justification without award")
         abort(
             HTTPStatus.BAD_REQUEST,
             "Award justification cannot be provided without selecting an award.",

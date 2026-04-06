@@ -62,16 +62,21 @@ def test_auth_register_invalid_email(client):
 
 
 def test_register_triggers_welcome_email_once_on_success(client, db, monkeypatch):
+    import threading
+
     sent = {"args": None}
+    email_sent = threading.Event()
 
     def fake_send_email(*args, **kwargs):
         sent["args"] = (args, kwargs)
+        email_sent.set()
 
     monkeypatch.setattr(EmailService, "send_email", fake_send_email)
 
     response = register_user(client, email=EMAIL, password=PASSWORD)
     assert response.status_code == HTTPStatus.CREATED
 
+    email_sent.wait(timeout=5)
     assert sent["args"] is not None
     _, kwargs = sent["args"]
     assert kwargs["to"] == [EMAIL]

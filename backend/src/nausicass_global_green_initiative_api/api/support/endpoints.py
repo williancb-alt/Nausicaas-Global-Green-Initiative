@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from flask_restx import Namespace, Resource
@@ -14,6 +15,8 @@ from nausicass_global_green_initiative_api.api.support.dto import (
 )
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.support_service import SupportService
+
+logger = logging.getLogger(__name__)
 
 support_ns = Namespace("support", description="Operations relating to support messages")
 support_ns.models[applicant_model.name] = applicant_model
@@ -40,6 +43,7 @@ class SupportList(Resource):
         public_id = SupportList.post.public_id
         user = User.find_by_public_id(public_id)
         if not user:
+            logger.warning("Support message failed: user not found")
             support_ns.abort(int(HTTPStatus.UNAUTHORIZED), "User not found")
 
         try:
@@ -51,6 +55,7 @@ class SupportList(Resource):
             )
             return {"message": "Support message sent successfully."}, HTTPStatus.CREATED
         except ValueError as e:
+            logger.warning("Support message creation failed", extra={"error": str(e)})
             if "not found" in str(e).lower():
                 support_ns.abort(int(HTTPStatus.NOT_FOUND), str(e))
             elif "unauthorized" in str(e).lower():
@@ -83,4 +88,7 @@ class SupportReply(Resource):
             SupportService.reply_to_support_message(message_id, reply_text)
             return {"message": "Reply sent successfully."}, HTTPStatus.OK
         except ValueError as e:
+            logger.warning(
+                "Support reply failed", extra={"message_id": message_id, "error": str(e)}
+            )
             support_ns.abort(int(HTTPStatus.NOT_FOUND), str(e))

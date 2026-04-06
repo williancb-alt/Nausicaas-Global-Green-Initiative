@@ -1,4 +1,5 @@
 import json
+import logging
 from http import HTTPStatus
 from typing import Any
 
@@ -22,11 +23,16 @@ from nausicass_global_green_initiative_api.models.grant import Grant
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
 
+logger = logging.getLogger(__name__)
+
 
 @admin_token_required
 def create_grant(grant_dict: GrantDictionary) -> Response:
     name = grant_dict["name"]
     if Grant.find_by_name(name):
+        logger.warning(
+            "Grant creation failed: duplicate name", extra={"grant_name": name}
+        )
         error = f"Grant name: {name} already exists, must be unique."
         abort(HTTPStatus.CONFLICT, error, status="fail")
 
@@ -37,6 +43,10 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
         try:
             parsed_custom_fields = json.loads(custom_fields_str)
         except json.JSONDecodeError:
+            logger.warning(
+                "Grant creation failed: invalid custom_fields JSON",
+                extra={"grant_name": name},
+            )
             abort(
                 HTTPStatus.BAD_REQUEST,
                 "custom_fields must be valid JSON",
@@ -50,6 +60,7 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
 
     owner = User.find_by_public_id(create_grant.public_id)  # type: ignore[attr-defined]
     if not owner:
+        logger.warning("Grant creation failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     grant.owner_id = owner.id
     db.session.add(grant)
@@ -64,6 +75,7 @@ def create_grant(grant_dict: GrantDictionary) -> Response:
         grant_name=name,
     )
 
+    logger.info("Grant created", extra={"grant_name": name})
     response = jsonify(status="success", message=f"New grant added: {name}.")
     response.status_code = HTTPStatus.CREATED
     location_url = url_for("api.grant", name=name, _external=True)
@@ -118,6 +130,7 @@ def update_grant(
                 update_grant.public_id  # type: ignore[attr-defined]
             )
             if not user:
+                logger.warning("Grant update failed: user not found")
                 abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
             AuditService.log_grant_edited(
                 grant_id=grant.id,
@@ -127,12 +140,16 @@ def update_grant(
                 changes=changes,
             )
 
+        logger.info("Grant updated", extra={"grant_name": name})
         message = f"'{name}' was successfully updated"
         response_dict = dict(status="success", message=message)
         return response_dict, HTTPStatus.OK
     try:
         valid_name = grant_name(name)
     except ValueError as e:
+        logger.warning(
+            "Grant name validation failed", extra={"grant_name": name, "error": str(e)}
+        )
         abort(HTTPStatus.BAD_REQUEST, str(e), status="fail")
     grant_dict["name"] = valid_name
     return create_grant(grant_dict)
@@ -147,6 +164,7 @@ def delete_grant(name: str) -> tuple[str, HTTPStatus]:
     # Log deletion before it happens
     user = User.find_by_public_id(delete_grant.public_id)  # type: ignore[attr-defined]
     if not user:
+        logger.warning("Grant deletion failed: user not found")
         abort(HTTPStatus.UNAUTHORIZED, "User not found.", status="fail")
     AuditService.log_grant_deleted(
         grant_id=grant.id,
@@ -158,6 +176,7 @@ def delete_grant(name: str) -> tuple[str, HTTPStatus]:
 
     db.session.delete(grant)
     db.session.commit()
+    logger.info("Grant deleted", extra={"grant_name": name})
     return "", HTTPStatus.NO_CONTENT
 
 

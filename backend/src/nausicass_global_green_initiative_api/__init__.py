@@ -8,6 +8,8 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 from .config import get_config
+from .middleware import register_request_id, register_request_logging
+from .services.logging import configure_logging
 
 cors = CORS(
     supports_credentials=True,
@@ -17,9 +19,26 @@ migrate = Migrate()
 bcrypt = Bcrypt()
 
 
+def _setup_observability(app, config_name):
+    """
+    This function sets up
+    logging and request tracking middleware.
+    """
+
+    # Configures logging first based on environment
+    configure_logging(app, config_name)
+
+    # Then middleware adding for request ID
+    # and request logging
+    register_request_id(app)
+    register_request_logging(app)
+
+
 def create_app(config_name: str) -> Flask:
     app = Flask("nausicass_global_green_initiative_api")
     app.config.from_object(get_config(config_name))
+
+    _setup_observability(app, config_name)
 
     # Deliberate import placement to avoid a circular import
     from nausicass_global_green_initiative_api.api import api_bp

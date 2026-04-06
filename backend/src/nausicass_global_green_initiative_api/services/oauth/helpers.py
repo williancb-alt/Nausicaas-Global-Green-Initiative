@@ -40,6 +40,10 @@ def get_or_create_oauth_user(
     """Find user by provider, or by email (link), or create new OAuth-only user."""
     account = UserOAuthAccount.find_by_provider(provider, provider_id)
     if account is not None:
+        logger.info(
+            "OAuth login: existing account",
+            extra={"provider": provider, "user_id": str(account.user.public_id)},
+        )
         return account.user
     existing = User.find_by_email(email) if email else None
     if existing is not None:
@@ -48,6 +52,10 @@ def get_or_create_oauth_user(
         )
         db.session.add(account)
         db.session.commit()
+        logger.info(
+            "OAuth login: linked to existing user",
+            extra={"provider": provider, "user_id": str(existing.public_id)},
+        )
         return existing
     user = User(email=email or fallback_email)
     db.session.add(user)
@@ -57,6 +65,10 @@ def get_or_create_oauth_user(
     )
     db.session.add(account)
     db.session.commit()
+    logger.info(
+        "OAuth login: new user created",
+        extra={"provider": provider, "user_id": str(user.public_id)},
+    )
     return user
 
 
