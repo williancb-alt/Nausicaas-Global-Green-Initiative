@@ -3,8 +3,8 @@ name: K6 Performance Test
 on:
   workflow_call:
     inputs:
-      api_target:
-        description: "Backend API URL to test"
+      environment:
+        description: "Deployment environment (staging or production)"
         required: true
         type: string
       test_script:
@@ -17,11 +17,14 @@ on:
         required: true
   workflow_dispatch:
     inputs:
-      api_target:
-        description: "Backend API URL to test"
-        required: false
-        default: "https://api-staging.nausicaaglobalgreeninitiative.ie"
-        type: string
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
       test_script:
         description: "K6 test script to run"
         required: false
@@ -33,7 +36,6 @@ on:
           - stress
 
 env:
-  API_TARGET: ${{ inputs.api_target || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
   TEST_SCRIPT: ${{ inputs.test_script || 'smoke' }}
 
 permissions:
@@ -41,9 +43,11 @@ permissions:
 
 jobs:
   k6_performance_test:
-    name: "K6 ${{ inputs.test_script || 'smoke' }} test"
+    name: "K6 ${{ inputs.test_script || 'smoke' }} test (${{ inputs.environment }})"
     runs-on: ubuntu-latest
-    environment: staging
+    environment: ${{ inputs.environment }}
+    env:
+      API_TARGET: ${{ inputs.environment == 'production' && 'https://api.nausicaaglobalgreeninitiative.ie' || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
 
     steps:
       - name: Checkout
@@ -73,7 +77,7 @@ jobs:
             --summary-export=k6-summary.json
         env:
           BASE_URL: ${{ env.API_TARGET }}
-          TEST_USER_EMAIL: L00196611@atu.ie
+          TEST_USER_EMAIL: ${{ vars.K6_TEST_USER_EMAIL || 'L00196611@atu.ie' }}
           TEST_USER_PASSWORD: ${{ secrets.TF_VAR_SEED_PASSWORD }}
 
       - name: Upload k6 results

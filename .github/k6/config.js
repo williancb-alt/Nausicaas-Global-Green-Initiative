@@ -1,6 +1,7 @@
 // Define constants for the base url and API structure
-const BASE_URL =
-  __ENV.BASE_URL || "https://api-staging.nausicaaglobalgreeninitiative.ie";
+const BASE_URL = (
+  __ENV.BASE_URL || "https://api-staging.nausicaaglobalgreeninitiative.ie"
+).replace(/\/+$/, "");
 const API = `${BASE_URL}/api/v1`;
 
 // This class is where all configuration for k6 is stored
