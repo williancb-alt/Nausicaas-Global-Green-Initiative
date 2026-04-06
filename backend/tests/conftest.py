@@ -17,6 +17,11 @@ def app() -> Flask:
 
 
 @pytest.fixture
+def client(app: Flask) -> FlaskClient:
+    return app.test_client()
+
+
+@pytest.fixture
 def db(app: Flask, client: FlaskClient, request: FixtureRequest) -> SQLAlchemy:
     database.drop_all()
     database.create_all()

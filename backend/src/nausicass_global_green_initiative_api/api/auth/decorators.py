@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 from typing import Any, Callable, TypedDict
 
@@ -8,6 +9,8 @@ from nausicass_global_green_initiative_api.api.exceptions import (
     ApiUnauthorized,
 )
 from nausicass_global_green_initiative_api.models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 class TokenPayload(TypedDict):
@@ -40,6 +43,10 @@ def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
         token_payload = _validate_access_token(admin_only=True)
         user = User.find_by_public_id(token_payload["public_id"])
         if not user or not user.admin:
+            logger.warning(
+                "Access denied: admin required",
+                extra={"user_id": token_payload["public_id"], "path": request.path},
+            )
             raise ApiForbidden()
         token_payload["admin"] = user.admin
         for name, val in token_payload.items():
@@ -52,9 +59,14 @@ def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
 def _validate_access_token(admin_only: bool) -> TokenPayload:
     token = request.cookies.get("access_token")
     if not token:
+        logger.warning("Access denied: no token provided", extra={"path": request.path})
         raise ApiUnauthorized(description="Unauthorized", admin_only=admin_only)
     result = User.decode_access_token(token)
     if result.failure:
+        logger.warning(
+            "Access denied: invalid token",
+            extra={"path": request.path, "error": result.error},
+        )
         raise ApiUnauthorized(
             description=result.error,
             admin_only=admin_only,

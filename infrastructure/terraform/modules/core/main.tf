@@ -85,6 +85,27 @@ resource "azurerm_postgresql_flexible_server_database" "main" {
   collation = "en_US.utf8"
 }
 
+resource "azurerm_log_analytics_workspace" "aks" {
+  name                = "${var.aks_name}-logs"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+resource "azurerm_log_analytics_solution" "container_insights" {
+  solution_name         = "ContainerInsights"
+  location              = azurerm_resource_group.main.location
+  resource_group_name   = azurerm_resource_group.main.name
+  workspace_resource_id = azurerm_log_analytics_workspace.aks.id
+  workspace_name        = azurerm_log_analytics_workspace.aks.name
+
+  plan {
+    publisher = "Microsoft"
+    product   = "OMSGallery/ContainerInsights"
+  }
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                      = var.aks_name
   location                  = azurerm_resource_group.main.location
@@ -107,6 +128,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   key_vault_secrets_provider {
     secret_rotation_enabled  = false
     secret_rotation_interval = "5m"
+  }
+
+  oms_agent {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
   }
 
   network_profile {

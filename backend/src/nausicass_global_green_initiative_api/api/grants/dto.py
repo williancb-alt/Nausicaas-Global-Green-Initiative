@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import date, datetime, time, timezone
 from http import HTTPStatus
@@ -20,6 +21,8 @@ from nausicass_global_green_initiative_api.util.datetime_util import (
     make_tzaware,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def apply_custom_fields_change(
     grant: Grant, grant_dict: GrantDictionary, changes: dict
@@ -31,6 +34,7 @@ def apply_custom_fields_change(
     try:
         parsed = json.loads(custom_fields_str)
     except json.JSONDecodeError:
+        logger.warning("Grant update failed: invalid custom_fields JSON")
         abort(
             HTTPStatus.BAD_REQUEST,
             "custom_fields must be valid JSON",

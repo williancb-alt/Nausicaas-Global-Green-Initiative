@@ -1,0 +1,107 @@
+name: DAST - OWASP ZAP
+
+on:
+  workflow_call:
+    inputs:
+      api_target:
+        description: "Backend API URL to scan"
+        required: true
+        type: string
+      ui_target:
+        description: "Frontend UI URL to scan"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      api_target:
+        description: "Backend API URL to scan"
+        required: false
+        default: "https://api-staging.nausicaaglobalgreeninitiative.ie"
+        type: string
+      ui_target:
+        description: "Frontend UI URL to scan"
+        required: false
+        default: "https://ui-staging.nausicaaglobalgreeninitiative.ie"
+        type: string
+
+env:
+  API_TARGET: ${{ inputs.api_target || 'https://api-staging.nausicaaglobalgreeninitiative.ie' }}
+  UI_TARGET: ${{ inputs.ui_target || 'https://ui-staging.nausicaaglobalgreeninitiative.ie' }}
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  zap_api_scan:
+    name: ZAP API Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Wait for API
+        run: |
+          echo "Waiting for API at ${{ env.API_TARGET }}"
+          for i in $(seq 1 30); do
+            if curl -sf "${{ env.API_TARGET }}/health" > /dev/null 2>&1; then
+              echo "API ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 10s"
+            sleep 10
+          done
+          echo "API did not become ready in allocated time"
+          exit 1
+
+      - name: Run ZAP API scan
+        uses: zaproxy/action-api-scan@v0.10.0
+        with:
+          target: "${{ env.API_TARGET }}/api/v1/swagger.json"
+          format: openapi
+          rules_file_name: ".github/zap/api-rules.tsv"
+          fail_action: true
+          cmd_options: "-a -j -r report_html.html"
+          allow_issue_writing: false
+
+      - name: Upload ZAP API report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-api-report
+          path: |
+            report_json.json
+            report_html.html
+          retention-days: 30
+
+  zap_ui_scan:
+    name: ZAP UI Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Wait for UI
+        run: |
+          echo "Waiting for UI at ${{ env.UI_TARGET }}..."
+          for i in $(seq 1 30); do
+            if curl -sf "${{ env.UI_TARGET }}" > /dev/null 2>&1; then
+              echo "UI ready"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 10s"
+            sleep 10
+          done
+          echo "UI did not become ready in allocated time"
+          exit 1
+
+      - name: Run ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: "${{ env.UI_TARGET }}"
+          rules_file_name: ".github/zap/ui-rules.tsv"
+          fail_action: true
+          allow_issue_writing: false
+          artifact_name: zap-ui-report

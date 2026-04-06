@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from http import HTTPStatus
 from typing import TypedDict
@@ -19,6 +20,8 @@ from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
 
+logger = logging.getLogger(__name__)
+
 
 class AwardDictionary(TypedDict, total=False):
     """Type definition for API requests regarding awards"""
@@ -32,6 +35,9 @@ class AwardDictionary(TypedDict, total=False):
 def create_award(award_dict: AwardDictionary) -> Response:
     name = award_dict["name"]
     if Award.find_by_name(name):
+        logger.warning(
+            "Award creation failed: duplicate name", extra={"award_name": name}
+        )
         error = f"Award name: {name} already exists, must be unique."
         abort(HTTPStatus.CONFLICT, error, status="fail")
 
@@ -52,6 +58,7 @@ def create_award(award_dict: AwardDictionary) -> Response:
         award_name=name,
     )
 
+    logger.info("Award created", extra={"award_name": name})
     response = jsonify(status="success", message=f"New award added: {name}.")
     response.status_code = HTTPStatus.CREATED
     response.headers["Location"] = url_for("api.award", name=name, _external=True)
@@ -100,12 +107,16 @@ def update_award(
             changes=changes,
         )
 
+        logger.info("Award updated", extra={"award_name": name})
         message = f"'{name}' was successfully updated"
         response_dict = dict(status="success", message=message)
         return response_dict, HTTPStatus.OK
     try:
         valid_name = award_name(name)
     except ValueError as e:
+        logger.warning(
+            "Award name validation failed", extra={"award_name": name, "error": str(e)}
+        )
         abort(HTTPStatus.BAD_REQUEST, str(e), status="fail")
     award_dict["name"] = valid_name
     return create_award(award_dict)
@@ -128,6 +139,7 @@ def delete_award(name: str) -> tuple[str, HTTPStatus]:
 
     db.session.delete(award)
     db.session.commit()
+    logger.info("Award deleted", extra={"award_name": name})
     return "", HTTPStatus.NO_CONTENT
 
 

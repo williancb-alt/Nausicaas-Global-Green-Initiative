@@ -67,3 +67,43 @@ def add_user(email: str, admin: bool, password: str) -> int:
     message = f"Successfully added new {user_type}:\n {new_user}"
     click.secho(message, fg="blue", bold=True)
     return 0
+
+
+@app.cli.command("seed-db", short_help="Seed the database with sample data")
+def seed_db() -> int:
+    """
+    Seed the database with sample users, grants, awards, and applications.
+
+    Only runs in dev and testing environments. Will not run in production.
+    """
+
+    # Get the current FLASK_ENV, defaults to dev if not set
+    flask_env = os.getenv("FLASK_ENV", "development")
+
+    # Prevent running in prod environment
+    if flask_env == "production":
+        click.secho("Error: seed-db cannot be run in production.", fg="red", bold=True)
+        return 1
+
+    from nausicass_global_green_initiative_api.seed import run_seed
+
+    # Call helper function to seed the db and capture summary
+    result = run_seed()
+
+    # If None is returned, db was already seeded
+    if result is None:
+        click.secho("Database already seeded.", fg="yellow")
+        return 0
+
+    # Print summary of seeded data in db to the console
+    click.secho("Database seeded successfully!", fg="green", bold=True)
+    click.echo("Users:")
+    for u in result["users"]:
+        role = " (admin)" if u["admin"] else ""
+        click.echo(f" - {u['email']}{role}")
+    click.echo(f" Grants: {result['grants']}")
+    click.echo(f" Awards: {result['awards']}")
+    click.echo(f" Applications: {result['applications']}")
+    click.echo(f" Support Messages: {result['support_messages']}")
+    click.echo(f" Audit Logs: {result['audit_logs']}")
+    return 0

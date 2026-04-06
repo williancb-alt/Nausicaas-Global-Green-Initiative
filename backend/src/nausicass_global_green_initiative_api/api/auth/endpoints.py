@@ -47,7 +47,7 @@ class RegisterUser(Resource):
     @auth_ns.response(int(HTTPStatus.CREATED), "User was successfully created.")
     @auth_ns.response(int(HTTPStatus.CONFLICT), "Email address is already registered.")
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
-    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
     def post(self) -> Response:
         """Register a new user and return an access token."""
         request_data = auth_req_parser.parse_args()
@@ -64,7 +64,7 @@ class LoginUser(Resource):
     @auth_ns.response(int(HTTPStatus.OK), "Login succeeded.")
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "email or password does not match")
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
-    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
     def post(self) -> Response:
         """Authenticate an existing user and return an access token."""
         request_data = auth_req_parser.parse_args()
@@ -95,7 +95,7 @@ class LogoutUser(Resource):
     @auth_ns.response(int(HTTPStatus.OK), "Log out succeeded, token is no longer valid.")
     @auth_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
     @auth_ns.response(int(HTTPStatus.UNAUTHORIZED), "Token is invalid or expired.")
-    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+    @auth_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
     def post(self) -> Response:
         """Add token to blacklist, deauthenticating the current user."""
         return process_logout_request()
