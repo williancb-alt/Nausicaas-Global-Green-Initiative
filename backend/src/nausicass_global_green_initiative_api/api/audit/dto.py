@@ -34,11 +34,23 @@ audit_list_reqparser.add_argument(
     "action",
     type=str,
     required=False,
-    help="Filter by action type",
+    help="Filter by action type (e.g. grant_created, login_failed)",
 )
 audit_list_reqparser.add_argument(
     "success",
     type=bool,
     required=False,
-    help="Filter by success status",
+    help="Filter by outcome: true for successful actions, false for failures",
+)
+audit_list_reqparser.add_argument(
+    "days",
+    type=positive,
+    required=False,
+    help="Restrict results to the last N days (e.g. 7, 30, 90)",
+)
+audit_list_reqparser.add_argument(
+    "user_email",
+    type=str,
+    required=False,
+    help="Filter by the email address of the user who performed the action",
 )

@@ -49,11 +49,21 @@ class AuditLogList(Resource):
     @audit_ns.response(int(HTTPStatus.OK), "Retrieved audit logs.")
     @admin_token_required
     def get(self) -> Response:
-        """Retrieve recent audit logs (admin only)."""
+        """Retrieve recent audit logs with optional filters (admin only)."""
         args = audit_list_reqparser.parse_args()
         limit = args.get("limit", 100)
+        action = args.get("action")
+        success = args.get("success")
+        days = args.get("days")
+        user_email = args.get("user_email")
 
-        logs = AuditLog.get_recent_logs(limit=limit)
+        logs = AuditLog.get_filtered_logs(
+            limit=limit,
+            action=action,
+            success=success,
+            days=days,
+            user_email=user_email,
+        )
 
         response = jsonify(
             {

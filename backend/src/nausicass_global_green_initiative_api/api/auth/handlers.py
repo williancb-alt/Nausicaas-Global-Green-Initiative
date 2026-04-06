@@ -14,6 +14,7 @@ from nausicass_global_green_initiative_api.models.password_reset_token import (
 )
 from nausicass_global_green_initiative_api.models.token_blacklist import BlacklistedToken
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.audit_service import AuditService
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import (
     format_timespan_digits,
@@ -90,6 +91,10 @@ def process_registration_request(email: str, password: str) -> Response:
 def process_login_request(email: str, password: str) -> Response:
     user = User.find_by_email(email)
     if not user:
+        AuditService.log_login_failed(
+            email=email,
+            reason="Email not registered",
+        )
         current_app.logger.warning("Login failed: unknown email")
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
     try:
@@ -101,6 +106,10 @@ def process_login_request(email: str, password: str) -> Response:
         if user.password_hash is None:
             provider_names = sorted([a.provider for a in user.oauth_accounts.all()])
             message = _oauth_only_login_message(provider_names)
+            AuditService.log_login_failed(
+                email=email,
+                reason="OAuth-only account; password login not allowed",
+            )
             response = jsonify(
                 status="fail",
                 message=message,
@@ -112,6 +121,9 @@ def process_login_request(email: str, password: str) -> Response:
                 extra={"user_id": str(user.public_id)},
             )
             return response
+
+        AuditService.log_login_failed(email=email, reason="Incorrect password")
+
         current_app.logger.warning(
             "Login failed: invalid password",
             extra={"user_id": str(user.public_id)},

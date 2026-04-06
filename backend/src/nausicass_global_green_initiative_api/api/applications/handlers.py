@@ -141,6 +141,13 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
         },
     )
 
+    AuditService.log_application_created(
+        application_id=application.id,
+        user_id=user.id,
+        user_email=user.email,
+        details={"grant_name": grant_name},
+    )
+
     response = jsonify(
         status="success",
         message=f"Application submitted for '{grant_name}'.",
@@ -264,12 +271,7 @@ def update_application(
         extra={"application_id": application_id, "status_changed": status_changed},
     )
 
-    AuditService.log_admin_edit(
-        application_id=application_id,
-        admin_user_id=user.id,
-        admin_email=user.email,
-        changes=changes if changes else {"note": "No field changes detected"},
-    )
+    _log_admin_update_audit(user, application_id, new_status, changes)
 
     if status_changed:
         _send_status_update_email(application)
@@ -280,6 +282,27 @@ def update_application(
     )
     response.status_code = HTTPStatus.OK
     return response
+
+
+def _log_admin_update_audit(
+    user: User,
+    application_id: int,
+    new_status: str | None,
+    changes: dict,
+) -> None:
+    """Log an admin edit and, when applicable, the submission lock event."""
+    AuditService.log_admin_edit(
+        application_id=application_id,
+        admin_user_id=user.id,
+        admin_email=user.email,
+        changes=changes if changes else {"note": "No field changes detected"},
+    )
+    if new_status == "submitted":
+        AuditService.log_application_submitted(
+            application_id=application_id,
+            user_id=user.id,
+            user_email=user.email,
+        )
 
 
 def _send_status_update_email(application: Application) -> None:
@@ -329,6 +352,12 @@ def delete_application(application_id: int) -> tuple[str, HTTPStatus]:
             attempted_changes={"action": "delete"},
         )
         raise ApiForbidden()
+
+    AuditService.log_application_deleted(
+        application_id=application_id,
+        admin_user_id=user.id,
+        admin_email=user.email,
+    )
 
     db.session.delete(application)
     db.session.commit()
