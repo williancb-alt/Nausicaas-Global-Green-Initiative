@@ -63,6 +63,12 @@ class TestConfigureLogging:
     def test_production_sets_info_level(self, prod_app):
         assert prod_app.logger.level == logging.INFO
 
+    def test_staging_uses_json_formatter(self, minimal_app):
+        configure_logging(minimal_app, "staging")
+        handler = minimal_app.logger.handlers[0]
+        assert isinstance(handler.formatter, JSONLogsFormat)
+        assert minimal_app.logger.level == logging.INFO
+
     def test_development_sets_debug_level(self, dev_app):
         assert dev_app.logger.level == logging.DEBUG
 

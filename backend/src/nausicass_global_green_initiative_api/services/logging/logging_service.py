@@ -22,13 +22,7 @@ def configure_logging(app: Flask, env: str) -> None:
     handler = logging.StreamHandler(sys.stdout)
 
     # Configure formatter and log level based on env
-    if env == "production":
-        handler.setFormatter(JSONLogsFormat())
-        log_level = logging.INFO
-    elif env == "testing":
-        handler.setFormatter(logging.Formatter("[%(levelname)s] %(name)s: %(message)s"))
-        log_level = logging.WARNING
-    else:
+    if env == "development":
         handler.setFormatter(
             logging.Formatter(
                 "%(asctime)s [%(levelname)s] %(name)s "
@@ -36,6 +30,13 @@ def configure_logging(app: Flask, env: str) -> None:
             )
         )
         log_level = logging.DEBUG
+    elif env == "testing":
+        handler.setFormatter(logging.Formatter("[%(levelname)s] %(name)s: %(message)s"))
+        log_level = logging.WARNING
+    else:
+        # Production, staging, and any other env get JSON
+        handler.setFormatter(JSONLogsFormat())
+        log_level = logging.INFO
 
     # Set handler and level for the Flask app logger
     app.logger.addHandler(handler)
