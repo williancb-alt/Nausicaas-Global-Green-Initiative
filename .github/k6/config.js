@@ -16,7 +16,7 @@ export class K6Config {
     awards: `${API}/awards`,
     awardDetail: `${API}/awards/${encodeURIComponent("Nausicaä Sustainability Award 2026")}`,
     applications: `${API}/applications`,
-    myApplications: `${API}/applications/my`,
+    myApplications: `${API}/applications/me`,
     audit: `${API}/audit`,
     auditFailed: `${API}/audit/failed`,
     support: `${API}/support`,
