@@ -10,7 +10,10 @@ export function login(
 ) {
   // Login — the access_token httponly cookie is automatically
   // stored in this VU's cookie jar by k6
-  const res = http.post(endpoints.login, { email, password }, { redirects: 0 });
+  const res = http.post(endpoints.login, { email, password }, {
+    redirects: 0,
+    tags: { name: "login" },
+  });
 
   if (res.status !== 200) {
     console.error(
