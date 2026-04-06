@@ -108,6 +108,14 @@ uv run flask --app run.py run
 uv run tox
 ```
 
+### Seeding the database (in local dev / staging env)
+
+Note this runs automatically on container startup so is only needed if running backend manually.
+
+```
+uv run flask --app run.py seed-db
+```
+
 ### Adding new database migration
 
 Add new model within models directory with target table properties (see other existing files in the directory for example)

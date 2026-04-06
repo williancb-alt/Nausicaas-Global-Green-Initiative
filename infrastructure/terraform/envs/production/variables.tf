@@ -45,3 +45,10 @@ variable "environment" {
   type        = string
   default     = "production"
 }
+
+variable "seed_password" {
+  description = "Password for seeded users (unused in production)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

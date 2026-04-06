@@ -93,6 +93,7 @@ jobs:
       TF_VAR_google_client_secret: ${{ secrets.TF_VAR_GOOGLE_CLIENT_SECRET }}
       TF_VAR_github_client_id: ${{ secrets.TF_VAR_GITHUB_CLIENT_ID }}
       TF_VAR_github_client_secret: ${{ secrets.TF_VAR_GITHUB_CLIENT_SECRET }}
+      TF_VAR_seed_password: ${{ secrets.TF_VAR_SEED_PASSWORD }}
 
     steps:
       - name: Checkout

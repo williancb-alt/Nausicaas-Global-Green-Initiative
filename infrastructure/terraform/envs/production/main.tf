@@ -85,6 +85,8 @@ module "app_backend" {
   key_vault_name                       = local.key_vault_name
   key_vault_tenant_id                  = local.key_vault_tenant_id
   key_vault_kubelet_identity_client_id = local.key_vault_kubelet_identity_client_id
+
+  seed_password = var.seed_password
 }
 
 module "app_frontend" {

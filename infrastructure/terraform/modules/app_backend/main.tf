@@ -111,6 +111,7 @@ resource "kubernetes_secret" "backend_env" {
     FRONTEND_URL  = var.frontend_url
     EMAIL_ENABLED = "true"
     FLASK_ENV     = var.environment
+    SEED_PASSWORD = var.seed_password
   }
 }
 
@@ -333,7 +334,7 @@ resource "kubernetes_job_v1" "backend_migrate" {
           command = [
             "sh",
             "-c",
-            "python -m flask --app run.py db upgrade",
+            "python -m flask --app run.py db upgrade && python -m flask --app run.py seed-db",
           ]
         }
 
