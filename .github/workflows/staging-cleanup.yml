@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 1 * * *"
 
+concurrency:
+  group: staging-environment
+  cancel-in-progress: false
+
 permissions:
   contents: read
   id-token: write
