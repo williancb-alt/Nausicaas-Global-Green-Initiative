@@ -157,15 +157,23 @@ resource "kubernetes_deployment" "backend" {
             container_port = 8080
           }
 
+          startup_probe {
+            http_get {
+              path = "/health"
+              port = 8080
+            }
+            period_seconds    = 10
+            failure_threshold = 12
+            timeout_seconds   = 5
+          }
+
           liveness_probe {
             http_get {
               path = "/health"
               port = 8080
             }
-            initial_delay_seconds = 30
-            period_seconds        = 15
-            timeout_seconds       = 5
-            failure_threshold     = 3
+            period_seconds  = 15
+            timeout_seconds = 5
           }
 
           readiness_probe {
@@ -173,19 +181,17 @@ resource "kubernetes_deployment" "backend" {
               path = "/ready"
               port = 8080
             }
-            initial_delay_seconds = 10
-            period_seconds        = 10
-            timeout_seconds       = 3
-            failure_threshold     = 3
+            period_seconds  = 10
+            timeout_seconds = 3
           }
 
           resources {
             requests = {
-              cpu    = "100m"
+              cpu    = "250m"
               memory = "256Mi"
             }
             limits = {
-              cpu    = "500m"
+              cpu    = "1000m"
               memory = "512Mi"
             }
           }
