@@ -121,10 +121,8 @@ def process_login_request(email: str, password: str) -> Response:
                 extra={"user_id": str(user.public_id)},
             )
             return response
-        
-        AuditService.log_login_failed(
-            email=email,
-            reason="Incorrect password")
+
+        AuditService.log_login_failed(email=email, reason="Incorrect password")
 
         current_app.logger.warning(
             "Login failed: invalid password",
