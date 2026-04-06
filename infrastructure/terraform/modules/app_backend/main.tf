@@ -187,7 +187,7 @@ resource "kubernetes_deployment" "backend" {
 
           resources {
             requests = {
-              cpu    = "250m"
+              cpu    = "150m"
               memory = "256Mi"
             }
             limits = {
