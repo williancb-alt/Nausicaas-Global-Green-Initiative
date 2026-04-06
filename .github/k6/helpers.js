@@ -12,6 +12,12 @@ export function login(
   // stored in this VU's cookie jar by k6
   const res = http.post(endpoints.login, { email, password }, { redirects: 0 });
 
+  if (res.status !== 200) {
+    console.error(
+      `Login failed: status=${res.status}, body=${res.body}, email=${email}`,
+    );
+  }
+
   check(res, {
     "login succeeded": (r) => r.status === 200,
   });

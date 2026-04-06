@@ -14,7 +14,7 @@ on:
         default: "smoke"
         type: string
     secrets:
-      SEED_PASSWORD:
+      TF_VAR_SEED_PASSWORD:
         required: true
   workflow_dispatch:
     inputs:
@@ -75,7 +75,7 @@ jobs:
         env:
           BASE_URL: ${{ env.API_TARGET }}
           TEST_USER_EMAIL: L00196611@atu.ie
-          TEST_USER_PASSWORD: ${{ secrets.SEED_PASSWORD }}
+          TEST_USER_PASSWORD: ${{ secrets.TF_VAR_SEED_PASSWORD }}
 
       - name: Upload k6 results
         if: always()
