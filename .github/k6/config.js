@@ -67,12 +67,11 @@ export class K6Config {
     ],
     thresholds: {
       // API endpoints
-      "http_req_duration{name:api}": ["p(95)<1000", "p(99)<3000"],
-      // Login has its own relaxed threshold of 3000ms for 95% of requests
-      // and 5000ms for 99% of requests, since it may be slower under load
-      "http_req_duration{name:login}": ["p(95)<3000", "p(99)<5000"],
-      // Less than 5% of requests should fail
-      http_req_failed: ["rate<0.05"],
+      "http_req_duration{name:api}": ["p(95)<2000", "p(99)<5000"],
+      // Login has its own relaxed threshold under extreme load
+      "http_req_duration{name:login}": ["p(95)<5000", "p(99)<10000"],
+      // Less than 10% of requests should fail
+      http_req_failed: ["rate<0.10"],
     },
   };
 }

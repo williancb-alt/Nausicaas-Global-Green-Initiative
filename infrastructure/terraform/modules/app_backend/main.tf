@@ -243,7 +243,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "backend" {
     }
 
     min_replicas = 1
-    max_replicas = 10
+    max_replicas = 20
 
     metric {
       type = "Resource"
