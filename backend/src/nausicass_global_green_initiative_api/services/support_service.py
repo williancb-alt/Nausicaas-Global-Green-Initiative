@@ -1,3 +1,5 @@
+import logging
+
 from flask import render_template
 from nausicass_global_green_initiative_api import db
 from nausicass_global_green_initiative_api.models.application import Application
@@ -5,6 +7,8 @@ from nausicass_global_green_initiative_api.models.support_message import Support
 from nausicass_global_green_initiative_api.models.user import User
 from nausicass_global_green_initiative_api.services.email_service import EmailService
 from nausicass_global_green_initiative_api.util.datetime_util import utc_now
+
+logger = logging.getLogger(__name__)
 
 
 class SupportService:
@@ -24,6 +28,10 @@ class SupportService:
         )
         db.session.add(support_msg)
         db.session.commit()
+        logger.info(
+            "Support message created",
+            extra={"message_id": support_msg.id, "application_id": application_id},
+        )
 
         SupportService._notify_admins_of_support_request(
             user.email, application.id, subject, message
@@ -80,6 +88,7 @@ class SupportService:
         support_msg.admin_response = reply_text
         support_msg.answered_at = utc_now()
         db.session.commit()
+        logger.info("Support message replied to", extra={"message_id": message_id})
         return support_msg
 
     @staticmethod

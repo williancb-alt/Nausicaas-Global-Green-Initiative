@@ -65,10 +65,14 @@ def _send_welcome_email_async(app, email: str) -> None:
 
 def process_registration_request(email: str, password: str) -> Response:
     if User.find_by_email(email):
+        current_app.logger.warning("Registration failed: email already registered")
         abort(HTTPStatus.CONFLICT, f"{email} is already registered", status="fail")
     new_user = User(email=email, password=password)
     db.session.add(new_user)
     db.session.commit()
+    current_app.logger.info(
+        "User registered", extra={"user_id": str(new_user.public_id)}
+    )
     app = current_app._get_current_object()
     threading.Thread(
         target=_send_welcome_email_async,
@@ -86,6 +90,7 @@ def process_registration_request(email: str, password: str) -> Response:
 def process_login_request(email: str, password: str) -> Response:
     user = User.find_by_email(email)
     if not user:
+        current_app.logger.warning("Login failed: unknown email")
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
     try:
         password_valid = user.check_password(password)
@@ -102,9 +107,18 @@ def process_login_request(email: str, password: str) -> Response:
                 oauth_providers=provider_names,
             )
             response.status_code = HTTPStatus.UNAUTHORIZED
+            current_app.logger.warning(
+                "Login failed: OAuth-only account",
+                extra={"user_id": str(user.public_id)},
+            )
             return response
+        current_app.logger.warning(
+            "Login failed: invalid password",
+            extra={"user_id": str(user.public_id)},
+        )
         abort(HTTPStatus.UNAUTHORIZED, "email or password does not match", status="fail")
     access_token = user.encode_access_token()
+    current_app.logger.info("User logged in", extra={"user_id": str(user.public_id)})
     return _create_auth_successful_response(
         token=access_token,
         status_code=HTTPStatus.OK,
@@ -163,6 +177,7 @@ def process_logout_request() -> Response:
     blacklisted_token = BlacklistedToken(access_token, expires_at)
     db.session.add(blacklisted_token)
     db.session.commit()
+    current_app.logger.info("User logged out")
     response = jsonify(dict(status="success", message="successfully logged out"))
     response.set_cookie("access_token", "", expires=0)
     return response
@@ -196,6 +211,10 @@ def process_forgot_password_request(email: str) -> Response:
     """Always returns success to prevent email enumeration."""
     user = User.find_by_email(email)
     if user:
+        current_app.logger.info(
+            "Password reset requested",
+            extra={"user_id": str(user.public_id)},
+        )
         token_model, raw_token = PasswordResetToken.create(user.id)
         db.session.commit()
         app = current_app._get_current_object()
@@ -218,6 +237,7 @@ def process_forgot_password_request(email: str) -> Response:
 def process_reset_password_request(token: str, password: str) -> Response:
     reset_token = PasswordResetToken.find_valid_token(token)
     if not reset_token:
+        current_app.logger.warning("Password reset failed: invalid or expired token")
         abort(
             HTTPStatus.BAD_REQUEST,
             "Reset token is invalid or has expired.",
@@ -227,6 +247,10 @@ def process_reset_password_request(token: str, password: str) -> Response:
     user.password = password
     reset_token.used = True
     db.session.commit()
+    current_app.logger.info(
+        "Password reset completed",
+        extra={"user_id": str(user.public_id)},
+    )
     response = jsonify(
         status="success",
         message="Password has been reset successfully.",

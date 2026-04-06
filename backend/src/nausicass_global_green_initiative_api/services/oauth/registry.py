@@ -33,11 +33,17 @@ def init_oauth(app: Flask) -> None:
 
 def start_oauth_login(provider: str) -> Response:
     if provider not in PROVIDERS:
+        logger.warning(
+            "OAuth login failed: unknown provider", extra={"provider": provider}
+        )
         abort(HTTPStatus.NOT_FOUND, f"Unknown OAuth provider: {provider}", status="fail")
     return PROVIDERS[provider].start_login()
 
 
 def handle_oauth_callback(provider: str) -> Response:
     if provider not in PROVIDERS:
+        logger.warning(
+            "OAuth callback failed: unknown provider", extra={"provider": provider}
+        )
         abort(HTTPStatus.NOT_FOUND, f"Unknown OAuth provider: {provider}", status="fail")
     return PROVIDERS[provider].handle_callback()
