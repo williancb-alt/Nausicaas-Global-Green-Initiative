@@ -26,69 +26,71 @@ export function login(
   });
 }
 
+const apiParams = { tags: { name: "api" } };
+
 export function makeRequests() {
   // Health
-  const healthResponse = http.get(endpoints.health);
+  const healthResponse = http.get(endpoints.health, apiParams);
   check(healthResponse, {
     "health status 200": (r) => r.status === 200,
   });
 
   // Current user profile
-  const userResponse = http.get(endpoints.currentUser);
+  const userResponse = http.get(endpoints.currentUser, apiParams);
   check(userResponse, {
     "current user status 200": (r) => r.status === 200,
   });
 
   // Grants list
-  const grantsResponse = http.get(`${endpoints.grants}?page=1&per_page=10`);
+  const grantsResponse = http.get(`${endpoints.grants}?page=1&per_page=10`, apiParams);
   check(grantsResponse, {
     "grants status 200": (r) => r.status === 200,
   });
 
   // Grant detail
-  const grantDetailResponse = http.get(endpoints.grantDetail);
+  const grantDetailResponse = http.get(endpoints.grantDetail, apiParams);
   check(grantDetailResponse, {
     "grant detail status 200": (r) => r.status === 200,
   });
 
   // Awards list
-  const awardsResponse = http.get(`${endpoints.awards}?page=1&per_page=10`);
+  const awardsResponse = http.get(`${endpoints.awards}?page=1&per_page=10`, apiParams);
   check(awardsResponse, {
     "awards status 200": (r) => r.status === 200,
   });
 
   // Award detail
-  const awardDetailResponse = http.get(endpoints.awardDetail);
+  const awardDetailResponse = http.get(endpoints.awardDetail, apiParams);
   check(awardDetailResponse, {
     "award detail status 200": (r) => r.status === 200,
   });
 
   // My applications
-  const appsResponse = http.get(endpoints.myApplications);
+  const appsResponse = http.get(endpoints.myApplications, apiParams);
   check(appsResponse, {
     "my applications status 200": (r) => r.status === 200,
   });
 
   // All applications (admin)
-  const allAppsResponse = http.get(endpoints.applications);
+  const allAppsResponse = http.get(endpoints.applications, apiParams);
   check(allAppsResponse, {
     "all applications status 200": (r) => r.status === 200,
   });
 
   // Audit log (admin)
-  const auditResponse = http.get(endpoints.audit);
+  const auditResponse = http.get(endpoints.audit, apiParams);
   check(auditResponse, {
     "audit status 200": (r) => r.status === 200,
   });
 
   // Failed audit log (admin)
-  const auditFailedResponse = http.get(endpoints.auditFailed);
+  const auditFailedResponse = http.get(endpoints.auditFailed, apiParams);
   check(auditFailedResponse, {
     "audit failed status 200": (r) => r.status === 200,
   });
 
   // Support messages
-  const supportResponse = http.get(endpoints.support);
+  const supportResponse = http.get(endpoints.support, apiParams);
   check(supportResponse, {
     "support status 200": (r) => r.status === 200,
   });

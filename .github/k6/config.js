@@ -27,8 +27,8 @@ export class K6Config {
     vus: 1,
     duration: "30s",
     thresholds: {
-      // API endpoints (excluding login) should respond within 1500ms
-      "http_req_duration{name!=login}": ["p(99)<1500"],
+      // API endpoints should respond within 1500ms
+      "http_req_duration{name:api}": ["p(99)<1500"],
       // Login has its own relaxed threshold of 3000ms
       "http_req_duration{name:login}": ["p(99)<3000"],
       // Less than 1% of requests should fail
@@ -45,8 +45,8 @@ export class K6Config {
       { duration: "1m", target: 0 },
     ],
     thresholds: {
-      // API endpoints (excluding login)
-      "http_req_duration{name!=login}": ["p(95)<500", "p(99)<1500"],
+      // API endpoints
+      "http_req_duration{name:api}": ["p(95)<500", "p(99)<1500"],
       // Login has its own relaxed threshold of 2000ms for 95% of requests
       "http_req_duration{name:login}": ["p(95)<2000", "p(99)<5000"],
       // Less than 1% of requests should fail
@@ -65,8 +65,8 @@ export class K6Config {
       { duration: "2m", target: 0 },
     ],
     thresholds: {
-      // API endpoints (excluding login)
-      "http_req_duration{name!=login}": ["p(95)<1000", "p(99)<3000"],
+      // API endpoints
+      "http_req_duration{name:api}": ["p(95)<1000", "p(99)<3000"],
       // Login has its own relaxed threshold of 3000ms for 95% of requests
       // and 5000ms for 99% of requests, since it may be slower under load
       "http_req_duration{name:login}": ["p(95)<3000", "p(99)<5000"],
