@@ -1,7 +1,6 @@
 name: K6 - Scheduled Weekly Performance Test
 
 on:
-  push:
   schedule:
     - cron: "0 8 * * 1"
   workflow_dispatch:
@@ -14,6 +13,7 @@ permissions:
   contents: read
   id-token: write
   actions: read
+  security-events: write
 
 jobs:
   deploy_core:
