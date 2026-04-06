@@ -129,8 +129,6 @@ resource "kubernetes_deployment" "backend" {
   }
 
   spec {
-    replicas = 1
-
     selector {
       match_labels = { app = "backend" }
     }
@@ -223,6 +221,54 @@ resource "kubernetes_deployment" "backend" {
     helm_release.ingress_nginx,
     kubernetes_manifest.secret_provider_class,
   ]
+}
+
+resource "kubernetes_horizontal_pod_autoscaler_v2" "backend" {
+  metadata {
+    name      = "backend"
+    namespace = local.namespace_name
+  }
+
+  spec {
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment.backend.metadata[0].name
+    }
+
+    min_replicas = 1
+    max_replicas = 10
+
+    metric {
+      type = "Resource"
+      resource {
+        name = "cpu"
+        target {
+          type                = "Utilization"
+          average_utilization = 50
+        }
+      }
+    }
+
+    behavior {
+      scale_up {
+        stabilization_window_seconds = 30
+        policy {
+          type           = "Pods"
+          value          = 2
+          period_seconds = 60
+        }
+      }
+      scale_down {
+        stabilization_window_seconds = 300
+        policy {
+          type           = "Pods"
+          value          = 1
+          period_seconds = 60
+        }
+      }
+    }
+  }
 }
 
 resource "kubernetes_service" "backend" {

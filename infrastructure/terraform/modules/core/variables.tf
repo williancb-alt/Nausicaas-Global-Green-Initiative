@@ -7,6 +7,10 @@ variable "aks_node_size" { type = string }
 variable "db_server_name" { type = string }
 variable "db_name" { type = string }
 variable "db_admin_username" { type = string }
+variable "db_sku_name" {
+  type    = string
+  default = "B_Standard_B1ms"
+}
 variable "db_admin_password" {
   type      = string
   sensitive = true

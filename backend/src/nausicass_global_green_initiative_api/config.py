@@ -36,6 +36,12 @@ class Config:
     TOKEN_EXPIRE_HOURS = 0
     TOKEN_EXPIRE_MINUTES = 0
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 3,
+        "max_overflow": 1,
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     SWAGGER_UI_DOC_EXPANSION = "list"
     RESTX_MASK_SWAGGER = False
