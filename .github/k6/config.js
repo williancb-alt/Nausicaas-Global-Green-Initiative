@@ -8,7 +8,7 @@ export class K6Config {
   static baseUrl = BASE_URL;
 
   static endpoints = {
-    health: `${API}/health`,
+    health: `${BASE_URL}/health`,
     login: `${API}/auth/login`,
     currentUser: `${API}/auth/user`,
     grants: `${API}/grants`,
