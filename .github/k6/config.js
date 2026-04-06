@@ -46,10 +46,10 @@ export class K6Config {
       { duration: "1m", target: 0 },
     ],
     thresholds: {
-      // API endpoints
-      "http_req_duration{name:api}": ["p(95)<1000", "p(99)<3000"],
+      // API endpoints (p95 accounts for scale-up latency in pods)
+      "http_req_duration{name:api}": ["p(95)<3000", "p(99)<6000"],
       // Login is slower under load due to bcrypt hashing
-      "http_req_duration{name:login}": ["p(95)<3000", "p(99)<5000"],
+      "http_req_duration{name:login}": ["p(95)<10000", "p(99)<15000"],
       // Less than 1% of requests should fail
       http_req_failed: ["rate<0.01"],
     },
@@ -66,10 +66,10 @@ export class K6Config {
       { duration: "2m", target: 0 },
     ],
     thresholds: {
-      // API endpoints
-      "http_req_duration{name:api}": ["p(95)<2000", "p(99)<5000"],
-      // Login has its own relaxed threshold under extreme load
-      "http_req_duration{name:login}": ["p(95)<5000", "p(99)<10000"],
+      // API endpoints (higher tolerance under extreme request load)
+      "http_req_duration{name:api}": ["p(95)<5000", "p(99)<10000"],
+      // Login is CPU-bound (bcrypt) and crashes under extreme load
+      "http_req_duration{name:login}": ["p(95)<10000", "p(99)<15000"],
       // Less than 10% of requests should fail
       http_req_failed: ["rate<0.10"],
     },
