@@ -31,7 +31,7 @@ grant_ns.models[pagination_model.name] = pagination_model
 @grant_ns.route("", endpoint="grant_list")
 @grant_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @grant_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@grant_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@grant_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class GrantList(Resource):
     """Handles HTTP requests to URL: /grants."""
 
@@ -60,7 +60,7 @@ class GrantList(Resource):
 @grant_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @grant_ns.response(int(HTTPStatus.NOT_FOUND), "grant not found.")
 @grant_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@grant_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@grant_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class GrantResource(Resource):
     """Handles HTTP requests to URL: /grants/{name}."""
 

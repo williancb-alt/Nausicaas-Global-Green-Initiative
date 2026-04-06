@@ -47,3 +47,9 @@ variable "environment" {
   description = "Deployment environment (e.g. staging, production)"
   type        = string
 }
+
+variable "seed_password" {
+  description = "Password for seeded users (non-production only)"
+  type        = string
+  sensitive   = true
+}

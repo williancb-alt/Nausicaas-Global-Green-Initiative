@@ -85,6 +85,8 @@ module "app_backend" {
   key_vault_name                       = local.key_vault_name
   key_vault_tenant_id                  = local.key_vault_tenant_id
   key_vault_kubelet_identity_client_id = local.key_vault_kubelet_identity_client_id
+
+  seed_password = var.seed_password
 }
 
 module "app_frontend" {
@@ -92,6 +94,7 @@ module "app_frontend" {
 
   frontend_hostname  = var.frontend_hostname
   frontend_image_ref = var.frontend_image_ref
+  backend_hostname   = var.backend_hostname
 
   namespace       = var.environment
   tls_secret_name = "nausicaa-wildcard-tls"

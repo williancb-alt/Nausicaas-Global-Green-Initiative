@@ -32,7 +32,7 @@ award_ns.models[pagination_model.name] = pagination_model
 @award_ns.route("", endpoint="award_list")
 @award_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @award_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@award_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@award_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class AwardList(Resource):
     """Handles HTTP requests to URL: /awards."""
 
@@ -62,7 +62,7 @@ class AwardList(Resource):
 @award_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @award_ns.response(int(HTTPStatus.NOT_FOUND), "award not found.")
 @award_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@award_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@award_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class Award(Resource):
     """Handles HTTP requests to URL: /awards/{name}."""
 

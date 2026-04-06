@@ -36,7 +36,7 @@ application_ns.models[application_pagination_model.name] = application_paginatio
 @application_ns.route("", endpoint="application_list")
 @application_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @application_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class ApplicationList(Resource):
     """Handles HTTP requests to URL: /applications."""
 
@@ -70,7 +70,7 @@ class ApplicationList(Resource):
 @application_ns.route("/me", endpoint="my_applications")
 @application_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @application_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class MyApplications(Resource):
     """Handles HTTP requests to URL: /applications/me."""
 
@@ -94,7 +94,7 @@ class MyApplications(Resource):
 @application_ns.response(int(HTTPStatus.BAD_REQUEST), "Validation error.")
 @application_ns.response(int(HTTPStatus.NOT_FOUND), "Application not found.")
 @application_ns.response(int(HTTPStatus.UNAUTHORIZED), "Unauthorized.")
-@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Internal server error.")
+@application_ns.response(int(HTTPStatus.INTERNAL_SERVER_ERROR), "Server error.")
 class ApplicationResource(Resource):
     """Handles HTTP requests to URL: /applications/{id}."""
 

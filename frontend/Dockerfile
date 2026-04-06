@@ -27,4 +27,4 @@ COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
 EXPOSE 80
 
-CMD sh -c "envsubst '\$VITE_API_BASE_URL \$SERVER_NAME' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+CMD sh -c "envsubst '\$VITE_API_BASE_URL \$SERVER_NAME \$PUBLIC_API_URL' < /etc/nginx/templates/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
