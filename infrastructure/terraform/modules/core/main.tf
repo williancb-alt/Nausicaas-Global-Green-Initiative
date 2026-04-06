@@ -93,6 +93,19 @@ resource "azurerm_log_analytics_workspace" "aks" {
   retention_in_days   = 30
 }
 
+resource "azurerm_log_analytics_solution" "container_insights" {
+  solution_name         = "ContainerInsights"
+  location              = azurerm_resource_group.main.location
+  resource_group_name   = azurerm_resource_group.main.name
+  workspace_resource_id = azurerm_log_analytics_workspace.aks.id
+  workspace_name        = azurerm_log_analytics_workspace.aks.name
+
+  plan {
+    publisher = "Microsoft"
+    product   = "OMSGallery/ContainerInsights"
+  }
+}
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                      = var.aks_name
   location                  = azurerm_resource_group.main.location
