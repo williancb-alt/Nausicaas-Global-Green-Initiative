@@ -2,7 +2,7 @@
 
 from flask_restx import Model
 from flask_restx.fields import Boolean, Integer, String
-from flask_restx.inputs import positive
+from flask_restx.inputs import boolean, positive
 from flask_restx.reqparse import RequestParser
 
 audit_log_model = Model(
@@ -38,7 +38,7 @@ audit_list_reqparser.add_argument(
 )
 audit_list_reqparser.add_argument(
     "success",
-    type=bool,
+    type=boolean,
     required=False,
     help="Filter by outcome: true for successful actions, false for failures",
 )
