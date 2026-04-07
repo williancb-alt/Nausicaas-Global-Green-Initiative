@@ -42,7 +42,7 @@ const mockLogs: AuditLogsResponse = {
   logs: [
     {
       id: 1,
-      timestamp: "2026-03-16T10:00:00Z",
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
       entity_type: "grant",
       action: "grant_created",
       user_email: "admin@test.com",
@@ -56,7 +56,7 @@ const mockLogs: AuditLogsResponse = {
     },
     {
       id: 2,
-      timestamp: "2026-03-16T11:00:00Z",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
       entity_type: "application",
       action: "app_submitted",
       user_email: "user@test.com",
@@ -70,7 +70,7 @@ const mockLogs: AuditLogsResponse = {
     },
     {
       id: 3,
-      timestamp: "2026-03-16T12:00:00Z",
+      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
       entity_type: "security",
       action: "login_failed",
       user_email: null,

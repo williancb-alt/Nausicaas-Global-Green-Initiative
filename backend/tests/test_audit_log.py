@@ -229,7 +229,7 @@ class TestAuditLogFiltering:
     """Tests for get_filtered_logs model method."""
 
     @pytest.mark.parametrize(
-        "log1,log2,filter_kwargs,expected_field,expected_value",
+        "case",
         [
             (
                 {"action": "grant_created", "entity_type": "grant", "entity_id": 1},
@@ -257,18 +257,9 @@ class TestAuditLogFiltering:
             ),
         ],
     )
-    def test_filter_single_match(
-        self,
-        client,
-        db,
-        test_user,
-        log1,
-        log2,
-        filter_kwargs,
-        expected_field,
-        expected_value,
-    ):
+    def test_filter_single_match(self, client, db, test_user, case):
         """A single-field filter returns exactly the matching log."""
+        log1, log2, filter_kwargs, expected_field, expected_value = case
         AuditLog.log(**log1)
         AuditLog.log(**log2)
 
@@ -373,7 +364,7 @@ class TestAuditApiEndpoints:
         assert "items" in data
 
     @pytest.mark.parametrize(
-        "log1,log2,params,expected_field,expected_value",
+        "case",
         [
             (
                 {"action": "grant_created", "entity_type": "grant", "entity_id": 1},
@@ -418,18 +409,9 @@ class TestAuditApiEndpoints:
             ),
         ],
     )
-    def test_filter_param(
-        self,
-        client,
-        db,
-        admin_user,
-        log1,
-        log2,
-        params,
-        expected_field,
-        expected_value,
-    ):
+    def test_filter_param(self, client, db, admin_user, case):
         """Endpoint returns only the log that matches the given query param."""
+        log1, log2, params, expected_field, expected_value = case
         AuditLog.log(**log1)
         AuditLog.log(**log2)
 
