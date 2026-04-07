@@ -14,6 +14,7 @@ import {
 } from "../schemas/grantSchema"
 import type { DynamicFieldConfig, UpdateGrantParams } from "../types"
 import type { Grant } from "../services/api/client"
+import { getMonitoring } from "../services/monitoring"
 import { GRANT_MESSAGES } from "../utils/constants"
 import { GrantEditField } from "../components/grant/management/types"
 
@@ -94,7 +95,11 @@ export function useGrantManagement() {
         setEditCustomFieldConfigs([])
         setEditCustomFieldValues({})
       }
-    } catch {
+    } catch (err) {
+      getMonitoring().captureException(err, {
+        context: "grant.parseCustomFields",
+        grantName: grant.name,
+      })
       setEditCustomFieldConfigs([])
       setEditCustomFieldValues({})
     }

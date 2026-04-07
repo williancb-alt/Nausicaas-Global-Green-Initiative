@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { api } from "../services/api"
+import { getMonitoring } from "../services/monitoring"
 import type { UserInfo } from "../services/api/client"
 
 export interface Grant {
@@ -27,7 +28,7 @@ export function useDashboardData(user: UserInfo | null) {
         const appResponse = await api.applications.getMyApplications(1, 1)
         setMyApps({ count: appResponse.total_items })
       } catch (err: unknown) {
-        console.error(err)
+        getMonitoring().captureException(err, { context: "dashboard.loadData" })
         setError("Failed to load dashboard data")
       } finally {
         setLoading(false)

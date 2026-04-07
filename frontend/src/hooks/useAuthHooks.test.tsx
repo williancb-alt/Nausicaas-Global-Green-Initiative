@@ -6,9 +6,18 @@ import { useAuthStore } from "../store/authStore"
 import { mockUser, mockAdminUser } from "../test/mock-data"
 import { TestWrapper } from "../test/test-utils"
 
+const mockCaptureException = vi.fn()
+
 // Mock dependencies
 vi.mock("../services/api")
 vi.mock("../store/authStore")
+vi.mock("../services/monitoring", () => ({
+  getMonitoring: () => ({
+    captureException: mockCaptureException,
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+  }),
+}))
 
 describe("useAuthHooks", () => {
   const setUserMock = vi.fn()
@@ -58,7 +67,6 @@ describe("useAuthHooks", () => {
     it("should handle getUser error gracefully", async () => {
       vi.mocked(api.auth.login).mockResolvedValue(authSuccess)
       vi.mocked(api.auth.getUser).mockRejectedValue(new Error("Failed"))
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
       const { result } = renderHook(() => useLogin(), {
         wrapper: TestWrapper,
@@ -66,8 +74,10 @@ describe("useAuthHooks", () => {
       result.current.mutate({ email: "test@test.com", password: "password" })
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
-      expect(consoleSpy).toHaveBeenCalled()
-      consoleSpy.mockRestore()
+      expect(mockCaptureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        expect.objectContaining({ context: "post-login user fetch" }),
+      )
     })
   })
 

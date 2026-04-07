@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
+import { getMonitoring } from "../../services/monitoring"
 
 export function OAuthErrorHandler() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -17,8 +18,9 @@ export function OAuthErrorHandler() {
       { replace: true },
     )
 
-    const message = "Login failed. Please try again."
+    getMonitoring().captureMessage(`OAuth login failed: ${oauthError}`, "error")
 
+    const message = "Login failed. Please try again."
     alert(message)
   }, [oauthError, setSearchParams])
 

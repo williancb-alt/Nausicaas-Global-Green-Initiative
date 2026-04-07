@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "../components/button/Button"
 import { useAuthStore } from "../store/authStore"
+import { getMonitoring } from "../services/monitoring"
 import { useGrantsStore } from "../store/grantsStore"
 import {
   useGrants,
@@ -93,7 +94,7 @@ export function Home(): JSX.Element {
         setDynamicFieldValues({})
         queryClient
           .invalidateQueries({ queryKey: ["grants"] })
-          .catch(console.error)
+          .catch((err: unknown) => getMonitoring().captureException(err))
         setCurrentPage(1)
       },
     })
@@ -145,7 +146,7 @@ export function Home(): JSX.Element {
       onSuccess: () => {
         queryClient
           .invalidateQueries({ queryKey: ["grants"] })
-          .catch(console.error)
+          .catch((err: unknown) => getMonitoring().captureException(err))
         setDeletingGrant(null)
       },
       onError: () => {

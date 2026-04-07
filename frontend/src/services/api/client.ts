@@ -1,3 +1,4 @@
+import { getMonitoring } from "../monitoring"
 import { parseErrorMessage } from "./errorParser"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")
@@ -22,12 +23,34 @@ async function buildErrorMessage(response: Response): Promise<string> {
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
+  const monitoring = getMonitoring()
+
   if (response.ok) {
+    monitoring.addBreadcrumb({
+      category: "http",
+      message: `${response.status} ${response.url}`,
+      level: "info",
+      data: { status: response.status, url: response.url },
+    })
     if (response.status === 204) return undefined as T
     return response.json() as Promise<T>
   }
 
-  throw new Error(await buildErrorMessage(response))
+  const errorMessage = await buildErrorMessage(response)
+  const error = new Error(errorMessage)
+
+  monitoring.addBreadcrumb({
+    category: "http",
+    message: `${response.status} ${response.url}`,
+    level: "error",
+    data: { status: response.status, url: response.url },
+  })
+  monitoring.captureException(error, {
+    httpStatus: response.status,
+    url: response.url,
+  })
+
+  throw error
 }
 
 type RequestOptions = {
