@@ -110,8 +110,8 @@ jobs:
             --build-arg VITE_SENTRY_UI_DSN="${{ secrets.VITE_SENTRY_UI_DSN }}" \
             --build-arg VITE_APP_VERSION="${IMAGE_TAG}" \
             --build-arg SENTRY_AUTH_TOKEN="${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            --build-arg SENTRY_ORG="${{ vars.SENTRY_ORG }}" \
-            --build-arg SENTRY_PROJECT="${{ vars.SENTRY_PROJECT }}" \
+            --build-arg SENTRY_ORG="${{ secrets.SENTRY_ORG }}" \
+            --build-arg SENTRY_PROJECT="${{ secrets.SENTRY_FRONTEND_PROJECT }}" \
             -t "$ACR/frontend:${IMAGE_TAG}" ./frontend
 
       - name: Scan frontend image with Grype
