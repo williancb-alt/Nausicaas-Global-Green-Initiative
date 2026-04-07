@@ -331,6 +331,14 @@ class TestAuditLogFiltering:
         assert len(results) == 3
 
 
+def _admin_audit_get(client, params=""):
+    """Login as admin and GET the audit endpoint, returning parsed JSON."""
+    login_user(client, "admin@test.com", "Password123")
+    response = client.get(f"/api/v1/audit{params}")
+    assert response.status_code == 200
+    return response.get_json()
+
+
 class TestAuditApiEndpoints:
     """Tests for audit API endpoints."""
 
@@ -350,12 +358,8 @@ class TestAuditApiEndpoints:
             entity_id=1,
         )
 
-        login_user(client, "admin@test.com", "Password123")
+        data = _admin_audit_get(client)
 
-        response = client.get("/api/v1/audit")
-
-        assert response.status_code == 200
-        data = response.get_json()
         assert data["status"] == "success"
         assert "items" in data
 
@@ -372,11 +376,8 @@ class TestAuditApiEndpoints:
             entity_id=1,
         )
 
-        login_user(client, "admin@test.com", "Password123")
-        response = client.get("/api/v1/audit?action=grant_created")
+        data = _admin_audit_get(client, "?action=grant_created")
 
-        assert response.status_code == 200
-        data = response.get_json()
         assert data["count"] == 1
         assert data["items"][0]["action"] == "grant_created"
 
@@ -395,11 +396,8 @@ class TestAuditApiEndpoints:
             success=False,
         )
 
-        login_user(client, "admin@test.com", "Password123")
-        response = client.get("/api/v1/audit?success=false")
+        data = _admin_audit_get(client, "?success=false")
 
-        assert response.status_code == 200
-        data = response.get_json()
         assert data["count"] == 1
         assert data["items"][0]["success"] is False
 
@@ -418,13 +416,16 @@ class TestAuditApiEndpoints:
             user_email="other@test.com",
         )
 
-        login_user(client, "admin@test.com", "Password123")
-        response = client.get("/api/v1/audit?user_email=admin@test.com")
+        data = _admin_audit_get(client, "?user_email=admin@test.com")
 
-        assert response.status_code == 200
-        data = response.get_json()
         assert data["count"] == 1
         assert data["items"][0]["user_email"] == "admin@test.com"
+
+
+def _login_and_create_award(client, award_name="eco-grant"):
+    """Login as admin and create a named award; returns nothing."""
+    login_user(client, "admin@test.com", "Password123")
+    create_award(client, award_name=award_name, deadline_str=DEFAULT_DEADLINE)
 
 
 class TestAuditAwardHandlerIntegration:
@@ -432,8 +433,7 @@ class TestAuditAwardHandlerIntegration:
 
     def test_create_award_creates_audit_log(self, client, db, admin_user):
         """Creating an award via the API produces an award_created log."""
-        login_user(client, "admin@test.com", "Password123")
-        create_award(client, award_name="eco-grant", deadline_str=DEFAULT_DEADLINE)
+        _login_and_create_award(client)
 
         logs = AuditLog.get_filtered_logs(action="award_created")
 
@@ -443,8 +443,7 @@ class TestAuditAwardHandlerIntegration:
 
     def test_delete_award_creates_audit_log(self, client, db, admin_user):
         """Deleting an award via the API produces an award_deleted log."""
-        login_user(client, "admin@test.com", "Password123")
-        create_award(client, award_name="eco-grant", deadline_str=DEFAULT_DEADLINE)
+        _login_and_create_award(client)
         delete_award(client, "eco-grant")
 
         logs = AuditLog.get_filtered_logs(action="award_deleted")
@@ -454,8 +453,7 @@ class TestAuditAwardHandlerIntegration:
 
     def test_update_award_creates_audit_log(self, client, db, admin_user):
         """Updating an existing award via the API produces an award_edited log."""
-        login_user(client, "admin@test.com", "Password123")
-        create_award(client, award_name="eco-grant", deadline_str=DEFAULT_DEADLINE)
+        _login_and_create_award(client)
         update_award(client, "eco-grant", deadline_str=DEFAULT_DEADLINE)
 
         logs = AuditLog.get_filtered_logs(action="award_edited")

@@ -15,6 +15,54 @@ interface FilterState {
   userEmail: string
 }
 
+const SECURITY_ACTIONS = new Set([
+  "application_edit_blocked",
+  "unauthorized_access",
+  "login_failed",
+])
+
+function filterByTab(logs: AuditLog[], tab: AuditTabType): AuditLog[] {
+  switch (tab) {
+    case "grants":
+      return logs.filter(log => log.entity_type === "grant")
+    case "applications":
+      return logs.filter(log => log.entity_type === "application")
+    case "security":
+      return logs.filter(log => SECURITY_ACTIONS.has(log.action) || !log.success)
+    case "admins":
+      return logs.filter(log => log.is_admin)
+    default:
+      return logs
+  }
+}
+
+function filterByDateRange(logs: AuditLog[], dateRange: string): AuditLog[] {
+  if (dateRange === "all") return logs
+
+  const now = new Date()
+  let cutoff: Date | null = null
+
+  if (dateRange === "today") {
+    cutoff = new Date(now)
+    cutoff.setHours(0, 0, 0, 0)
+  } else {
+    const daysMap: Record<string, number> = {
+      "7days": 7,
+      "30days": 30,
+      "90days": 90,
+    }
+    const days = daysMap[dateRange]
+    if (days !== undefined) {
+      cutoff = new Date(now)
+      cutoff.setDate(cutoff.getDate() - days)
+    }
+  }
+
+  if (!cutoff) return logs
+  const cutoffDate = cutoff
+  return logs.filter(log => new Date(log.timestamp) >= cutoffDate)
+}
+
 export function AuditLogs(): JSX.Element {
   const [activeTab, setActiveTab] = useState<AuditTabType>("grants")
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
@@ -38,67 +86,14 @@ export function AuditLogs(): JSX.Element {
   const getFilteredLogs = (): AuditLog[] => {
     if (!auditData?.logs) return []
 
-    let filtered = [...auditData.logs]
+    let filtered = filterByTab([...auditData.logs], activeTab)
 
-    // Filter by tab
-    switch (activeTab) {
-      case "grants":
-        filtered = filtered.filter(log => log.entity_type === "grant")
-        break
-      case "applications":
-        filtered = filtered.filter(log => log.entity_type === "application")
-        break
-      case "security":
-        filtered = filtered.filter(
-          log =>
-            log.action === "application_edit_blocked" ||
-            log.action === "unauthorized_access" ||
-            log.action === "login_failed" ||
-            !log.success,
-        )
-        break
-      case "admins":
-        filtered = filtered.filter(log => log.is_admin)
-        break
-      case "all":
-      default:
-        break
-    }
-
-    // Apply action filter
     if (filters.action !== "all") {
       filtered = filtered.filter(log => log.action === filters.action)
     }
 
-    // Apply date range filter
-    if (filters.dateRange !== "all") {
-      const now = new Date()
-      let cutoff: Date | null = null
+    filtered = filterByDateRange(filtered, filters.dateRange)
 
-      if (filters.dateRange === "today") {
-        cutoff = new Date(now)
-        cutoff.setHours(0, 0, 0, 0)
-      } else {
-        const daysMap: Record<string, number> = {
-          "7days": 7,
-          "30days": 30,
-          "90days": 90,
-        }
-        const days = daysMap[filters.dateRange]
-        if (days !== undefined) {
-          cutoff = new Date(now)
-          cutoff.setDate(cutoff.getDate() - days)
-        }
-      }
-
-      if (cutoff) {
-        filtered = filtered.filter(
-          log => new Date(log.timestamp) >= cutoff!,
-        )
-      }
-    }
-
-    // Apply user email filter
     if (filters.userEmail !== "all") {
       filtered = filtered.filter(log => log.user_email === filters.userEmail)
     }
@@ -131,14 +126,7 @@ export function AuditLogs(): JSX.Element {
     if (tab === "applications" || tab === "security") {
       const hasData = auditData?.logs.some(log => {
         if (tab === "applications") return log.entity_type === "application"
-        if (tab === "security")
-          return (
-            log.action === "application_edit_blocked" ||
-            log.action === "unauthorized_access" ||
-            log.action === "login_failed" ||
-            !log.success
-          )
-        return false
+        return SECURITY_ACTIONS.has(log.action) || !log.success
       })
       return !hasData
     }
