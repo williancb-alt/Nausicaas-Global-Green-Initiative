@@ -1,26 +1,39 @@
-import { type ChangeEvent, JSX } from "react"
+import { type ChangeEvent, JSX, useState } from "react"
 
-// AuditAction type available in ../../types if needed
+interface FilterState {
+  action: string
+  dateRange: string
+  userEmail: string
+}
+
 interface AuditFiltersProps {
-  onFilterChange: (filters: {
-    action: string
-    dateRange: string
-    userEmail: string
-  }) => void
-  adminEmails: string[] // List of admin emails for dropdown
+  onFilterChange: (filters: FilterState) => void
+  adminEmails: string[]
+}
+
+const DEFAULT_FILTERS: FilterState = {
+  action: "all",
+  dateRange: "7days",
+  userEmail: "all",
 }
 
 export function AuditFilters({
   onFilterChange,
   adminEmails,
 }: AuditFiltersProps): JSX.Element {
-  const handleActionChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const action = e.target.value
-    onFilterChange({
-      action,
-      dateRange: "7days",
-      userEmail: "all",
-    })
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+
+  const handleChange = (field: keyof FilterState) => (
+    e: ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const updated = { ...filters, [field]: e.target.value }
+    setFilters(updated)
+    onFilterChange(updated)
+  }
+
+  const handleClear = () => {
+    setFilters(DEFAULT_FILTERS)
+    onFilterChange(DEFAULT_FILTERS)
   }
 
   return (
@@ -35,8 +48,8 @@ export function AuditFilters({
             <select
               id="actionFilter"
               className="form-select"
-              onChange={handleActionChange}
-              defaultValue="all"
+              value={filters.action}
+              onChange={handleChange("action")}
             >
               <option value="all">All Actions</option>
               <optgroup label="Grant Actions">
@@ -44,24 +57,23 @@ export function AuditFilters({
                 <option value="grant_edited">Grant Edited</option>
                 <option value="grant_deleted">Grant Deleted</option>
               </optgroup>
-              <optgroup label="Application Actions" disabled>
-                <option value="application_created">
-                  Application Created (Coming Soon)
-                </option>
-                <option value="application_submitted">
-                  Application Submitted (Coming Soon)
-                </option>
-                <option value="application_edited">
-                  Application Edited (Coming Soon)
-                </option>
+              <optgroup label="Award Actions">
+                <option value="award_created">Award Created</option>
+                <option value="award_edited">Award Edited</option>
+                <option value="award_deleted">Award Deleted</option>
               </optgroup>
-              <optgroup label="Security Events" disabled>
-                <option value="application_edit_blocked">
-                  Edit Blocked (Coming Soon)
+              <optgroup label="Application Actions">
+                <option value="application_created">Application Created</option>
+                <option value="application_submitted">
+                  Application Submitted
                 </option>
-                <option value="unauthorized_access">
-                  Unauthorized Access (Coming Soon)
-                </option>
+                <option value="application_edited">Application Edited</option>
+                <option value="application_deleted">Application Deleted</option>
+              </optgroup>
+              <optgroup label="Security Events">
+                <option value="application_edit_blocked">Edit Blocked</option>
+                <option value="login_failed">Login Failed</option>
+                <option value="unauthorized_access">Unauthorized Access</option>
               </optgroup>
             </select>
           </div>
@@ -74,7 +86,8 @@ export function AuditFilters({
             <select
               id="dateRangeFilter"
               className="form-select"
-              defaultValue="7days"
+              value={filters.dateRange}
+              onChange={handleChange("dateRange")}
             >
               <option value="today">Today</option>
               <option value="7days">Last 7 Days</option>
@@ -89,8 +102,13 @@ export function AuditFilters({
             <label htmlFor="userFilter" className="form-label fw-semibold">
               Admin User
             </label>
-            <select id="userFilter" className="form-select" defaultValue="all">
-              <option value="all">All Admins</option>
+            <select
+              id="userFilter"
+              className="form-select"
+              value={filters.userEmail}
+              onChange={handleChange("userEmail")}
+            >
+              <option value="all">All Users</option>
               {adminEmails.map(email => (
                 <option key={email} value={email}>
                   {email}
@@ -101,10 +119,10 @@ export function AuditFilters({
         </div>
 
         <div className="mt-3">
-          <button className="btn btn-outline-secondary btn-sm me-2">
-            Apply Filters
-          </button>
-          <button className="btn btn-outline-danger btn-sm">
+          <button
+            className="btn btn-outline-danger btn-sm"
+            onClick={handleClear}
+          >
             Clear Filters
           </button>
         </div>
