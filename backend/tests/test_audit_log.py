@@ -258,8 +258,15 @@ class TestAuditLogFiltering:
         ],
     )
     def test_filter_single_match(
-        self, client, db, test_user, log1, log2,
-        filter_kwargs, expected_field, expected_value,
+        self,
+        client,
+        db,
+        test_user,
+        log1,
+        log2,
+        filter_kwargs,
+        expected_field,
+        expected_value,
     ):
         """A single-field filter returns exactly the matching log."""
         AuditLog.log(**log1)
@@ -412,7 +419,15 @@ class TestAuditApiEndpoints:
         ],
     )
     def test_filter_param(
-        self, client, db, admin_user, log1, log2, params, expected_field, expected_value
+        self,
+        client,
+        db,
+        admin_user,
+        log1,
+        log2,
+        params,
+        expected_field,
+        expected_value,
     ):
         """Endpoint returns only the log that matches the given query param."""
         AuditLog.log(**log1)
