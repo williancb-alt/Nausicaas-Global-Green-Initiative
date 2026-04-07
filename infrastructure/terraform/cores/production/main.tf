@@ -53,6 +53,7 @@ module "core" {
 
   db_server_name    = var.db_server_name
   db_name           = var.db_name
+  db_sku_name       = var.db_sku_name
   db_admin_username = var.db_admin_username
   db_admin_password = var.db_admin_password
 

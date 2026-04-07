@@ -1,0 +1,93 @@
+name: K6 - Scheduled Weekly Performance Test
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: staging-environment
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  security-events: write
+
+jobs:
+  deploy_core:
+    name: Deploy staging core layer
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: apply
+    secrets: inherit
+
+  build_and_push:
+    name: Build & push staging images
+    needs: [deploy_core]
+    uses: ./.github/workflows/push-to-acr.yml
+    with:
+      environment: staging
+    secrets: inherit
+
+  deploy_app:
+    name: Deploy staging app layer
+    needs: [build_and_push]
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: apply
+    secrets: inherit
+
+  k6_smoke:
+    name: K6 Smoke Test
+    needs: [deploy_app]
+    uses: ./.github/workflows/k6-load-test.yml
+    with:
+      environment: staging
+      test_script: smoke
+    secrets: inherit
+
+  k6_load:
+    name: K6 Load Test
+    needs: [k6_smoke]
+    uses: ./.github/workflows/k6-load-test.yml
+    with:
+      environment: staging
+      test_script: load
+    secrets: inherit
+
+  k6_stress:
+    name: K6 Stress Test
+    needs: [k6_load]
+    uses: ./.github/workflows/k6-load-test.yml
+    with:
+      environment: staging
+      test_script: stress
+    secrets: inherit
+
+  teardown_app:
+    name: Teardown staging app layer
+    needs: [deploy_app, k6_smoke, k6_load, k6_stress]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: app
+      environment: staging
+      action: destroy
+    secrets: inherit
+
+  teardown_core:
+    name: Teardown staging core layer
+    needs: [teardown_app]
+    if: always()
+    uses: ./.github/workflows/terraform-deploy.yml
+    with:
+      layer: core
+      environment: staging
+      action: destroy
+    secrets: inherit

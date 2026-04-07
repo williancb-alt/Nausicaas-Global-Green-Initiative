@@ -129,8 +129,6 @@ resource "kubernetes_deployment" "backend" {
   }
 
   spec {
-    replicas = 1
-
     selector {
       match_labels = { app = "backend" }
     }
@@ -159,15 +157,23 @@ resource "kubernetes_deployment" "backend" {
             container_port = 8080
           }
 
+          startup_probe {
+            http_get {
+              path = "/health"
+              port = 8080
+            }
+            period_seconds    = 10
+            failure_threshold = 12
+            timeout_seconds   = 5
+          }
+
           liveness_probe {
             http_get {
               path = "/health"
               port = 8080
             }
-            initial_delay_seconds = 30
-            period_seconds        = 15
-            timeout_seconds       = 5
-            failure_threshold     = 3
+            period_seconds  = 15
+            timeout_seconds = 5
           }
 
           readiness_probe {
@@ -175,19 +181,17 @@ resource "kubernetes_deployment" "backend" {
               path = "/ready"
               port = 8080
             }
-            initial_delay_seconds = 10
-            period_seconds        = 10
-            timeout_seconds       = 3
-            failure_threshold     = 3
+            period_seconds  = 10
+            timeout_seconds = 3
           }
 
           resources {
             requests = {
-              cpu    = "100m"
+              cpu    = "150m"
               memory = "256Mi"
             }
             limits = {
-              cpu    = "500m"
+              cpu    = "1000m"
               memory = "512Mi"
             }
           }
@@ -223,6 +227,56 @@ resource "kubernetes_deployment" "backend" {
     helm_release.ingress_nginx,
     kubernetes_manifest.secret_provider_class,
   ]
+}
+
+resource "kubernetes_horizontal_pod_autoscaler_v2" "backend" {
+  metadata {
+    name      = "backend"
+    namespace = local.namespace_name
+  }
+
+  spec {
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment.backend.metadata[0].name
+    }
+
+    min_replicas = 3
+    max_replicas = 10
+
+    metric {
+      type = "Resource"
+      resource {
+        name = "cpu"
+        target {
+          type                = "Utilization"
+          average_utilization = 50
+        }
+      }
+    }
+
+    behavior {
+      scale_up {
+        stabilization_window_seconds = 30
+        select_policy                = "Max"
+        policy {
+          type           = "Pods"
+          value          = 2
+          period_seconds = 60
+        }
+      }
+      scale_down {
+        stabilization_window_seconds = 300
+        select_policy                = "Min"
+        policy {
+          type           = "Pods"
+          value          = 1
+          period_seconds = 60
+        }
+      }
+    }
+  }
 }
 
 resource "kubernetes_service" "backend" {
