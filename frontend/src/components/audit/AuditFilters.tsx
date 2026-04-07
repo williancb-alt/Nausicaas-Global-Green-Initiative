@@ -23,13 +23,12 @@ export function AuditFilters({
 }: AuditFiltersProps): JSX.Element {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
 
-  const handleChange = (field: keyof FilterState) => (
-    e: ChangeEvent<HTMLSelectElement>,
-  ) => {
-    const updated = { ...filters, [field]: e.target.value }
-    setFilters(updated)
-    onFilterChange(updated)
-  }
+  const handleChange =
+    (field: keyof FilterState) => (e: ChangeEvent<HTMLSelectElement>) => {
+      const updated = { ...filters, [field]: e.target.value }
+      setFilters(updated)
+      onFilterChange(updated)
+    }
 
   const handleClear = () => {
     setFilters(DEFAULT_FILTERS)

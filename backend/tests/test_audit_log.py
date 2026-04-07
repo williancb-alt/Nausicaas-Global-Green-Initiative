@@ -228,45 +228,47 @@ class TestAuditServiceNewMethods:
 class TestAuditLogFiltering:
     """Tests for get_filtered_logs model method."""
 
-    def test_filter_by_action(self, client, db, test_user):
-        """Only logs matching the requested action are returned."""
-        AuditLog.log(
-            action=AuditAction.GRANT_CREATED.value,
-            entity_type="grant",
-            entity_id=1,
-            user_email=test_user.email,
-        )
-        AuditLog.log(
-            action=AuditAction.GRANT_DELETED.value,
-            entity_type="grant",
-            entity_id=1,
-            user_email=test_user.email,
-        )
+    @pytest.mark.parametrize(
+        "log1,log2,filter_kwargs,expected_field,expected_value",
+        [
+            (
+                {"action": "grant_created", "entity_type": "grant", "entity_id": 1},
+                {"action": "grant_deleted", "entity_type": "grant", "entity_id": 2},
+                {"action": "grant_created"},
+                "action",
+                "grant_created",
+            ),
+            (
+                {
+                    "action": "grant_created",
+                    "entity_type": "grant",
+                    "entity_id": 1,
+                    "success": True,
+                },
+                {
+                    "action": "application_edit_blocked",
+                    "entity_type": "application",
+                    "entity_id": 2,
+                    "success": False,
+                },
+                {"success": False},
+                "success",
+                False,
+            ),
+        ],
+    )
+    def test_filter_single_match(
+        self, client, db, test_user, log1, log2,
+        filter_kwargs, expected_field, expected_value,
+    ):
+        """A single-field filter returns exactly the matching log."""
+        AuditLog.log(**log1)
+        AuditLog.log(**log2)
 
-        results = AuditLog.get_filtered_logs(action="grant_created")
+        results = AuditLog.get_filtered_logs(**filter_kwargs)
 
         assert len(results) == 1
-        assert results[0].action == "grant_created"
-
-    def test_filter_by_success_false(self, client, db, test_user):
-        """Only failed logs are returned when success=False is applied."""
-        AuditLog.log(
-            action=AuditAction.GRANT_CREATED.value,
-            entity_type="grant",
-            entity_id=1,
-            success=True,
-        )
-        AuditLog.log(
-            action=AuditAction.APPLICATION_EDIT_BLOCKED.value,
-            entity_type="application",
-            entity_id=2,
-            success=False,
-        )
-
-        results = AuditLog.get_filtered_logs(success=False)
-
-        assert len(results) == 1
-        assert results[0].success is False
+        assert getattr(results[0], expected_field) == expected_value
 
     def test_filter_by_user_email(self, client, db, test_user, admin_user):
         """Only logs for the specified user email are returned."""
@@ -363,63 +365,63 @@ class TestAuditApiEndpoints:
         assert data["status"] == "success"
         assert "items" in data
 
-    def test_filter_by_action_param(self, client, db, admin_user):
-        """Endpoint returns only logs matching the action query param."""
-        AuditLog.log(
-            action=AuditAction.GRANT_CREATED.value,
-            entity_type="grant",
-            entity_id=1,
-        )
-        AuditLog.log(
-            action=AuditAction.GRANT_DELETED.value,
-            entity_type="grant",
-            entity_id=1,
-        )
+    @pytest.mark.parametrize(
+        "log1,log2,params,expected_field,expected_value",
+        [
+            (
+                {"action": "grant_created", "entity_type": "grant", "entity_id": 1},
+                {"action": "grant_deleted", "entity_type": "grant", "entity_id": 2},
+                "?action=grant_created",
+                "action",
+                "grant_created",
+            ),
+            (
+                {
+                    "action": "grant_created",
+                    "entity_type": "grant",
+                    "entity_id": 1,
+                    "success": True,
+                },
+                {
+                    "action": "application_edit_blocked",
+                    "entity_type": "application",
+                    "entity_id": 2,
+                    "success": False,
+                },
+                "?success=false",
+                "success",
+                False,
+            ),
+            (
+                {
+                    "action": "grant_created",
+                    "entity_type": "grant",
+                    "entity_id": 1,
+                    "user_email": "admin@test.com",
+                },
+                {
+                    "action": "grant_edited",
+                    "entity_type": "grant",
+                    "entity_id": 2,
+                    "user_email": "other@test.com",
+                },
+                "?user_email=admin@test.com",
+                "user_email",
+                "admin@test.com",
+            ),
+        ],
+    )
+    def test_filter_param(
+        self, client, db, admin_user, log1, log2, params, expected_field, expected_value
+    ):
+        """Endpoint returns only the log that matches the given query param."""
+        AuditLog.log(**log1)
+        AuditLog.log(**log2)
 
-        data = _admin_audit_get(client, "?action=grant_created")
+        data = _admin_audit_get(client, params)
 
         assert data["count"] == 1
-        assert data["items"][0]["action"] == "grant_created"
-
-    def test_filter_by_success_false_param(self, client, db, admin_user):
-        """Endpoint returns only failed logs when success=false is passed."""
-        AuditLog.log(
-            action=AuditAction.GRANT_CREATED.value,
-            entity_type="grant",
-            entity_id=1,
-            success=True,
-        )
-        AuditLog.log(
-            action=AuditAction.APPLICATION_EDIT_BLOCKED.value,
-            entity_type="application",
-            entity_id=2,
-            success=False,
-        )
-
-        data = _admin_audit_get(client, "?success=false")
-
-        assert data["count"] == 1
-        assert data["items"][0]["success"] is False
-
-    def test_filter_by_user_email_param(self, client, db, admin_user):
-        """Endpoint returns only logs for the specified user_email."""
-        AuditLog.log(
-            action=AuditAction.GRANT_CREATED.value,
-            entity_type="grant",
-            entity_id=1,
-            user_email="admin@test.com",
-        )
-        AuditLog.log(
-            action=AuditAction.GRANT_EDITED.value,
-            entity_type="grant",
-            entity_id=1,
-            user_email="other@test.com",
-        )
-
-        data = _admin_audit_get(client, "?user_email=admin@test.com")
-
-        assert data["count"] == 1
-        assert data["items"][0]["user_email"] == "admin@test.com"
+        assert data["items"][0][expected_field] == expected_value
 
 
 def _login_and_create_award(client, award_name="eco-grant"):

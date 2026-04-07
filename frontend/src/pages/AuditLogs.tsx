@@ -28,7 +28,9 @@ function filterByTab(logs: AuditLog[], tab: AuditTabType): AuditLog[] {
     case "applications":
       return logs.filter(log => log.entity_type === "application")
     case "security":
-      return logs.filter(log => SECURITY_ACTIONS.has(log.action) || !log.success)
+      return logs.filter(
+        log => SECURITY_ACTIONS.has(log.action) || !log.success,
+      )
     case "admins":
       return logs.filter(log => log.is_admin)
     default:
@@ -214,9 +216,9 @@ export function AuditLogs(): JSX.Element {
         <div className="alert alert-warning mb-4" role="alert">
           <strong>🔐 Security Events</strong>
           <p className="mb-0 mt-2">
-            Showing security-relevant events: blocked edit attempts on
-            submitted applications, failed login attempts, and unauthorized
-            access attempts.
+            Showing security-relevant events: blocked edit attempts on submitted
+            applications, failed login attempts, and unauthorized access
+            attempts.
           </p>
         </div>
       )}

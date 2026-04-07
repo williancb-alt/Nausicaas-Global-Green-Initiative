@@ -35,7 +35,9 @@ function exportToCsv(logs: AuditLog[]): void {
     "IP Address",
   ]
 
-  const escape = (val: string | number | boolean | null | undefined): string => {
+  const escape = (
+    val: string | number | boolean | null | undefined,
+  ): string => {
     if (val === null || val === undefined) return ""
     const str = String(val)
     return str.includes(",") || str.includes('"') || str.includes("\n")
