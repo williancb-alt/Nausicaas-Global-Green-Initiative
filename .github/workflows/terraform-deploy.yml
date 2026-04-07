@@ -94,6 +94,7 @@ jobs:
       TF_VAR_github_client_id: ${{ secrets.TF_VAR_GITHUB_CLIENT_ID }}
       TF_VAR_github_client_secret: ${{ secrets.TF_VAR_GITHUB_CLIENT_SECRET }}
       TF_VAR_seed_password: ${{ secrets.TF_VAR_SEED_PASSWORD }}
+      TF_VAR_sentry_api_dsn: ${{ secrets.TF_VAR_SENTRY_API_DSN }}
       TF_VAR_db_sku_name: ${{ secrets.TF_VAR_DB_SKU_NAME }}
 
     steps:

@@ -9,8 +9,19 @@ from nausicass_global_green_initiative_api.api.exceptions import (
     ApiUnauthorized,
 )
 from nausicass_global_green_initiative_api.models.user import User
+from nausicass_global_green_initiative_api.services.monitoring import get_monitoring
 
 logger = logging.getLogger(__name__)
+
+
+def _set_monitoring_user(public_id: str, admin: bool = False) -> None:
+    """
+    Set current user on the monitoring service for context.
+    """
+
+    monitoring = get_monitoring()
+    monitoring.set_user({"id": public_id, "is_admin": str(admin)})
+    monitoring.set_tag("user.role", "admin" if admin else "user")
 
 
 class TokenPayload(TypedDict):
@@ -28,6 +39,9 @@ def token_required(f: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(f)
     def decorated(*args: Any, **kwargs: Any) -> Any:
         token_payload = _validate_access_token(admin_only=False)
+        _set_monitoring_user(
+            token_payload["public_id"], token_payload.get("admin", False)
+        )
         for name, val in token_payload.items():
             setattr(decorated, name, val)
         return f(*args, **kwargs)
@@ -49,6 +63,7 @@ def admin_token_required(f: Callable[..., Any]) -> Callable[..., Any]:
             )
             raise ApiForbidden()
         token_payload["admin"] = user.admin
+        _set_monitoring_user(token_payload["public_id"], user.admin)
         for name, val in token_payload.items():
             setattr(decorated, name, val)
         return f(*args, **kwargs)

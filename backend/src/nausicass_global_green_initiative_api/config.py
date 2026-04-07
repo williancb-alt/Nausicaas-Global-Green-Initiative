@@ -10,6 +10,7 @@ class Config:
 
     SECRET_KEY = os.getenv("SECRET_KEY", "open sesame")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "")
+    SENTRY_DSN = os.getenv("SENTRY_API_DSN", "")
     OAUTH_PROVIDERS = [
         {
             "name": "google",

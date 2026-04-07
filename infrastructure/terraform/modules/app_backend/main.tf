@@ -107,11 +107,12 @@ resource "kubernetes_secret" "backend_env" {
   type = "Opaque"
 
   data = {
-    SECRET_KEY    = random_password.flask_secret_key.result
-    FRONTEND_URL  = var.frontend_url
-    EMAIL_ENABLED = "true"
-    FLASK_ENV     = var.environment
-    SEED_PASSWORD = var.seed_password
+    SECRET_KEY     = random_password.flask_secret_key.result
+    FRONTEND_URL   = var.frontend_url
+    EMAIL_ENABLED  = "true"
+    FLASK_ENV      = var.environment
+    SEED_PASSWORD  = var.seed_password
+    SENTRY_API_DSN = var.sentry_api_dsn
   }
 }
 

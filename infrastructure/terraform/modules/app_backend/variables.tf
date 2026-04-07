@@ -53,3 +53,10 @@ variable "seed_password" {
   type        = string
   sensitive   = true
 }
+
+variable "sentry_api_dsn" {
+  description = "Sentry DSN for backend error monitoring"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
