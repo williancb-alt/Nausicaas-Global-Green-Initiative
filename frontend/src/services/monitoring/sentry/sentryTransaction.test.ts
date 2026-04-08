@@ -29,7 +29,7 @@ describe("SentryTransaction", () => {
     expect(Sentry.startInactiveSpan).toHaveBeenCalledWith({
       name: "load-page",
       op: "ui.render",
-      attributes: undefined,
+      forceTransaction: true,
     })
   })
 
@@ -44,6 +44,7 @@ describe("SentryTransaction", () => {
     expect(Sentry.startInactiveSpan).toHaveBeenCalledWith({
       name: "api-call",
       op: "http",
+      forceTransaction: true,
       attributes: { url: "/api/grants" },
     })
   })
