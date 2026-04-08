@@ -53,3 +53,38 @@ variable "seed_password" {
   type        = string
   sensitive   = true
 }
+
+variable "rate_limit_rps" {
+  description = "General API rate limit in requests per second per IP address"
+  type        = string
+  default     = "20"
+}
+
+variable "rate_limit_burst_multiplier" {
+  description = "Burst multiplier general API rate limit"
+  type        = string
+  default     = "5"
+}
+
+variable "auth_rate_limit_rps" {
+  description = "Auth endpoint rate limit in requests per second per IP address"
+  type        = string
+  default     = "5"
+}
+
+variable "auth_rate_limit_burst_multiplier" {
+  description = "Burst multiplier auth endpoints rate limit"
+  type        = string
+  default     = "3"
+}
+
+variable "auth_rate_limited_paths" {
+  description = "Unauthenticated auth endpoint paths to rate limit"
+  type        = list(string)
+  default = [
+    "/api/v1/auth/login",
+    "/api/v1/auth/register",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password",
+  ]
+}
