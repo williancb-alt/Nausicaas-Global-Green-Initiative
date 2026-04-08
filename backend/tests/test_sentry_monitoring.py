@@ -31,7 +31,7 @@ class TestSentryMonitoringServiceInit:
         assert call_kwargs["traces_sample_rate"] == 1.0
         assert call_kwargs["profiles_sample_rate"] == 0.1
         assert call_kwargs["debug"] is False
-        assert call_kwargs["send_default_pii"] is True
+        assert call_kwargs["send_default_pii"] is False
 
 
 class TestSentryMonitoringServiceMethods:
@@ -111,7 +111,7 @@ class TestSentryTransaction:
         tx = service.start_transaction(name="test", op="test")
         tx.finish()
 
-        mock_span.__exit__.assert_called_once_with(None, None, None)
+        mock_span.finish.assert_called_once()
 
     @patch("sentry_sdk.start_span")
     def test_set_status_delegates_to_span(self, mock_start):

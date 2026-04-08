@@ -20,7 +20,7 @@ def _set_monitoring_user(public_id: str, admin: bool = False) -> None:
     """
 
     monitoring = get_monitoring()
-    monitoring.set_user({"id": public_id, "is_admin": str(admin)})
+    monitoring.set_user({"id": public_id})
     monitoring.set_tag("user.role", "admin" if admin else "user")
 
 

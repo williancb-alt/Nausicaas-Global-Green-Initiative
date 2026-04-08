@@ -6,6 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.exceptions import HTTPException
 
 from .config import get_config
 from .middleware import register_request_id, register_request_logging
@@ -89,6 +90,8 @@ def create_app(config_name: str) -> Flask:
 
     @app.errorhandler(Exception)
     def handle_unhandled_exception(e):
+        if isinstance(e, HTTPException):
+            return e
         get_monitoring().capture_exception(e)
         app.logger.exception("Unhandled exception")
         return jsonify(status="fail", message="Internal server error"), 500

@@ -14,7 +14,8 @@ export class SentryTransaction implements MonitoringTransaction {
     this.span = Sentry.startInactiveSpan({
       name: context.name,
       op: context.op,
-      attributes: context.data as Record<string, string>,
+      forceTransaction: true,
+      ...(context.data && { attributes: context.data }),
     })
   }
 

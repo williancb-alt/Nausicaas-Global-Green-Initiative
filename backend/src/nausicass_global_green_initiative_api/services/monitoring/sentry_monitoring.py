@@ -20,15 +20,14 @@ class SentryMonitoringService(MonitoringService):
             release=kwargs.get("release"),
             traces_sample_rate=kwargs.get("traces_sample_rate", 1.0),
             profiles_sample_rate=kwargs.get("profiles_sample_rate", 0.1),
-            send_default_pii=True,
+            send_default_pii=False,
             integrations=[
                 FlaskIntegration(
                     transaction_style="url",
                 ),
                 SqlalchemyIntegration(),
             ],
-            # Capture all request bodies for max detail
-            max_request_body_size="always",
+            max_request_body_size="medium",
             # Attach server name for tracing
             server_name=kwargs.get("server_name"),
             debug=kwargs.get("debug", False),

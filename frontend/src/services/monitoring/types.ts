@@ -13,10 +13,12 @@ export type Breadcrumb = {
   data?: Record<string, unknown>
 }
 
+export type SpanAttributeValue = string | number | boolean
+
 export type TransactionContext = {
   name: string
   op: string
-  data?: Record<string, unknown>
+  data?: Record<string, SpanAttributeValue>
 }
 
 export interface MonitoringService {
