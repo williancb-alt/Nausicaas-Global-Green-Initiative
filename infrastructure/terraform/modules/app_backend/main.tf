@@ -303,8 +303,10 @@ resource "kubernetes_ingress_v1" "backend" {
     name      = "backend-ingress"
     namespace = local.namespace_name
     annotations = {
-      "kubernetes.io/ingress.class"              = "nginx"
-      "nginx.ingress.kubernetes.io/ssl-redirect" = "true"
+      "kubernetes.io/ingress.class"                        = "nginx"
+      "nginx.ingress.kubernetes.io/ssl-redirect"           = "true"
+      "nginx.ingress.kubernetes.io/limit-rps"              = "20"
+      "nginx.ingress.kubernetes.io/limit-burst-multiplier" = "5"
     }
   }
 
@@ -321,6 +323,77 @@ resource "kubernetes_ingress_v1" "backend" {
         path {
           path      = "/"
           path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service.backend.metadata[0].name
+
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_ingress_v1" "backend_auth" {
+  metadata {
+    name      = "backend-auth-ingress"
+    namespace = local.namespace_name
+    annotations = {
+      "kubernetes.io/ingress.class"                        = "nginx"
+      "nginx.ingress.kubernetes.io/ssl-redirect"           = "true"
+      "nginx.ingress.kubernetes.io/limit-rps"              = "5"
+      "nginx.ingress.kubernetes.io/limit-burst-multiplier" = "3"
+    }
+  }
+
+  spec {
+    tls {
+      hosts       = [var.backend_hostname]
+      secret_name = var.tls_secret_name
+    }
+
+    rule {
+      host = var.backend_hostname
+
+      http {
+        path {
+          path      = "/api/v1/auth/login"
+          path_type = "Exact"
+
+          backend {
+            service {
+              name = kubernetes_service.backend.metadata[0].name
+
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+
+        path {
+          path      = "/api/v1/auth/register"
+          path_type = "Exact"
+
+          backend {
+            service {
+              name = kubernetes_service.backend.metadata[0].name
+
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+
+        path {
+          path      = "/api/v1/auth/forgot-password"
+          path_type = "Exact"
 
           backend {
             service {
