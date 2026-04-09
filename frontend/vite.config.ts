@@ -1,8 +1,26 @@
 import { defineConfig } from "vitest/config"
 import react from "@vitejs/plugin-react"
+import { sentryVitePlugin } from "@sentry/vite-plugin"
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      release: {
+        name: process.env.VITE_APP_VERSION,
+      },
+      sourcemaps: {
+        filesToDeleteAfterUpload: ["./dist/**/*.map"],
+      },
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+    }),
+  ],
+  build: {
+    sourcemap: !!process.env.SENTRY_AUTH_TOKEN,
+  },
   resolve: {
     alias: [{ find: "@", replacement: "./src" }],
   },

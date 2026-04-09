@@ -1,5 +1,6 @@
 import React, { JSX, useEffect, useRef, useState } from "react"
 import { api } from "../../services/api"
+import { getMonitoring } from "../../services/monitoring"
 import { SuccessMessage } from "./SuccessMessage"
 import { SupportForm } from "./SupportForm"
 
@@ -42,6 +43,10 @@ export function ContactModalBody({
       setIsSuccess(true)
       closeTimerRef.current = setTimeout(onClose, 3000)
     } catch (err: unknown) {
+      getMonitoring().captureException(err, {
+        context: "support.contactModal",
+        applicationId,
+      })
       setIsSubmitting(false)
       if (err instanceof Error) {
         setError(err.message)

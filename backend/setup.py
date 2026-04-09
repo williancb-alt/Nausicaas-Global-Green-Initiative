@@ -36,6 +36,7 @@ INSTALL_REQUIRES = [
     "python-dateutil",
     "python-dotenv",
     "requests",
+    "sentry-sdk[flask]",
     "urllib3>=2.6.3",
     "werkzeug==3.1.6",
 ]

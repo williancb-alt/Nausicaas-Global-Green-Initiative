@@ -35,6 +35,7 @@ services:
       ACS_EMAIL_SENDER: ${ACS_EMAIL_SENDER}
       EMAIL_ENABLED: ${EMAIL_ENABLED:-true}
       SEED_PASSWORD: ${SEED_PASSWORD}
+      SENTRY_API_DSN: ${SENTRY_API_DSN:-}
     depends_on:
       - db
     ports:
@@ -53,6 +54,9 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:8080
         SERVER_NAME: localhost
+        VITE_ENVIRONMENT: development
+        VITE_SENTRY_UI_DSN: ${VITE_SENTRY_UI_DSN:-}
+        VITE_APP_VERSION: local
     profiles:
       - dev
     environment:

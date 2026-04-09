@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { api } from "../services/api"
+import { getMonitoring } from "../services/monitoring"
 import type { SupportMessage } from "../services/api/support"
 import { FilterStatus } from "../components/support/types"
 import {
@@ -30,6 +31,9 @@ export function useSupportManagement() {
       setMessages(data)
       setError(null)
     } catch (err) {
+      getMonitoring().captureException(err, {
+        context: "support.fetchMessages",
+      })
       setError(getErrorMessage(err, "Failed to load messages."))
     } finally {
       setLoading(false)
@@ -53,6 +57,10 @@ export function useSupportManagement() {
       setViewingHistory(messageId)
       await fetchMessages()
     } catch (err) {
+      getMonitoring().captureException(err, {
+        context: "support.sendReply",
+        messageId,
+      })
       setError(getErrorMessage(err, "Failed to send reply."))
     } finally {
       setIsSending(false)
