@@ -304,8 +304,10 @@ resource "kubernetes_ingress_v1" "backend" {
     name      = "backend-ingress"
     namespace = local.namespace_name
     annotations = {
-      "kubernetes.io/ingress.class"              = "nginx"
-      "nginx.ingress.kubernetes.io/ssl-redirect" = "true"
+      "kubernetes.io/ingress.class"                        = "nginx"
+      "nginx.ingress.kubernetes.io/ssl-redirect"           = "true"
+      "nginx.ingress.kubernetes.io/limit-rps"              = var.rate_limit_rps
+      "nginx.ingress.kubernetes.io/limit-burst-multiplier" = var.rate_limit_burst_multiplier
     }
   }
 
@@ -329,6 +331,50 @@ resource "kubernetes_ingress_v1" "backend" {
 
               port {
                 number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_ingress_v1" "backend_auth" {
+  metadata {
+    name      = "backend-auth-ingress"
+    namespace = local.namespace_name
+    annotations = {
+      "kubernetes.io/ingress.class"                        = "nginx"
+      "nginx.ingress.kubernetes.io/ssl-redirect"           = "true"
+      "nginx.ingress.kubernetes.io/limit-rps"              = var.auth_rate_limit_rps
+      "nginx.ingress.kubernetes.io/limit-burst-multiplier" = var.auth_rate_limit_burst_multiplier
+    }
+  }
+
+  spec {
+    tls {
+      hosts       = [var.backend_hostname]
+      secret_name = var.tls_secret_name
+    }
+
+    rule {
+      host = var.backend_hostname
+
+      http {
+        dynamic "path" {
+          for_each = var.auth_rate_limited_paths
+          content {
+            path      = path.value
+            path_type = "Exact"
+
+            backend {
+              service {
+                name = kubernetes_service.backend.metadata[0].name
+
+                port {
+                  number = 80
+                }
               }
             }
           }
