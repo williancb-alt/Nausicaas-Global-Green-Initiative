@@ -88,3 +88,10 @@ variable "auth_rate_limited_paths" {
     "/api/v1/auth/reset-password",
   ]
 }
+
+variable "sentry_api_dsn" {
+  description = "Sentry DSN for backend error monitoring"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

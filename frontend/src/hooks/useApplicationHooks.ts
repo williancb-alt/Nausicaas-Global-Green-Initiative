@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "../services/api"
+import { getMonitoring } from "../services/monitoring"
 import { ApplicationsResponse } from "../services/api/applications"
 
 // Get current user's applications
@@ -34,7 +35,7 @@ export function useSubmitApplication() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       grantName,
       fieldValues,
       awardName,
@@ -44,13 +45,28 @@ export function useSubmitApplication() {
       fieldValues: Record<string, string>
       awardName?: string
       awardJustification?: string
-    }) =>
-      api.applications.submitApplication(
-        grantName,
-        fieldValues,
-        awardName,
-        awardJustification,
-      ),
+    }) => {
+      const transaction = getMonitoring().startTransaction({
+        name: "submit-application",
+        op: "ui.submit",
+        data: { grantName },
+      })
+      try {
+        const result = await api.applications.submitApplication(
+          grantName,
+          fieldValues,
+          awardName,
+          awardJustification,
+        )
+        transaction.setStatus("ok")
+        return result
+      } catch (error) {
+        transaction.setStatus("error")
+        throw error
+      } finally {
+        transaction.finish()
+      }
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["myApplications"] })
       void queryClient.invalidateQueries({ queryKey: ["applications"] })

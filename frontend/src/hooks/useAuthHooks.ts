@@ -1,27 +1,54 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { api } from "../services/api"
+import { getMonitoring } from "../services/monitoring"
 import { useAuthStore } from "../store/authStore"
 import { LoginCredentials } from "../types"
+import { UserInfo } from "../services/api/types"
 
-export function useLogin() {
+function setMonitoringUser(user: UserInfo | null): void {
+  // Get the monitoring instance and set user context
+  // for error tracking and performance monitoring
+  const monitoring = getMonitoring()
+  if (user) {
+    monitoring.setUser({
+      id: user.public_id ?? user.email,
+      email: user.email,
+    })
+    monitoring.setTag("user.role", user.admin ? "admin" : "user")
+  } else {
+    monitoring.setUser(null)
+  }
+}
+
+function useAuthMutation(
+  mutationFn: ({ email, password }: LoginCredentials) => Promise<unknown>,
+  errorContext: string,
+) {
   const { setUser } = useAuthStore()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ email, password }: LoginCredentials) =>
-      api.auth.login(email, password),
+      mutationFn({ email, password }),
     onSuccess: async () => {
       try {
         const user = await api.auth.getUser()
         setUser(user)
+        setMonitoringUser(user)
         await queryClient.invalidateQueries({ queryKey: ["user"] })
       } catch (error) {
-        // TODO - error handling - trigger state or dispatch to show message to user informing of error
-        console.error("Failed to fetch user after login:", error)
+        getMonitoring().captureException(error, { context: errorContext })
       }
     },
   })
+}
+
+export function useLogin() {
+  return useAuthMutation(
+    ({ email, password }) => api.auth.login(email, password),
+    "post-login user fetch",
+  )
 }
 
 export function useLogout() {
@@ -32,29 +59,17 @@ export function useLogout() {
     mutationFn: () => api.auth.logout(),
     onSuccess: () => {
       clearAuth()
+      setMonitoringUser(null)
       queryClient.clear()
     },
   })
 }
 
 export function useRegister() {
-  const { setUser } = useAuthStore()
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ email, password }: LoginCredentials) =>
-      api.auth.register(email, password),
-    onSuccess: async () => {
-      try {
-        const user = await api.auth.getUser()
-        setUser(user)
-        await queryClient.invalidateQueries({ queryKey: ["user"] })
-      } catch (error) {
-        // TODO - error handling - trigger state or dispatch to show message to user informing of error
-        console.error("Failed to fetch user after registration:", error)
-      }
-    },
-  })
+  return useAuthMutation(
+    ({ email, password }) => api.auth.register(email, password),
+    "post-register user fetch",
+  )
 }
 
 export function useForgotPassword() {
@@ -82,8 +97,10 @@ export function useUser() {
   useEffect(() => {
     if (query.data) {
       setUser(query.data)
+      setMonitoringUser(query.data)
     } else if (query.isError) {
       clearAuth()
+      setMonitoringUser(null)
     }
   }, [query.data, query.isError, setUser, clearAuth])
 

@@ -6,10 +6,12 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.exceptions import HTTPException
 
 from .config import get_config
 from .middleware import register_request_id, register_request_logging
 from .services.logging import configure_logging
+from .services.monitoring import get_monitoring, init_monitoring
 
 cors = CORS(
     supports_credentials=True,
@@ -22,11 +24,23 @@ bcrypt = Bcrypt()
 def _setup_observability(app: Flask, config_name: str) -> None:
     """
     This function sets up
-    logging and request tracking middleware.
+    logging, monitoring, and request tracking middleware.
     """
 
     # Configures logging first based on environment
     configure_logging(app, config_name)
+
+    # Initialise error monitoring (Sentry) if DSN is configured
+    sentry_dsn = app.config.get("SENTRY_DSN")
+    if sentry_dsn:
+        init_monitoring(
+            dsn=sentry_dsn,
+            environment=config_name,
+            traces_sample_rate=0.2 if config_name == "production" else 1.0,
+            profiles_sample_rate=0.1 if config_name == "production" else 0,
+            debug=config_name == "development",
+        )
+        app.logger.info("Sentry monitoring initialised")
 
     # Then middleware adding for request ID
     # and request logging
@@ -73,5 +87,13 @@ def create_app(config_name: str) -> Flask:
     @app.errorhandler(405)
     def method_not_allowed(e):
         return jsonify(status="fail", message="Method not allowed"), 405
+
+    @app.errorhandler(Exception)
+    def handle_unhandled_exception(e):
+        if isinstance(e, HTTPException):
+            return e
+        get_monitoring().capture_exception(e)
+        app.logger.exception("Unhandled exception")
+        return jsonify(status="fail", message="Internal server error"), 500
 
     return app

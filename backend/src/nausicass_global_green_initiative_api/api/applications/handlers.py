@@ -16,6 +16,7 @@ from nausicass_global_green_initiative_api.api.auth.decorators import (
 )
 from nausicass_global_green_initiative_api.api.exceptions import ApiForbidden
 from nausicass_global_green_initiative_api.services.audit_service import AuditService
+from nausicass_global_green_initiative_api.services.monitoring import get_monitoring
 from nausicass_global_green_initiative_api.models.award import Award
 from nausicass_global_green_initiative_api.models.application import Application
 from nausicass_global_green_initiative_api.models.grant import Grant
@@ -114,50 +115,62 @@ def create_application(application_dict: ApplicationCreateDict) -> Response:
     grant_name = application_dict["grant_name"]
     public_id = create_application.public_id  # type: ignore[attr-defined]
 
-    grant, user = _validate_create_application(grant_name, public_id)
-
-    award = _get_optional_award(application_dict.get("award_name"))
-    _validate_award_justification(
-        application_dict.get("award_name"),
-        application_dict.get("award_justification"),
+    tx = get_monitoring().start_transaction(
+        name="create-application", op="api.submit", grant_name=grant_name
     )
 
-    application = Application(
-        user_id=user.id,
-        grant_id=grant.id,
-        award=award,
-        award_justification=application_dict.get("award_justification"),
-        field_values=application_dict.get("field_values"),
-        status="pending_review",
-    )
-    db.session.add(application)
-    db.session.commit()
-    logger.info(
-        "Application created",
-        extra={
-            "application_id": application.id,
-            "grant_name": grant_name,
-            "user_id": str(user.public_id),
-        },
-    )
+    try:
+        grant, user = _validate_create_application(grant_name, public_id)
 
-    AuditService.log_application_created(
-        application_id=application.id,
-        user_id=user.id,
-        user_email=user.email,
-        details={"grant_name": grant_name},
-    )
+        award = _get_optional_award(application_dict.get("award_name"))
+        _validate_award_justification(
+            application_dict.get("award_name"),
+            application_dict.get("award_justification"),
+        )
 
-    response = jsonify(
-        status="success",
-        message=f"Application submitted for '{grant_name}'.",
-        application_id=application.id,
-    )
-    response.status_code = HTTPStatus.CREATED
-    response.headers["Location"] = url_for(
-        "api.application", application_id=application.id, _external=True
-    )
-    return response
+        application = Application(
+            user_id=user.id,
+            grant_id=grant.id,
+            award=award,
+            award_justification=application_dict.get("award_justification"),
+            field_values=application_dict.get("field_values"),
+            status="pending_review",
+        )
+        db.session.add(application)
+        db.session.commit()
+        logger.info(
+            "Application created",
+            extra={
+                "application_id": application.id,
+                "grant_name": grant_name,
+                "user_id": str(user.public_id),
+            },
+        )
+
+        AuditService.log_application_created(
+            application_id=application.id,
+            user_id=user.id,
+            user_email=user.email,
+            details={"grant_name": grant_name},
+        )
+
+        tx.set_status("ok")
+
+        response = jsonify(
+            status="success",
+            message=f"Application submitted for '{grant_name}'.",
+            application_id=application.id,
+        )
+        response.status_code = HTTPStatus.CREATED
+        response.headers["Location"] = url_for(
+            "api.application", application_id=application.id, _external=True
+        )
+        return response
+    except Exception:
+        tx.set_status("error")
+        raise
+    finally:
+        tx.finish()
 
 
 @token_required
