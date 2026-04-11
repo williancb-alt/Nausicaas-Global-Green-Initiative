@@ -262,10 +262,13 @@ jobs:
       - name: Pre-destroy Kubernetes cleanup
         if: env.ACTION == 'destroy' && env.LAYER == 'core'
         run: |
-          az aks get-credentials \
+          if ! az aks get-credentials \
             --resource-group "$TF_VAR_rg_name" \
             --name "$TF_VAR_aks_name" \
-            --overwrite-existing
+            --overwrite-existing 2>/dev/null; then
+            echo "AKS cluster or resource group not found as not deployed, skipping Kubernetes cleanup"
+            exit 0
+          fi
 
           kubectl delete certificate --all -A --ignore-not-found=true
           kubectl delete clusterissuer --all --ignore-not-found=true

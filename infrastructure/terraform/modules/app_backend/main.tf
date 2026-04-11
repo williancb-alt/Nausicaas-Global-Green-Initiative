@@ -453,6 +453,13 @@ resource "kubernetes_job_v1" "backend_migrate" {
     }
   }
 
+  wait_for_completion = true
+
+  timeouts {
+    create = "5m"
+    update = "5m"
+  }
+
   depends_on = [
     kubernetes_secret.backend_env,
     kubernetes_manifest.secret_provider_class,
