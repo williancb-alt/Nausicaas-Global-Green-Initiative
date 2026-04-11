@@ -59,7 +59,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add backend/setup.py frontend/package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || exit 0
+          git commit --allow-empty -m "chore: bump version to ${{ steps.version.outputs.version }}"
           git push origin HEAD:${{ github.ref_name }}
 
       - name: Ensure tag exists
