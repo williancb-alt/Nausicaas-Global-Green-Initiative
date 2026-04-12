@@ -262,6 +262,16 @@ jobs:
       - name: Pre-destroy Kubernetes cleanup
         if: env.ACTION == 'destroy' && env.LAYER == 'core'
         run: |
+          if ! az group exists --name "$TF_VAR_rg_name" | grep -q true; then
+            echo "Resource group $TF_VAR_rg_name doesn't exist, skipping Kubernetes cleanup"
+            exit 0
+          fi
+
+          if ! az aks show --resource-group "$TF_VAR_rg_name" --name "$TF_VAR_aks_name" --query "name" -o tsv >/dev/null 2>&1; then
+            echo "AKS cluster $TF_VAR_aks_name not found within $TF_VAR_rg_name, skipping Kubernetes cleanup"
+            exit 0
+          fi
+
           az aks get-credentials \
             --resource-group "$TF_VAR_rg_name" \
             --name "$TF_VAR_aks_name" \
