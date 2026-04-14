@@ -21,6 +21,7 @@ An online grant application platform for Studio Ghibli's climate change initiati
 - [Testing](#testing)
 - [Branching Strategy & Version Control](#branching-strategy--version-control)
 - [Useful Links](#useful-links)
+- [Further Documentation](#further-documentation)
 - [Social Contract](#social-contract)
 - [Meetings](#meetings)
 - [Communication](#communication)
@@ -33,12 +34,19 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 ### Frontend
 
+#### Core
+
 | Technology | Version |
 |-----------|---------|
 | React | >= 19.0.0 |
 | TypeScript | >= 5.7.3 |
 | Vite | >= 6.1.0 |
 | Bootstrap | >= 5.3.8 |
+
+#### Additional
+
+| Technology | Version |
+|-----------|---------|
 | React Router DOM | >= 7.8.2 |
 | Axios | >= 1.13.2 |
 | React Hook Form | >= 7.69.0 |
@@ -48,26 +56,43 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 ### Backend
 
+#### Core
+
 | Technology | Version |
 |-----------|---------|
 | Python | 3.13 |
 | Flask | >= 3.1.0 |
-| Flask-RESTx (Swagger UI) | latest |
-| Flask-SQLAlchemy | >= 3.1.0 |
-| Flask-Migrate (Alembic) | latest |
 | Gunicorn | latest |
+
+#### Additional
+
+| Technology | Version |
+|-----------|---------|
+| Flask-RESTx (Swagger UI) | latest |
 | PyJWT | latest |
 | Flask-Bcrypt | latest |
 | Authlib (Google, GitHub OAuth) | latest |
-| PostgreSQL | 16 |
 
-### Testing and Code Quality
+### Database
+
+| Technology | Version |
+|-----------|---------|
+| PostgreSQL | 16 |
+| Flask-SQLAlchemy | >= 3.1.0 |
+| Flask-Migrate (Alembic) | latest |
+
+### Testing
 
 | Technology | Version |
 |-----------|---------|
 | pytest / tox (backend) | latest |
 | Vitest (frontend) | >= 3.0.5 |
 | Playwright (E2E) | >= 1.58.0 |
+
+### Linting & Code Quality
+
+| Technology | Version |
+|-----------|---------|
 | Black (Python formatting) | >= 25.1.0 |
 | Flake8 (Python linting) | latest |
 | ESLint | >= 9.19.0 |
@@ -105,20 +130,16 @@ An online grant application platform for Studio Ghibli's climate change initiati
 
 Pauric Dawson (Permanent)
 
-## Superstar
-
-*To be discussed*
-
 ## Team
 
 | Name | Responsibilities / Work Completed |
 |------|-----------------------------------|
-| Arno Moelich | *To be filled* |
-| Matheus Maximo De Araujo | *To be filled* |
-| John Dennehy | *To be filled* |
-| Willian Belolli | *To be filled* |
-| Tito Etimiri | *To be filled* |
-| Ronan O'Dea | *To be filled* |
+| Arno Moelich | Audit logging API & frontend dashboard, admin grant CRUD protection, submitted application immutability, audit coverage expansion |
+| Matheus Maximo De Araujo | Awards management API & frontend, award filter for admin view, frontend test coverage |
+| John Dennehy | CI/CD pipeline, infrastructure (Terraform/AKS), K6 performance testing, DAST (ZAP), Grype scanning, Sentry monitoring, OAuth, containerisation, React & backend initialisation |
+| Willian Belolli | User dashboard, support ticket system, email notifications, project branding, frontend test coverage ramp-up, linting & formatting cleanup |
+| Tito Etimiri | UI feature branch (incorporated into CRUD functionality merge), risk register management, Figma UI design templates, documentation updates, E2E testing learning & exploration |
+| Ronan O'Dea | Grant application system, dynamic custom fields, password validation & reset, SBOM pipeline, frontend coverage gate, QUICKSTART guide, unit & E2E tests |
 
 > **Note:** Anuj Kumar was a member of the team but has since left the project. He contributed towards scaffolding the IaC deployment.
 
@@ -166,14 +187,15 @@ Rotating scrum master so that everyone gets to experience the role once.
 
 These are the current risks on the project, re-aligned on a weekly basis. Full register available at [Administration/Risk Register.md](./Documentation/Administration/Risk%20Register.md).
 
-*This risk register needs to be reviewed and updated.*
-
 | Risk ID | Risk Description | Category | Likelihood (1-5) | Impact (1-5) | Risk Rating | Mitigation Strategy |
 |---------|------------------|----------|------------------|--------------|-------------|---------------------|
 | 1 | Applicant bypasses no-edit rule via API or cache error, leading to inconsistent audit trails. | Technical | 2 | 4 | Med (8) | Implement server-side validation; lock database records upon status change to Submitted. |
 | 2 | Admin accidental/malicious deletion of a grant type, causing active applications to orphan or fail. | Operational | 2 | 5 | High (10) | Implement Soft Delete logic; require Super-Admin approval for grant removal. |
 | 3 | Search function reveals sensitive organizational financial data to unauthorized users. | Legal/Compliance | 1 | 5 | Low (5) | Role-Based Access Control (RBAC); encrypt PII at rest. |
 | 4 | High volume of climate grant submissions crashes the Review dashboard for admins. | Technical | 3 | 4 | High (12) | Load testing; implement pagination and indexed search for Admin Search by Org tool. |
+| 5 | Dependency/package manager vulnerability introduces security risks into the system. | Technical | 4 | 5 | High (20) | Implement automated vulnerability scanning for dependencies and container images; ensure timely updates of affected packages. |
+| 6 | Key team member drops out, causing knowledge gaps and potential delivery delays. | Operational | 3 | 4 | High (12) | Maintain clear documentation, enforce knowledge sharing, and ensure task handovers are completed. |
+| 7 | Security vulnerability exploit in a third-party npm package (Axios supply chain compromise / RAT) risks malicious code being introduced into the frontend build. | Security | 3 | 5 | High (15) | Removed Axios from the frontend in response to the disclosed compromise and replaced it with the native Fetch API; pin dependency versions and lockfile; run npm audit, Snyk and Grype on every PR/image build; generate CycloneDX SBOMs via Syft; review and patch affected packages promptly when CVEs are disclosed. |
 
 ## Environments
 
