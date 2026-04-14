@@ -73,9 +73,9 @@ export function AuditStats({ logs, timeRange }: AuditStatsProps): JSX.Element {
             <div className="text-muted small">{timeRange}</div>
             <div className="display-6 my-2">📋 {applicationActions}</div>
             <div className="fw-semibold">Application Actions</div>
-            {applicationActions === 0 && (
-              <div className="text-muted small mt-1">Coming Soon</div>
-            )}
+            <div className="text-muted small mt-1">
+              Created/Submitted/Edited
+            </div>
           </div>
         </div>
       </div>

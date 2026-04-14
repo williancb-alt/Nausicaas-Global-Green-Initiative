@@ -1,9 +1,9 @@
 import { JSX } from "react"
 import type { AuditLog } from "../../services/api/audit"
 
-// Helper to parse details JSON string
 interface AuditDetails {
   grant_name?: string
+  award_name?: string
   [key: string]: unknown
 }
 
@@ -21,6 +21,57 @@ interface AuditTableProps {
   onRowClick: (log: AuditLog) => void
 }
 
+function exportToCsv(logs: AuditLog[]): void {
+  const headers = [
+    "ID",
+    "Timestamp",
+    "User",
+    "Is Admin",
+    "Action",
+    "Entity Type",
+    "Entity ID",
+    "Success",
+    "Failure Reason",
+    "IP Address",
+  ]
+
+  const escape = (
+    val: string | number | boolean | null | undefined,
+  ): string => {
+    if (val === null || val === undefined) return ""
+    const str = String(val)
+    return str.includes(",") || str.includes('"') || str.includes("\n")
+      ? `"${str.replace(/"/g, '""')}"`
+      : str
+  }
+
+  const rows = logs.map(log =>
+    [
+      log.id,
+      log.timestamp,
+      log.user_email,
+      log.is_admin,
+      log.action,
+      log.entity_type,
+      log.entity_id,
+      log.success,
+      log.failure_reason,
+      log.ip_address,
+    ]
+      .map(escape)
+      .join(","),
+  )
+
+  const csv = [headers.join(","), ...rows].join("\n")
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
   const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp)
@@ -34,16 +85,26 @@ export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
 
   const getActionBadge = (action: string): JSX.Element => {
     const badges: Record<string, { color: string; label: string }> = {
+      // Grant actions
       grant_created: { color: "success", label: "Created" },
       grant_edited: { color: "warning", label: "Edited" },
       grant_deleted: { color: "danger", label: "Deleted" },
+      // Award actions
+      award_created: { color: "success", label: "Created" },
+      award_edited: { color: "warning", label: "Edited" },
+      award_deleted: { color: "danger", label: "Deleted" },
+      // Application actions
+      application_created: { color: "success", label: "Created" },
       application_submitted: { color: "info", label: "Submitted" },
+      application_edited: { color: "warning", label: "Edited" },
+      application_deleted: { color: "danger", label: "Deleted" },
       application_edit_blocked: { color: "danger", label: "Blocked" },
+      // Security actions
+      login_failed: { color: "danger", label: "Login Failed" },
       unauthorized_access: { color: "danger", label: "Unauthorized" },
     }
 
     const badge = badges[action] || { color: "secondary", label: action }
-
     return <span className={`badge bg-${badge.color}`}>{badge.label}</span>
   }
 
@@ -59,10 +120,12 @@ export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
   }
 
   const getEntityDisplay = (log: AuditLog): string => {
-    const entityName =
-      parseDetails(log.details)?.grant_name ||
+    const parsed = parseDetails(log.details)
+    return (
+      parsed?.grant_name ||
+      parsed?.award_name ||
       `${log.entity_type} #${log.entity_id}`
-    return entityName
+    )
   }
 
   if (logs.length === 0) {
@@ -139,11 +202,12 @@ export function AuditTable({ logs, onRowClick }: AuditTableProps): JSX.Element {
           <div className="text-muted">
             Showing {logs.length} of {logs.length} records
           </div>
-          {logs.length > 0 && (
-            <button className="btn btn-outline-secondary btn-sm">
-              Export CSV
-            </button>
-          )}
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => exportToCsv(logs)}
+          >
+            Export CSV
+          </button>
         </div>
       </div>
     </div>

@@ -9,16 +9,71 @@ import type { AuditLog } from "../services/api/audit"
 
 type AuditTabType = "all" | "grants" | "applications" | "security" | "admins"
 
+interface FilterState {
+  action: string
+  dateRange: string
+  userEmail: string
+}
+
+const SECURITY_ACTIONS = new Set([
+  "application_edit_blocked",
+  "unauthorized_access",
+  "login_failed",
+])
+
+function filterByTab(logs: AuditLog[], tab: AuditTabType): AuditLog[] {
+  switch (tab) {
+    case "grants":
+      return logs.filter(log => log.entity_type === "grant")
+    case "applications":
+      return logs.filter(log => log.entity_type === "application")
+    case "security":
+      return logs.filter(
+        log => SECURITY_ACTIONS.has(log.action) || !log.success,
+      )
+    case "admins":
+      return logs.filter(log => log.is_admin)
+    default:
+      return logs
+  }
+}
+
+function filterByDateRange(logs: AuditLog[], dateRange: string): AuditLog[] {
+  if (dateRange === "all") return logs
+
+  const now = new Date()
+  let cutoff: Date | null = null
+
+  if (dateRange === "today") {
+    cutoff = new Date(now)
+    cutoff.setHours(0, 0, 0, 0)
+  } else {
+    const daysMap: Record<string, number> = {
+      "7days": 7,
+      "30days": 30,
+      "90days": 90,
+    }
+    const days = daysMap[dateRange]
+    if (days !== undefined) {
+      cutoff = new Date(now)
+      cutoff.setDate(cutoff.getDate() - days)
+    }
+  }
+
+  if (!cutoff) return logs
+  const cutoffDate = cutoff
+  return logs.filter(log => new Date(log.timestamp) >= cutoffDate)
+}
+
 export function AuditLogs(): JSX.Element {
   const [activeTab, setActiveTab] = useState<AuditTabType>("grants")
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
-  const [_filters, _setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     action: "all",
     dateRange: "7days",
     userEmail: "all",
   })
 
-  // Fetch audit logs
   const {
     data: auditData,
     isLoading,
@@ -26,54 +81,33 @@ export function AuditLogs(): JSX.Element {
     refetch,
   } = useQuery({
     queryKey: ["auditLogs"],
-    queryFn: () => api.audit.getRecentLogs(100),
-    refetchInterval: 30000, // Refresh every 30 seconds
+    queryFn: () => api.audit.getRecentLogs(500),
+    refetchInterval: 30000,
   })
 
-  // Filter logs based on active tab
   const getFilteredLogs = (): AuditLog[] => {
     if (!auditData?.logs) return []
 
-    let filtered = [...auditData.logs]
+    let filtered = filterByTab([...auditData.logs], activeTab)
 
-    // Filter by tab
-    switch (activeTab) {
-      case "grants":
-        filtered = filtered.filter(log => log.entity_type === "grant")
-        break
-      case "applications":
-        filtered = filtered.filter(log => log.entity_type === "application")
-        break
-      case "security":
-        filtered = filtered.filter(
-          log =>
-            log.action === "application_edit_blocked" ||
-            log.action === "unauthorized_access" ||
-            log.action === "login_failed" ||
-            !log.success,
-        )
-        break
-      case "admins":
-        filtered = filtered.filter(log => log.is_admin)
-        break
-      case "all":
-      default:
-        // Show all
-        break
+    if (filters.action !== "all") {
+      filtered = filtered.filter(log => log.action === filters.action)
     }
 
-    // Additional filters can be applied here based on filters state
+    filtered = filterByDateRange(filtered, filters.dateRange)
+
+    if (filters.userEmail !== "all") {
+      filtered = filtered.filter(log => log.user_email === filters.userEmail)
+    }
 
     return filtered
   }
 
   const filteredLogs = getFilteredLogs()
 
-  // Get unique admin emails for filter dropdown
-  const adminEmails = Array.from(
+  const allEmails = Array.from(
     new Set(
       auditData?.logs
-        .filter(log => log.is_admin)
         .filter(log => log.user_email !== null)
         .map(log => log.user_email as string) ?? [],
     ),
@@ -91,17 +125,10 @@ export function AuditLogs(): JSX.Element {
   }
 
   const isTabDisabled = (tab: AuditTabType): boolean => {
-    // Disable tabs that don't have data yet
     if (tab === "applications" || tab === "security") {
       const hasData = auditData?.logs.some(log => {
         if (tab === "applications") return log.entity_type === "application"
-        if (tab === "security")
-          return (
-            log.action === "application_edit_blocked" ||
-            log.action === "unauthorized_access" ||
-            !log.success
-          )
-        return false
+        return SECURITY_ACTIONS.has(log.action) || !log.success
       })
       return !hasData
     }
@@ -176,28 +203,29 @@ export function AuditLogs(): JSX.Element {
       )}
 
       {activeTab === "applications" && (
-        <div className="alert alert-warning mb-4" role="alert">
-          <strong>⏳ Coming Soon</strong>
+        <div className="alert alert-info mb-4" role="alert">
+          <strong>📋 Application Activity</strong>
           <p className="mb-0 mt-2">
-            Application audit tracking will be available once the application
-            submission system is implemented by Ronan (Epic #4).
+            Showing all application lifecycle events including creation,
+            submission, admin edits, and deletions.
           </p>
         </div>
       )}
 
       {activeTab === "security" && (
         <div className="alert alert-warning mb-4" role="alert">
-          <strong>⏳ Coming Soon</strong>
+          <strong>🔐 Security Events</strong>
           <p className="mb-0 mt-2">
-            Security event tracking (unauthorized access attempts, blocked
-            edits, failed logins) will be implemented in the next phase.
+            Showing security-relevant events: blocked edit attempts on submitted
+            applications, failed login attempts, and unauthorized access
+            attempts.
           </p>
         </div>
       )}
 
       {/* Filters */}
       {!isTabDisabled(activeTab) && (
-        <AuditFilters onFilterChange={_setFilters} adminEmails={adminEmails} />
+        <AuditFilters onFilterChange={setFilters} adminEmails={allEmails} />
       )}
 
       {/* Loading State */}
