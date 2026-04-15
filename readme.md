@@ -275,11 +275,11 @@ See [Infrastructure README](./infrastructure/README.md) for full details on the 
 
 ## Meetings
 
-Stand-ups will occur **Every Tuesday at 20:30** during class and **Thursdays at 19:00**. Two per week.
+Stand-ups will occur **Every Tuesday at 20:00** during class and **Thursdays at 19:00**. Two per week.
 
 Updates will be in the form: What I've done, Impediments, What I plan to do.
 
-Sprint planning will occur at **Every Thursday at 19:15** every week.
+Sprint planning will occur at the **start of each sprint cycle**, with dedicated time immediately after the stand-up.
 Please add and update items within **GitHub Projects** prior to the sprint planning session.
 
 Sprint retro will be at the end of our sprint on **Thursdays at 19:30** (timebox retro for 15 minutes, to be organised by the scrum master).
